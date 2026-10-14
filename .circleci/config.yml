@@ -1,0 +1,33 @@
+version: 2.1
+jobs:
+  android-verify:
+    docker:
+      - image: cimg/android:2025.04
+    resource_class: medium
+    working_directory: ~/V2V
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - gradle-v1-{{ checksum "app/gradle.lockfile" }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - run:
+          name: Build, DSP tests and Android lint
+          command: ./gradlew --no-daemon assembleDebug testDebugUnitTest lintDebug
+      - run:
+          name: Package APK and checksum
+          command: ./scripts/package-apk.sh
+      - store_test_results:
+          path: app/build/test-results/testDebugUnitTest
+      - store_artifacts:
+          path: deliverables
+      - store_artifacts:
+          path: app/build/reports
+      - save_cache:
+          key: gradle-v1-{{ checksum "app/gradle.lockfile" }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+          paths:
+            - ~/.gradle/caches
+            - ~/.gradle/wrapper
+workflows:
+  verify:
+    jobs:
+      - android-verify
