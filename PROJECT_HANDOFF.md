@@ -15,7 +15,7 @@
 
 APK SHA-256：`52c1f053ab3265548cd87ebde51d9206995e5ed0d1b7e4adb5934a3756ef7598`。Debug v2 簽章已驗證。
 
-Git：由空倉庫建立工程；首次實際 commit 建立後補記程式碼 SHA。
+已驗證的程式碼 commit：`0a34c0a5b61adda15dbeb9a11857485a44f1fb61`。後續 handoff 文件更新不改程式碼；倉庫最新文件 commit 可用 `git log -1` 核對。
 CircleCI：設定檔已提供，但專案仍需帳號內 Set Up Project；沒有假造 pipeline PASS。
 
 ## 阻擋與下一步

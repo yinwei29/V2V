@@ -15,7 +15,7 @@
 | Gradle wrapper | PASS | 官方產生 wrapper，8.13 distribution SHA-256 與官方 checksum 一致 |
 | XML / WAV / CircleCI YAML | PASS（靜態） | XML 解析、48k mono PCM16 2秒 WAV、YAML 解析；不是 CircleCI 實際執行 |
 
-CircleCI 未在本環境取得專案啟用權限或執行結果，設定檔已交付；使用者需在帳號連接 V2V / main。沒有 emulator / device，不執行 connectedDebugAndroidTest。
+本環境未配置 CircleCI 帳號連線，也沒有實際 pipeline 執行結果，設定檔已交付；使用者需在帳號連接 V2V / main。沒有 emulator / device，不執行 connectedDebugAndroidTest。
 
 DSP 測試涵蓋不同頻率波形能量的 SPLIT 隔離與左右交換、雙耳純譯音、gO/gT=0 時辨識量測分支仍前進、limiter 連續性與單調性、30 次切換的相鄰樣本差、downmix headroom / phase cancellation、模式切回增益恢復、外部來源不能升級原聲控制。
 
@@ -42,3 +42,5 @@ DSP 測試涵蓋不同頻率波形能量的 SPLIT 隔離與左右交換、雙耳
 | T20 真實會議 | BLOCKED | 未指定會議 SDK、授權及版本 |
 
 第三方來源與裝置欄位詳見 CAPTURE_COMPATIBILITY。CI 沒有 emulator job；不能把 unit test 當 instrumentation。
+
+已驗證程式碼 commit：`0a34c0a5b61adda15dbeb9a11857485a44f1fb61`。
