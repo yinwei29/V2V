@@ -21,6 +21,9 @@ class SettingsStore(context: Context) {
             (p[original] ?: 0.2f).coerceIn(0f, 1f), (p[translation] ?: 1f).coerceIn(0f, 1f), p[swapped] ?: false,
         )
     }
+    val diagnosticsEnabled = store.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[booleanPreferencesKey("diagnostics_enabled")] ?: true }
+    suspend fun setDiagnosticsEnabled(enabled: Boolean) { store.edit { it[booleanPreferencesKey("diagnostics_enabled")] = enabled } }
     suspend fun save(s: MixSettings) { store.edit {
         it[intPreferencesKey("schema_version")] = 1
         it[mode] = s.mode.name; it[original] = s.originalGain

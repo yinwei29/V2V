@@ -9,6 +9,9 @@ jobs:
       - checkout
       - restore_cache:
           keys:
+            - debug-keystore-v1
+      - restore_cache:
+          keys:
             - gradle-v1-{{ checksum "app/gradle.lockfile" }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - run:
           name: Build, DSP tests and Android lint
@@ -22,6 +25,10 @@ jobs:
           path: deliverables
       - store_artifacts:
           path: app/build/reports
+      - save_cache:
+          key: debug-keystore-v1
+          paths:
+            - ~/.android/debug.keystore
       - save_cache:
           key: gradle-v1-{{ checksum "app/gradle.lockfile" }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
           paths:

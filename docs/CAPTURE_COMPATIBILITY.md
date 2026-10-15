@@ -10,3 +10,9 @@
 | 未提供 | 未提供 | Meet UNKNOWN | 未測 | SYSTEM_PLAYBACK | UNKNOWN | 未在裝置授權 | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNAVAILABLE | NOT_TESTED_ON_DEVICE | 無 |
 
 每次測試記錄來源版本、短音檔、電平／路由／frame sample count、授權畫面、静音前後證據；不得把非靜音 PCM 自動解釋為來源內容正確或 TTS 防回灌成功。
+
+## 2026-10-15 使用者 M1 測試截圖
+
+證據：使用者在本次聊天提供 255259.jpg / 255261.jpg / 255257.jpg。未將截圖公開提交 Git（含使用者狀態列）。來源 SYSTEM_PLAYBACK、手動停止約 34.8秒；診斷曾列 AVAILABLE / 非靜音 PCM、1727 frames、1,657,104 samples；原聲 UNAVAILABLE / CAPTURE_ONLY，外部控制禁用。停止畫面 RMS 0 不代表整段都沒音訊。
+
+結果：**USER_REPORTED_PARTIAL_EVIDENCE**，只證明該次 App 曾收到非靜音與計數、能力 UI 降級符合預期。裝置型號、Android、來源 APP／版本、實際內容、耳機與路由仍 UNKNOWN；不能升級為 YouTube / Zoom / Meet PASS。M1 沒有 ASR / MT / TTS，因此截圖不能作翻譯驗收。下一版可用技術 JSONL log 補充版本、電平時序與停止原因；來源 APP 版本需測試者另行提供。

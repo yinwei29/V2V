@@ -10,8 +10,8 @@ android {
         applicationId = "com.yinwei.v2v"
         minSdk = 29
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0-m1"
+        versionCode = 2
+        versionName = "0.2.0-m2-preview"
     }
     buildFeatures { compose = true; buildConfig = true }
     compileOptions {
@@ -31,7 +31,10 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.4")
     implementation("io.insert-koin:koin-android:4.0.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+    testImplementation("org.json:json:20240303")
 }
 
 dependencyLocking { lockAllConfigurations() }

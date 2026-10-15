@@ -2,7 +2,7 @@ package com.yinwei.v2v.audio
 
 import kotlin.math.sqrt
 
-enum class Source { TEST_FILE, SYSTEM_PLAYBACK }
+enum class Source { TEST_FILE, SYSTEM_PLAYBACK, OWNED_FILE }
 enum class SessionState { IDLE, REQUESTING_PERMISSION, STARTING, RUNNING, NO_SIGNAL, PAUSED, STOPPING, ERROR, STOPPED }
 enum class SourceStatus { UNKNOWN, AVAILABLE, NO_SIGNAL, UNSUPPORTED, BLOCKED_SOURCE_INTEGRATION, ERROR }
 enum class MixMode { SPLIT, TRANSLATION_ONLY, MIX }
@@ -27,6 +27,7 @@ data class SourceCapabilities(
 data class AudioFrame(
     val sessionId: String, val sourceId: Source, val sequence: Long,
     val timestampUs: Long, val sampleRate: Int, val pcm: ShortArray,
+    val sourcePositionSamples: Long = 0,
 ) {
     val channelCount = 1
     val encoding = "PCM16"

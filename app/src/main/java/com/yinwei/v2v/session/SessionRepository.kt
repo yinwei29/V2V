@@ -1,6 +1,7 @@
 package com.yinwei.v2v.session
 
 import com.yinwei.v2v.audio.*
+import com.yinwei.v2v.transcript.TranscriptSegment
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -17,6 +18,9 @@ data class SessionSnapshot(
     val mtState: StageState = StageState.NOT_CONFIGURED,
     val ttsState: StageState = StageState.NOT_CONFIGURED,
     val outputPaused: Boolean = false,
+    val segments: List<TranscriptSegment> = emptyList(),
+    val skippedSamples: Long = 0, val providerTokens: Long? = null,
+    val providerError: String = "",
     val message: String = "M0 / M1 音訊驗證版 · 尚未接入 ASR、翻譯及真實 TTS",
 )
 class SessionRepository {

@@ -8,6 +8,9 @@ import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.*
 import com.yinwei.v2v.R
+import com.yinwei.v2v.security.ApiKeyStore
+import com.yinwei.v2v.providers.OpenAiProvider
+import com.yinwei.v2v.diagnostics.*
 import com.yinwei.v2v.audio.*
 import com.yinwei.v2v.settings.SettingsStore
 import com.yinwei.v2v.ui.MainActivity
@@ -18,6 +21,8 @@ import java.util.UUID
 class TranslationForegroundService : Service() {
     private val repository: SessionRepository by inject()
     private val settings: SettingsStore by inject()
+    private val keys: ApiKeyStore by inject()
+    private val diagnostics: Diagnostics by inject()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var job: Job? = null
     private var projection: MediaProjection? = null
@@ -29,14 +34,16 @@ class TranslationForegroundService : Service() {
     private lateinit var audio: AudioManager
     private var terminalMessage = "使用者已停止"
     private var terminalState = SessionState.STOPPED
+    private var stopReason = StopReason.SOURCE_FINISHED
     private val projectionCallback = object : MediaProjection.Callback() {
-        override fun onStop() { end("系統已撤銷或停止擷取；重新開始需再次授權", SessionState.ERROR) }
+        override fun onStop() { stopReason = StopReason.SYSTEM_REVOKED; end("系統已撤銷或停止擷取；重新開始需再次授權", SessionState.ERROR) }
     }
     private val noisy = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) { pauseOutput("輸出裝置變更：已停止本 APP 音訊；請確認後恢復") }
     }
     private val devices = object : AudioDeviceCallback() {
         override fun onAudioDevicesRemoved(removed: Array<out AudioDeviceInfo>) {
+            removed.filter { it.isSink }.forEach { diagnostics.journal.record(DiagnosticEvent.ROUTE_CHANGE, repository.state.value.id, mapOf(Metric.ROUTE_TYPE to it.type)) }
             if (removed.any { it.isSink }) pauseOutput("音訊裝置移除：已停止本 APP 音訊；來源字幕輸入持續")
         }
     }
@@ -46,14 +53,14 @@ class TranslationForegroundService : Service() {
         audio.registerAudioDeviceCallback(devices, Handler(mainLooper))
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(noisy, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY), RECEIVER_NOT_EXPORTED)
         else @Suppress("DEPRECATION") registerReceiver(noisy, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY))
-        scope.launch { settings.settings.collect { mix = it } }
+        scope.launch { settings.settings.collect { mix = it; diagnostics.mix(it) } }
         getSystemService(NotificationManager::class.java).createNotificationChannel(
             NotificationChannel(CHANNEL, "音訊驗證工作階段", NotificationManager.IMPORTANCE_LOW))
     }
     override fun onBind(intent: Intent?) = null
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            STOP -> end("使用者已停止")
+            STOP -> { stopReason = StopReason.USER; end("使用者已停止") }
             RESUME -> { outputPaused = false; repository.update { it.copy(outputPaused = false, message = "已恢復測試音訊；非真實翻譯") } }
             START -> if (job == null) begin(intent)
             else -> if (job == null) stopSelf()
@@ -62,16 +69,30 @@ class TranslationForegroundService : Service() {
     }
     private fun begin(intent: Intent) {
         val external = intent.getBooleanExtra("external", false)
-        val source = if (external) Source.SYSTEM_PLAYBACK else Source.TEST_FILE
+        val fileUri = intent.getStringExtra("fileUri")?.let(android.net.Uri::parse)
+        val source = if (external) Source.SYSTEM_PLAYBACK else if (fileUri != null) Source.OWNED_FILE else Source.TEST_FILE
+        val cloud = intent.getBooleanExtra("cloudConsent", false) && source != Source.TEST_FILE
+        val language = intent.getStringExtra("language") ?: "en"
+        if (language !in setOf("en", "id", "auto")) { stopSelf(); return }
+        val provider = if (cloud) keys.read()?.let { OpenAiProvider(it, diagnostics = diagnostics.journal) } else null
+        if (cloud && provider == null) {
+            repository.update { it.copy(state = SessionState.ERROR, message = "尚未設定有效的 API Key；沒有開始擷取或傳送") }
+            stopSelf(); return
+        }
         val id = UUID.randomUUID().toString()
+        diagnostics.journal.record(DiagnosticEvent.SESSION_START, id, mapOf(Metric.CLOUD_ENABLED to if (cloud) 1 else 0), mapOf(Tag.SOURCE to source))
         terminalState = SessionState.STOPPED
         terminalMessage = "來源結束"
+        stopReason = StopReason.SOURCE_FINISHED
         ending = false
         outputPaused = false
         repository.set(SessionSnapshot(id = id, state = SessionState.STARTING, source = source,
             capabilities = if (external) SourceCapabilities() else SourceCapabilities(
                 originalControl = OriginalGainControlCapability.APP_OWNED, externalDirectOutputPresent = false,
-                reason = "本 APP 自有測試音檔；440Hz 原聲／660Hz 模擬譯音，不是 TTS")))
+                reason = if (source == Source.TEST_FILE) "本 APP 自有測試音檔；440Hz 原聲／660Hz 模擬譯音，不是 TTS"
+                    else "使用者授權 WAV，由本 APP 播放；尚未接入真實 TTS"),
+            asrState = if (cloud) StageState.IDLE else StageState.NOT_CONFIGURED,
+            mtState = if (cloud) StageState.IDLE else StageState.NOT_CONFIGURED))
         try {
             startForeground(1, notification(), if (external) ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
                 else ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
@@ -89,20 +110,29 @@ class TranslationForegroundService : Service() {
                 check(audio.requestAudioFocus(focus!!) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) { "無法取得音訊焦點" }
             }
         } catch (e: Exception) {
+            diagnostics.journal.record(DiagnosticEvent.SESSION_STOP, id, tags = mapOf(Tag.STOP_REASON to StopReason.AUDIO_ERROR), error = e.javaClass)
             end("啟動失敗：${e.javaClass.simpleName}", SessionState.ERROR)
             return
         }
         job = scope.launch {
             try {
-                withContext(Dispatchers.IO) { controller.run(id, source, projection, { mix }, { outputPaused }) }
+                withContext(Dispatchers.IO) { controller.run(id, source, projection, { mix }, { outputPaused }, fileUri, provider, language) }
             } catch (_: CancellationException) {
                 // Explicit end owns terminal state.
             } catch (e: Exception) {
                 if (!ending) {
-                    terminalMessage = "音訊失敗：${e.javaClass.simpleName}；請重新授權或檢查來源"
+                    diagnostics.journal.record(DiagnosticEvent.SESSION_STOP, id, tags = mapOf(Tag.STOP_REASON to StopReason.AUDIO_ERROR), error = e.javaClass)
+                    terminalMessage = if (e is IllegalArgumentException && e.message == WavReader.FORMAT) WavReader.FORMAT
+                        else "音訊失敗：${e.javaClass.simpleName}；請檢查 WAV 格式、權限或來源"
                     terminalState = SessionState.ERROR
+                    stopReason = StopReason.AUDIO_ERROR
                 }
             } finally {
+                val last = repository.state.value
+                diagnostics.journal.record(DiagnosticEvent.SESSION_STOP, id,
+                    metrics = mapOf(Metric.FRAMES to last.frames, Metric.SAMPLES to last.asrSamples, Metric.ELAPSED_MS to last.elapsedMs,
+                        Metric.UNDERRUNS to last.underruns, Metric.DROPPED_SAMPLES to last.skippedSamples),
+                    tags = mapOf(Tag.STATE to terminalState, Tag.STOP_REASON to stopReason))
                 releaseProjection()
                 focus?.let { audio.abandonAudioFocusRequest(it) }; focus = null
                 repository.update { it.copy(state = terminalState, level = 0f, message = terminalMessage,
@@ -113,6 +143,7 @@ class TranslationForegroundService : Service() {
         }
     }
     private fun pauseOutput(message: String) {
+        diagnostics.journal.record(DiagnosticEvent.OUTPUT_PAUSE, repository.state.value.id)
         outputPaused = true
         repository.update { it.copy(outputPaused = true, message = message) }
     }
@@ -140,6 +171,7 @@ class TranslationForegroundService : Service() {
         if (job?.isActive == true && !ending) {
             terminalState = SessionState.STOPPED
             terminalMessage = "系統已停止服務；請由主畫面重新開始"
+            stopReason = StopReason.SERVICE_DESTROYED
             repository.update { it.copy(state = SessionState.STOPPED, level = 0f, message = terminalMessage) }
         }
         controller.interrupt()
@@ -154,7 +186,7 @@ class TranslationForegroundService : Service() {
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
         val stop = PendingIntent.getService(this, 1, Intent(this, javaClass).setAction(STOP), PendingIntent.FLAG_IMMUTABLE)
         return Notification.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_wave)
-            .setContentTitle("V2V · 音訊驗證中").setContentText("M1 測試／擷取模式 · 尚無真實翻譯")
+            .setContentTitle("V2V · 音訊工作階段").setContentText("擷取／字幕工作中 · 按停止結束；無自動重新錄音")
             .setContentIntent(open).setOngoing(true).addAction(Notification.Action.Builder(null, "停止", stop).build()).build()
     }
     companion object {

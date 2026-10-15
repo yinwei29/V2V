@@ -1,24 +1,23 @@
 # V2V · Live Audio Translator
 
-Android 10+ 即時音訊翻譯工程。依 V2 規格第 16 節，首次交付 **M0 / M1 音訊驗證版**；CI 使用 **CircleCI**。
+Android 10+。目前 **0.2.0-m2-preview**：音訊擷取／混音、BYOK 雲端字幕管線與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
 
-> 此版沒有 ASR、MT、真實 TTS、小圈圈或浮動字幕。440Hz／660Hz 為原創測試音檔；不代表翻譯成功。YouTube、Zoom、Meet 未經真機驗證，不宣稱支援。
+> M1 已本機及 CircleCI #1 通過。M2 是工程預覽：程式已接 provider，但沒有真實 API Key／裝置端到端驗收。真實 TTS、小圈圈、浮動字幕、離線模型尚未交付，不能宣稱完整翻譯產品完成。YouTube／Zoom／Meet 支援待版本與裝置實測。
 
-## 已實作
+## 測試者操作
 
-- Kotlin / Compose / Material 3，Koin 注入、DataStore 模式與增益設定。
-- 使用者由可見 Activity 啟動前景服務；通知停止；START_NOT_STICKY，不自動錄音。
-- MediaProjection 每次新授權、AudioPlaybackCapture / AudioRecord PCM16 mono，排除本 APP UID。不使用麥克風 fallback。
-- 20ms PCM frame、單調時間、RMS 電平、有效音訊驗證、3 秒 NO_SIGNAL（不假判 unsupported）。
-- 自有 48kHz 測試 WAV，ASR 量測分支在增益之前；外部來源不重播副本。
-- 單一 stereo AudioTrack：SPLIT、TRANSLATION_ONLY、MIX，左右交換、50ms ramp / crossfade、soft-knee limiter。
-- 路由回報、underrun 計數、音訊焦點／耳機移除暫停本 APP 輸出與手動恢復。
-- 能力限制：外部來源禁用原聲增益與完整混音模式；不改系統媒體音量。
+1. 開啟「引擎與診斷」確認 **技術事件記錄中**。
+2. 選「自有測試音檔」驗證 stereo mixer；440Hz / 660Hz 是原創測試音，不是真實 TTS。
+3. 選授權 WAV（**48kHz / mono / PCM16**）或其他 APP 擷取。外部擷取每次都需系統授權，不偷開麥克風。
+4. 雲端字幕需先在 App 儲存自己的 OpenAI Key、測試連線，並在主頁勾選音訊／文字傳送同意。選 en / id / auto → 台灣繁體中文。Key 不傳聊天、不放 Git 或 CircleCI。
+5. 不勾同意時只播放／診斷，不傳音訊。真實音檔在純翻譯模式下沒有原聲與 TTS，但仍會送 ASR；想聽原聲請切 MIX。
+6. 重現問題後停止 → 診斷 → **匯出 Log／分享 Log**，把 JSONL 附回聊天，補上來源版本、耳機和步驟。Log 不含錄音／字幕／Key，不自動上傳；詳見 [DIAGNOSTIC_LOGS](docs/DIAGNOSTIC_LOGS.md)。
+
+字幕是分段 final，最長 10秒／600ms 安靜斷句，不宣稱串流 partial。provider 逾時或過載會顯示錯誤／跳過，不無限排隊。外部來源原聲不可控，相關滑桿與純翻譯原聲控制禁用，不改系統媒體音量。
 
 ## 建置
 
-版本鎖定：AGP 8.9.2 / Kotlin 2.1.20 / Gradle 8.13 / Java 17+，compile / target SDK 35，min SDK 29。
-Android Studio 或安裝 Android SDK 35 / Build Tools 35.0.0，`local.properties` 設 `sdk.dir`（不要提交）。
+AGP 8.9.2 / Kotlin 2.1.20 / Gradle 8.13 / Java 17+ / compile & target SDK35 / min29。Gradle wrapper 附官方 SHA-256；相依版本有 lockfile。SDK 35 / Build Tools 35.0.0；local.properties 設 sdk.dir（勿提交）。
 
 ```sh
 ./gradlew assembleDebug
@@ -27,23 +26,16 @@ Android Studio 或安裝 Android SDK 35 / Build Tools 35.0.0，`local.properties
 ./scripts/package-apk.sh
 ```
 
-APK：`app/build/outputs/apk/debug/app-debug.apk`；交付副本：`deliverables/V2V-0.1.0-m1-debug.apk`，SHA-256：`deliverables/SHA256SUMS`。Debug APK 需允許自行安裝；不適用 Play 發佈。不同 CI 環境的 debug 簽章可能不同；若無法覆蓋更新，移除舊版後重裝（設定會清除）。
+APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.2.0-m2-preview-debug.apk，SHA-256 見 deliverables/SHA256SUMS。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
 
 ## CircleCI
 
-設定：`.circleci/config.yml`，執行 build / unit tests / lint，保存 APK、checksum、JUnit XML、HTML 報告。
-CircleCI Projects → V2V → **Fastest: Use .circleci/config.yml in my repo** → 分支 `main` → Set Up Project。
-本版不需雲端 API Key 或簽署金鑰。Artifact 保留期限由 CircleCI Plan Usage Controls 設定（建議 3 天），不能由此 YAML 保證。
-CI 設定已提供；實際執行結果請以 CircleCI pipeline 為準，未連接專案不會自動有成功結果。
+已啟用，推送 main 會 build / unit test / lint。進 Pipeline → verify → android-verify → Artifacts 下載 APK、checksum、報告。CircleCI #1 對應 M1 d3fef3a 已 success；新版本請以該 commit 的 pipeline 為準。本版 CI 不放雲端 Key，網路測試只連 local MockWebServer。
 
-## 使用與驗證
+cimg/android:2025.04 / medium，cache 使用 dependency lockfile 與 wrapper checksum。CI 另外保存預設 debug.keystore 快取，供後續同來源測試 APK 穩定更新；這不是正式 release key，也不是雲端 API Key。快取清除或本機/CI 簽章不同時仍可能需要重裝。Artifact 保留期限由 CircleCI 帳號 Usage Controls 設定，建議 3 天；不在 YAML 假定 retention 已生效。
 
-1. 選自有測試音檔、開始。建議戴 stereo 耳機，從低音量開始；音調不是人聲。
-2. 在混音控制切换三模式，譯音 660Hz、原聲 440Hz。原聲為 0 時診斷的 ASR 量測樣本應繼續增加。
-3. 停止後選其他 APP 音訊，按系統提示授權，再在外部 APP 播放使用者有權存取的內容。
-4. 診斷只報 PCM 電平，沒有字幕；安靜／來源拒絕都可能為 NO_SIGNAL。外部聲音不被本 APP 靜音。
-5. 通知可停止；耳機移除停本 APP 音訊。重新接入後從主頁確認恢復。
+## 限制與文件
 
-無裝置的建置／DSP 測試不能證明第三方來源、藍牙隔離、鎖屏存活或 OEM 行為。
+Key 是 AES-GCM ciphertext，AES 金鑰在 Android Keystore；排除 backup / device transfer。Key 表單不保存到 saved state，Activity 禁止 screenshot / app preview。逐字稿只在本次記憶體內留最近 200 段，沒有 Room 歷史或匯出。Log 是獨立的技術資訊，最多 3×512KiB，開關可持久化、可刪除。
 
-完整限制、測試證據及後續工作見 [PROJECT_HANDOFF](PROJECT_HANDOFF.md) 與 [docs](docs/)。
+無真機不能證明第三方擷取、Bluetooth 實體左右隔離、鎖屏、30分鐘與20次啟停。詳見 [PROJECT_HANDOFF](PROJECT_HANDOFF.md)、[TEST_REPORT](docs/TEST_REPORT.md)、[PROVIDER_MATRIX](docs/PROVIDER_MATRIX.md) 與來源矩陣。

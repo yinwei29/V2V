@@ -31,6 +31,7 @@ class PcmOutput : AutoCloseable {
     val route: String get() = track.routedDevice?.let {
         "${it.productName} · type=${it.type} · stereo 實體隔離待驗證"
     } ?: "系統路由尚未回報"
+    val routeType: Int get() = track.routedDevice?.type ?: 0
     val underruns get() = track.underrunCount
     override fun close() { runCatching { track.pause(); track.flush(); track.stop() }; track.release() }
 }

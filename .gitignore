@@ -8,3 +8,4 @@ local.properties
 *.iml
 .env*
 deliverables/*.apk
+deliverables/*.zip
