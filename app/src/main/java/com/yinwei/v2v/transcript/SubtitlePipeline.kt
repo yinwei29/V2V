@@ -9,7 +9,7 @@ import kotlinx.coroutines.channels.Channel
 
 /** 250 × 20ms bounded ingress. No waiting chunk backlog: busy provider drops are counted and shown. */
 class SubtitlePipeline(
-    private val sessionId: String, private val language: String, private val provider: OpenAiProvider,
+    private val sessionId: String, private val language: String, private val provider: TranslationProvider,
     private val repository: SessionRepository, scope: CoroutineScope,
     private val diagnostics: DiagnosticJournal? = null,
     private val translated: (TranscriptSegment) -> Unit = {},
@@ -29,7 +29,7 @@ class SubtitlePipeline(
                     stage(StageState.IDLE, StageState.IDLE); continue
                 }
                 var segment = TranscriptSegment(sessionId, chunk.id, startMs = chunk.startMs, endMs = chunk.endMs,
-                    originalText = original, sourceLanguage = language)
+                    originalText = original, sourceLanguage = language, provider = provider.description)
                 publish(segment)
                 stage(StageState.IDLE, StageState.RUNNING)
                 val began = System.nanoTime()

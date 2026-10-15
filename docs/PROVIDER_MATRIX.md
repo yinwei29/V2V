@@ -4,10 +4,14 @@
 |---|---|---|---|---|
 | ASR | OpenAI POST /v1/audio/transcriptions，whisper-1 | 48k mono PCM16 WAV；en / id / auto，<=10秒片段 | final only，無 partial、confidence、diarization 或逐字時間戳；時間由輸入樣本推算 | USER_REPORTED_SUBTITLES；語言品質與受控測試待驗收 |
 | MT | POST /v1/chat/completions，gpt-4o-mini | 指定台灣繁體中文 zh-TW | 不補事實／保留術語指令，獨立片段；無術語表與跨段上下文 UI；截斷回應不當成功 | USER_REPORTED_SUBTITLES；語言品質與受控測試待驗收 |
+| Gemini ASR / MT | POST /v1beta/models/gemini-3.8-flash:generateContent，分開兩次請求 | inline WAV；en / id / auto → zh-TW，結構化 JSON | final only；low thinking；只接受完整 STOP 與合法字幕；沒有 Live API、逐字時間戳或跨段上下文 | 本機 MockWebServer 自動測試；真實 Google 帳號與裝置尚未驗收 |
 | TTS | Android TextToSpeech.synthesizeToFile + PCM callbacks | 已安裝、非網路 zh-TW voice；PCM16 mono/stereo 8–48kHz → mono48k | 單一 mixer / AudioTrack，語速0.75–2；缺語音降級字幕，格式不支援明示錯誤，不降採樣 | M3 工程預覽；NOT_TESTED_ON_DEVICE |
 | 離線 | 無 | 未支援 | 不自動回退或偷偷改供應商 | M5 未完成 |
 
 官方文件已於 2026-10-15 線上讀取：
+- https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash
+- https://ai.google.dev/gemini-api/docs/generate-content/audio
+- https://ai.google.dev/gemini-api/docs/generate-content/structured-output
 - https://platform.openai.com/docs/guides/speech-to-text
 - https://platform.openai.com/docs/api-reference/chat/create
 

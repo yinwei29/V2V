@@ -10,7 +10,7 @@ import android.media.projection.MediaProjectionManager
 import android.os.*
 import com.yinwei.v2v.R
 import com.yinwei.v2v.security.ApiKeyStore
-import com.yinwei.v2v.providers.OpenAiProvider
+import com.yinwei.v2v.providers.*
 import com.yinwei.v2v.diagnostics.*
 import com.yinwei.v2v.audio.*
 import com.yinwei.v2v.settings.SettingsStore
@@ -92,19 +92,24 @@ class TranslationForegroundService : Service() {
         val cloud = intent.getBooleanExtra("cloudConsent", false) && source != Source.TEST_FILE
         val language = intent.getStringExtra("language") ?: "en"
         if (language !in setOf("en", "id", "auto")) { stopSelf(); return }
-        val provider = if (cloud) keys.read()?.let { OpenAiProvider(it, diagnostics = diagnostics.journal) } else null
+        val selectedProvider = CloudProvider.parse(intent.getStringExtra("provider"))
+        if (selectedProvider == null) {
+            repository.update { it.copy(state = SessionState.ERROR, message = "請選擇有效的翻譯引擎；沒有開始擷取或傳送") }
+            stopSelf(); return
+        }
+        val provider = if (cloud) keys.read(selectedProvider)?.let { selectedProvider.create(it, diagnostics.journal) } else null
         if (cloud && provider == null) {
-            repository.update { it.copy(state = SessionState.ERROR, message = "尚未設定有效的 API Key；沒有開始擷取或傳送") }
+            repository.update { it.copy(state = SessionState.ERROR, message = "尚未設定有效的 ${selectedProvider.label} API Key；沒有開始擷取或傳送") }
             stopSelf(); return
         }
         val id = UUID.randomUUID().toString()
-        diagnostics.journal.record(DiagnosticEvent.SESSION_START, id, mapOf(Metric.CLOUD_ENABLED to if (cloud) 1 else 0), mapOf(Tag.SOURCE to source, Tag.LANGUAGE to DiagnosticLanguage.valueOf(language.uppercase(java.util.Locale.ROOT))))
+        diagnostics.journal.record(DiagnosticEvent.SESSION_START, id, mapOf(Metric.CLOUD_ENABLED to if (cloud) 1 else 0), mapOf(Tag.PROVIDER to selectedProvider, Tag.SOURCE to source, Tag.LANGUAGE to DiagnosticLanguage.valueOf(language.uppercase(java.util.Locale.ROOT))))
         terminalState = SessionState.STOPPED
         terminalMessage = "來源結束"
         stopReason = StopReason.SOURCE_FINISHED
         ending = false
         outputPaused = false
-        repository.set(SessionSnapshot(id = id, state = SessionState.STARTING, source = source, cloudEnabled = cloud, sourceLanguage = language,
+        repository.set(SessionSnapshot(id = id, state = SessionState.STARTING, source = source, cloudEnabled = cloud, sourceLanguage = language, cloudProvider = selectedProvider,
             capabilities = if (external) SourceCapabilities() else SourceCapabilities(
                 originalControl = OriginalGainControlCapability.APP_OWNED, externalDirectOutputPresent = false,
                 reason = if (source == Source.TEST_FILE) "本 APP 自有測試音檔；440Hz 原聲／660Hz 模擬譯音，不是 TTS"

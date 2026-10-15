@@ -80,6 +80,7 @@ class MainActivity : ComponentActivity() {
     private var pendingExternal = false
     private var pendingCloud = false
     private var pendingLanguage = "en"
+    private var pendingProvider = CloudProvider.OPENAI
     private val filePicker = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
             runCatching { contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
@@ -106,6 +107,7 @@ class MainActivity : ComponentActivity() {
         pendingExternal = savedInstanceState?.getBoolean("external") ?: false
         pendingCloud = savedInstanceState?.getBoolean("cloud") ?: false
         pendingLanguage = savedInstanceState?.getString("language") ?: "en"
+        pendingProvider = CloudProvider.parse(savedInstanceState?.getString("provider")) ?: CloudProvider.OPENAI
         // Includes the credential form: keys never appear in screenshots or app-switcher previews.
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         setContent {
@@ -115,14 +117,17 @@ class MainActivity : ComponentActivity() {
                 val state by repository.state.collectAsStateWithLifecycle()
                 val mix by settings.settings.collectAsStateWithLifecycle(MixSettings())
                 val presentation by settings.presentation.collectAsStateWithLifecycle(com.yinwei.v2v.settings.PresentationSettings())
+                val storedProvider by settings.cloudProvider.collectAsStateWithLifecycle<CloudProvider?>(null)
+                val selectedProvider = storedProvider ?: return@MaterialTheme
                 val archive by history.entries.collectAsStateWithLifecycle()
                 val historyError by history.error.collectAsStateWithLifecycle()
                 val logEnabled by settings.diagnosticsEnabled.collectAsStateWithLifecycle(true)
                 AppScreen(state, mix, presentation, { changed -> lifecycleScope.launch { settings.savePresentation(changed) } }, fileUri != null, keys, { filePicker.launch(arrayOf("audio/*", "application/octet-stream")) },
-                    { source, cloud, language ->
+                    { source, cloud, language, provider ->
                         pendingExternal = source == Source.SYSTEM_PLAYBACK
                         pendingCloud = cloud && source != Source.TEST_FILE
                         pendingLanguage = language
+                        pendingProvider = provider
                         if (source == Source.TEST_FILE) fileUri = null
                         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
                             notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -148,7 +153,7 @@ class MainActivity : ComponentActivity() {
                         }; historyNotice = "已清除翻譯紀錄" }
                         catch (_: Exception) { historyNotice = "清除失敗，請稍後重試" }
                         finally { historyBusy = false }
-                    } })
+                    } }, selectedProvider, { provider -> lifecycleScope.launch { settings.saveCloudProvider(provider) } })
             }
         }
     }
@@ -174,6 +179,7 @@ class MainActivity : ComponentActivity() {
     }
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString("file", fileUri); outState.putBoolean("external", pendingExternal)
+        outState.putString("provider", pendingProvider.name)
         outState.putBoolean("cloud", pendingCloud); outState.putString("language", pendingLanguage)
         super.onSaveInstanceState(outState)
     }
@@ -191,18 +197,18 @@ class MainActivity : ComponentActivity() {
                 .setAction(TranslationForegroundService.START).putExtra("external", external)
                 .putExtra("resultCode", result).putExtra("consent", consent)
                 .putExtra("fileUri", if (!external) fileUri else null)
-                .putExtra("cloudConsent", pendingCloud).putExtra("language", pendingLanguage))
+                .putExtra("provider", pendingProvider.name).putExtra("cloudConsent", pendingCloud).putExtra("language", pendingLanguage))
         } catch (_: Exception) { repository.update { it.copy(state = SessionState.ERROR, message = "無法啟動前景服務，請保持主畫面可見後重試") } }
     }
 }
 
 @Composable
-internal fun KeyPanel(keys: ApiKeyStore, configured: Boolean, enabled: Boolean, journal: DiagnosticJournal, refresh: () -> Unit) {
-    var value by remember { mutableStateOf("") } // Deliberately NOT rememberSaveable.
-    var busy by remember { mutableStateOf(false) }
-    var message by remember { mutableStateOf("") }
+internal fun KeyPanel(provider: CloudProvider, keys: ApiKeyStore, configured: Boolean, enabled: Boolean, journal: DiagnosticJournal, refresh: () -> Unit) {
+    var value by remember(provider) { mutableStateOf("") } // Deliberately NOT rememberSaveable.
+    var busy by remember(provider) { mutableStateOf(false) }
+    var message by remember(provider) { mutableStateOf("") }
     val scope = rememberCoroutineScope()
-    Text("OpenAI 引擎與 Key", style = MaterialTheme.typography.titleLarge)
+    Text("${provider.label} 引擎與 Key", style = MaterialTheme.typography.titleLarge)
     Text(if (configured) "已儲存加密 Key；不顯示原值" else "尚未設定 Key；不會有真實雲端字幕")
     OutlinedTextField(value = value, onValueChange = { value = it.take(1024) }, label = { Text("API Key（僅存此裝置）") },
         visualTransformation = PasswordVisualTransformation(), singleLine = true, enabled = enabled && !busy, modifier = Modifier.fillMaxWidth())
@@ -211,7 +217,7 @@ internal fun KeyPanel(keys: ApiKeyStore, configured: Boolean, enabled: Boolean, 
             busy = true
             val pending = value; value = ""
             scope.launch {
-                try { withContext(Dispatchers.IO) { keys.save(pending) }; refresh(); message = "已用 Keystore 加密儲存" }
+                try { withContext(Dispatchers.IO) { keys.save(pending, provider) }; refresh(); message = "已用 Keystore 加密儲存" }
                 catch (_: Exception) { message = "無法儲存，請確認裝置 Keystore 並重新輸入" }
                 finally { busy = false }
             }
@@ -219,7 +225,7 @@ internal fun KeyPanel(keys: ApiKeyStore, configured: Boolean, enabled: Boolean, 
         OutlinedButton(onClick = {
             busy = true; value = ""
             scope.launch {
-                try { withContext(Dispatchers.IO) { keys.remove() }; refresh(); message = "已移除 Key" }
+                try { withContext(Dispatchers.IO) { keys.remove(provider) }; refresh(); message = "已移除 Key" }
                 catch (_: Exception) { message = "無法移除 Key，請稍後重試" }
                 finally { busy = false }
             }
@@ -229,7 +235,7 @@ internal fun KeyPanel(keys: ApiKeyStore, configured: Boolean, enabled: Boolean, 
         busy = true
         scope.launch {
             try {
-                withContext(Dispatchers.IO) { OpenAiProvider(checkNotNull(keys.read()), diagnostics = journal).healthCheck() }
+                withContext(Dispatchers.IO) { provider.create(checkNotNull(keys.read(provider)), journal).healthCheck() }
                 message = "Key 驗證及模型查詢成功；仍需音訊端到端測試，不代表扣款／轉寫已驗收"
             } catch (e: CancellationException) { throw e }
             catch (e: ProviderFailure) { message = e.message.orEmpty() }
@@ -238,7 +244,8 @@ internal fun KeyPanel(keys: ApiKeyStore, configured: Boolean, enabled: Boolean, 
         }
     }, enabled = enabled && !busy && configured) { Text(if (busy) "處理中…" else "測試連線（僅傳 Key，不傳音訊）") }
     if (message.isNotBlank()) Text(message)
-    Text("OpenAI audio/transcriptions: whisper-1；chat/completions: gpt-4o-mini。分段 final、600ms 斷句、最長 10 秒。供應商可能收費；本版不報費用估算。", style = MaterialTheme.typography.bodySmall)
+    Text(if (provider == CloudProvider.OPENAI) "OpenAI · whisper-1 辨識 / gpt-4o-mini 翻譯。" else "Google Gemini · ${GeminiProvider.MODEL} 辨識與翻譯。請使用 Google AI Studio 的 Gemini API Key。", style = MaterialTheme.typography.bodySmall)
+    Text("分段完成後更新字幕，最長 10 秒。播報沿用手機離線語音。供應商可能收費；沒有額度時請在供應商後台調整專案／帳務，不需設定 CircleCI。", style = MaterialTheme.typography.bodySmall)
 }
 
 @Composable

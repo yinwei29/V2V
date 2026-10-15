@@ -1,3 +1,15 @@
+# 測試報告 · 0.5.0-gemini
+
+2026-10-15。本機 assembleDebug / testDebugUnitTest / lintDebug 通過，69 項測試，0 failure/error/skipped；最後完整驗證 2m 57s。lint 0 errors/fatal，10 warnings。原始輸出、JUnit及lint見 evidence/gemini/；前版報告與證據保留於下方與 evidence/studio/。本版 CircleCI 請以 main 的本次提交狀態為準。
+
+新增16項Gemini測試：WAV解碼與原始PCM一致、固定模型路徑與header驗證、台灣繁中與結構化JSON、用量缺失未知、無語音空字串、空譯文錯誤、截斷／安全阻擋／錯誤格式／長度限制、thought不當字幕、拒絕工具輸出、HTTP 400/401/403/404不重試且隱藏body、429僅再試一次、healthcheck不傳音訊或生成、退避與body讀取可取消、完整pipeline回寫revision2及呼叫播報callback、Log不含Key／字幕。原有53項完整回歸，包括OpenAI原路徑與取消、DSP、紀錄、語音等。
+
+沒有真實Gemini Key、Google生成呼叫或Android真機／emulator。模擬成功只證明本機請求／解析與管線邏輯，不證明帳號可用、模型品質、延遲、實際播報、Keystore或UI操作。手機測試按 GEMINI_SETUP.md 操作，既有裝置限制仍適用。
+
+本機交付 checksum：`16bedb4654f25a6d59392835a8b25bd3208fb4649f894c174a05949d1e42fbf1  V2V-0.5.0-gemini-debug.apk`。CircleCI產物各用自己的checksum，避免混淆不同建置／簽章。
+
+---
+
 # 測試報告 · 0.4.0-studio
 
 2026-10-15。OpenJDK17 / Gradle8.13 / SDK35。本機assembleDebug、testDebugUnitTest及lintDebug已通過；53項測試，0 failure/error/skipped。最後完整build/test/lint為2m15s；lint 0 errors, 10 warnings。最後輸出與JUnit、lint見 evidence/studio/。完整CI以本版main commit的CircleCI狀態為準，不以舊版#4冒充本版結果。

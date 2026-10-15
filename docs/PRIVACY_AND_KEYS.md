@@ -1,10 +1,10 @@
 # 隱私、Key 與診斷
 
-M2 preview 支援個人 BYOK。Key 只由使用者在 App 輸入，Android Keystore 生成 AES 金鑰，AES-GCM ciphertext + IV 存 noBackupFilesDir；不把普通 API Key 字串當 Keystore entry。每次加密使用新 IV。Key 不寫 log、savedInstanceState、Git、CI、備份或診斷。Key 表單用 password transformation，Activity 設 FLAG_SECURE（包含 app-switcher preview），因此本版無法截取 App 畫面，請以 log 回報。
+0.5 支援 OpenAI 與 Google Gemini 個人 BYOK。兩家分開使用 ciphertext 檔案與 Keystore alias；既有 OpenAI 檔名與 alias 不變。切換引擎後需重新勾選雲端同意，工作階段固定所選引擎。Key 只由使用者在 App 輸入，Android Keystore 生成 AES 金鑰，AES-GCM ciphertext + IV 存 noBackupFilesDir；不把普通 API Key 字串當 Keystore entry。每次加密使用新 IV。Key 不寫 log、savedInstanceState、Git、CI、備份或診斷。Key 表單用 password transformation，Activity 設 FLAG_SECURE（包含 app-switcher preview），因此本版無法截取 App 畫面，請以 log 回報。
 
-健康檢查只發送 Authorization 至固定 OpenAI HTTPS /models，不傳音訊；能查詢模型不代表音訊／翻譯功能或扣款已驗收。Key 可更新／移除；無法解密或還原後無有效 AES key，刪除 ciphertext 並要求重新輸入。實際 Keystore / 換機 / 系統還原需真機測試。
+健康檢查僅以 Authorization（OpenAI）或 x-goog-api-key（Gemini）送至各自固定 HTTPS /models，不傳音訊；能查詢模型不代表音訊／翻譯功能或扣款已驗收。Key 可更新／移除；無法解密或還原後無有效 AES key，刪除 ciphertext 並要求重新輸入。實際 Keystore / 換機 / 系統還原需真機測試。
 
-只有使用者勾選「有權處理且同意傳送」並開始來源，才會把 audio chunks 及辨識文字送 OpenAI。測試 tone 永不送雲端。不勾選就是播放／診斷；擷取失敗不改用麥克風、不切未配置供應商或離線。固定 HTTPS，不允許 redirect 或 cleartext（JVM unit fixture 的 local MockWebServer 除外，不是 App 流程）。
+只有使用者勾選「有權處理且同意傳送」並開始來源，才會把 audio chunks 及辨識文字送使用者選定的 OpenAI 或 Google Gemini。測試 tone 永不送雲端。不勾選就是播放／診斷；擷取失敗不改用麥克風、不切未配置供應商或離線。固定 HTTPS，不允許 redirect 或 cleartext（JVM unit fixture 的 local MockWebServer 除外，不是 App 流程）。
 
 來源 PCM / ASR uploads 全在記憶體，不保存來源錄音或完整 HTTP response；原文／譯文依下述本機紀錄設定保存；即時字幕最近200段保留在工作階段記憶體。0.4依使用者要求，另將完成原文／譯文保存在手機私有noBackup目錄，最多1,000段／4MB，可關閉自動保存、清除或經SAF匯出TXT；不自動上傳、不進技術Log，沒有Room或SRT。App allowBackup=false + fullBackupContent=false，Android12+ dataExtractionRules 排除 cloud / device transfer 所有資料域。卸載移除 Key、log、設定。
 

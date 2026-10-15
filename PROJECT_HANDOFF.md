@@ -1,25 +1,25 @@
-# PROJECT_HANDOFF · 0.4.0-studio
+# PROJECT_HANDOFF · 0.5.0-gemini
 
-本次依使用者要求新增翻譯紀錄頁、TXT匯出、清除、整體介面與圖示重整、緊湊浮窗與更強譯音響度。使用者主流程仍為其他App／背景翻譯。原先0.3.1遠端ba14a8a已通過CircleCI #4；本次main推送後需看本版CI。
+使用者本次要求增加Gemini API。已新增OpenAI／Google Gemini切換、獨立Key、雲端同意與設定保存，延續0.4工作台／翻譯紀錄／響度增強及現有其他App音訊流程。CircleCI仍使用既有android-verify，不需雲端Key或帳號新設定。
 
 ## 交付
 
-- 四頁：翻譯、紀錄、聲音、設定。字幕深色高對比卡、動作區、來源／語言卡、折疊診斷，原文／譯文歷史從主畫面移到紀錄頁。共用向量圖示、launcher圖示與透明通知圖示。
-- 紀錄存noBackupFilesDir/history/translations.json，最多1,000段／4MB；預設保存為使用者明確要求，頁面可關閉自動保存。每個final回呼保存一次，revision去重；fsync與atomic rename後發布StateFlow。清除含確認與目前session完成段watermark，避免晚到callback復活舊紀錄；未來新片段仍保存。損壞檔不覆寫並提示。
-- 固定紀錄頁工具列匯出全部UTF-8 TXT／清除；搜尋、原文顯示切換、文字選取。SAF由使用者選位置，不自動分享，上版未保存的字幕無法從技術Log還原。
-- 浮窗播報／字幕分類，語速、增益、字級、行數、背景、寬度每項只有單列減／值／加；更新值不重建整個面板，保留捲動。底部主畫面／隱藏／暫停／結束圖示；讀取／拖曳與權限降級保留。
-- 響度增強可關閉：偏小PCM補至0.18 RMS，最多4×，近靜音不放大，soft-knee處理峰值；之後手動增益上限400%及單一mixer。數位增益不是實際聲壓倍數，不改系統媒體音量或其他App原聲。Log新增RMS前後值與增強倍率，不含字幕文字。
+- TranslationProvider介面與工廠；Gemini gemini-3.8-flash，固定GoogleHTTPS endpoint，x-goog-api-key header，先辨識後翻譯兩個獨立請求，結構化text回應；來源語言en/id/auto，zh-TW譯文。OpenAI API／模型保留。
+- 共用ProviderHttp：40秒call、取消涵蓋body讀取、成功body上限1MiB、429／5xx最多再試一次，1–8秒退避；不跟redirect、不記錄Key、字幕或HTTP正文。Gemini阻擋／非STOP／格式錯誤不產生成功字幕或播報。
+- ApiKeyStore保留既有OpenAI檔名provider-key.bin與alias v2v.provider.aes.v1；Gemini另有gemini-key.bin及v2v.gemini.aes.v1。各自儲存／移除，不互相覆蓋，均noBackup與AES-GCM。
+- DataStore保存所選引擎，Activity等載入後才顯示操作；開始請求固定provider至session，工作中不能切換；切換provider重設雲端同意與Key輸入欄位。服務檢查所選引擎有效與相應Key存在，錯誤不啟動擷取。SessionSnapshot與技術SESSION_START均記provider，TranscriptSegment使用實際模型description。
+- 主頁顯示目前引擎並可跳至設定切換；Key面板提供測試連線（僅查模型）。Gemini與OpenAI共用字幕、浮窗、紀錄及Android離線TTS，未新增雲端TTS或麥克風回退。
 
-## 驗證
+## 驗證／交付狀態
 
-本機53項單元測試及build/lint通過。證據與原始輸出見 docs/evidence/studio/、docs/TEST_REPORT.md。最後APK為deliverables/V2V-0.4.0-studio-debug.apk，SHA256SUMS依打包產生；CI與本機簽章／環境不同，各自比對自己的checksum。
+本機69項單元測試及build/lint成功，最後2m 57s；lint0 errors/fatal、10 warnings。docs/evidence/gemini/、docs/TEST_REPORT.md記實際結果。APK deliverables/V2V-0.5.0-gemini-debug.apk，checksum `16bedb4654f25a6d59392835a8b25bd3208fb4649f894c174a05949d1e42fbf1  V2V-0.5.0-gemini-debug.apk`。本版CI以對應main提交查詢，不沿用舊版#5結果。
 
-## 使用者設定／待測
+## 需要使用者設定與待測
 
-不需重設CircleCI、Key或已授權浮窗。新版本起開始保存完成翻譯，可在紀錄頁關閉；匯出TXT含原文與譯文，僅使用者選定的外部檔案。清除App紀錄不刪除已匯出TXT。記錄檔不進備份／Log／預設FileProvider分享目錄；Key表單仍FLAG_SECURE。
+在Google AI Studio建立Gemini API Key，手機設定→Google Gemini→儲存→測試連線，返回主頁重新同意雲端傳送。Key不傳聊天、不放Git／CI。原OpenAI Key不需重填。詳見docs/GEMINI_SETUP.md。
 
-沒有Android真機／emulator，實際外觀、SAF、浮窗stepper、摺疊與字體放大、聲音響度／路由、YouTube／Zoom／Meet／藍牙／鎖屏／30分鐘均需裝置複測。外部原聲控制、離線ASR/MT、模型管理、SRT、來源授權整合及全產品穩定性仍未完成，不能標全功能PASS。
+沒有真實Gemini生成測試與Android裝置；模型權限／額度、語言品質／延遲、Key保存／切換／移除、浮窗／離線播報需手機驗證。加入Gemini無法解除YouTube／Zoom／Meet音訊擷取政策或單獨控制其他App原聲。既有藍牙路由、鎖屏、30分鐘、離線ASR／MT等仍待驗收或未實作。
 
-本機與遠端先前commit不同但tree相同；本次以遠端ba14a8a為parent，以7f97df7ef5401931b27700932a444561b5570480為base tree做fast-forward，禁止用舊本機history強推。
+## Git注意
 
-最後本機驗證2m15s，lint 0 errors, 10 warnings；本機APK SHA256：`4a5817bd347504964af7329ae32ba35ec1ca0bc812b2b343e9abd8c68aa28c2f  V2V-0.4.0-studio-debug.apk`。
+本機baseline e44a767，遠端baseline7f841f315610979ccd81e4a0c02c2738a978552d，tree同為366fe9c594236c2f47e64225089a761104d2a63a。本次用遠端parent建立等同本機tree的新commit並以expected SHA推main，禁止從舊本機history強推。遠端實際commit與CI結果另存 /workspace/tooling/gemini-github-upload.json。

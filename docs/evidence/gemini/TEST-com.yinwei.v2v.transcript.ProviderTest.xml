@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yinwei.v2v.transcript.ProviderTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-15T13:23:24.038Z" hostname="e9af72b1bf16" time="7.055">
+  <properties/>
+  <testcase name="unauthorizedNeverRetriesOrExposesSensitiveErrorBody" classname="com.yinwei.v2v.transcript.ProviderTest" time="0.055"/>
+  <testcase name="cancellationDuringBackoffPreventsOldSessionRetry" classname="com.yinwei.v2v.transcript.ProviderTest" time="0.218"/>
+  <testcase name="absentUsageIsUnknownRatherThanPretendingZeroBilling" classname="com.yinwei.v2v.transcript.ProviderTest" time="0.027"/>
+  <testcase name="cancellationWhileReadingBodyClosesCallWithoutWaitingForReadTimeout" classname="com.yinwei.v2v.transcript.ProviderTest" time="3.071"/>
+  <testcase name="sendsActualWavWithIndonesianHintAndRequestsTaiwanTraditionalChinese" classname="com.yinwei.v2v.transcript.ProviderTest" time="0.076"/>
+  <testcase name="successfulTranslationPublishesRevisionTwoAndLogsOnlyMetadata" classname="com.yinwei.v2v.transcript.ProviderTest" time="0.22"/>
+  <testcase name="busyProviderDropsAreCountedAndDoNotGrowAnUnboundedQueue" classname="com.yinwei.v2v.transcript.ProviderTest" time="0.12"/>
+  <testcase name="cancelledPipelineCannotPublishLateResponseToNewSession" classname="com.yinwei.v2v.transcript.ProviderTest" time="2.185"/>
+  <testcase name="truncatedTranslationNeverBecomesSuccessfulSubtitle" classname="com.yinwei.v2v.transcript.ProviderTest" time="0.041"/>
+  <testcase name="rateLimitRetriesOnlyOnceAndThenReportsQuota" classname="com.yinwei.v2v.transcript.ProviderTest" time="1.036"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Oct 15, 2026 1:23:27 PM okhttp3.mockwebserver.MockWebServer$SocketHandler handle
+WARNING: MockWebServer[42907] connection from /127.0.0.1 didn't make a request
+]]></system-err>
+</testsuite>

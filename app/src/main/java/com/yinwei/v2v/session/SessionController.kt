@@ -4,7 +4,7 @@ import com.yinwei.v2v.speech.PcmSpeech
 import com.yinwei.v2v.settings.PresentationSettings
 import android.content.Context
 import android.net.Uri
-import com.yinwei.v2v.providers.OpenAiProvider
+import com.yinwei.v2v.providers.TranslationProvider
 import com.yinwei.v2v.diagnostics.*
 import com.yinwei.v2v.transcript.SubtitlePipeline
 import android.media.projection.MediaProjection
@@ -24,7 +24,7 @@ class SessionController(private val context: Context, private val repository: Se
     fun pauseOutput() { speech?.clear(); activeOutput?.pauseAndFlush() }
     fun interrupt() { pauseOutput(); capture?.interrupt() }
     suspend fun run(id: String, source: Source, projection: MediaProjection?, mix: () -> MixSettings,
-        outputPaused: () -> Boolean, fileUri: Uri? = null, provider: OpenAiProvider? = null, language: String = "en", presentation: () -> PresentationSettings = { PresentationSettings() }) = coroutineScope {
+        outputPaused: () -> Boolean, fileUri: Uri? = null, provider: TranslationProvider? = null, language: String = "en", presentation: () -> PresentationSettings = { PresentationSettings() }) = coroutineScope {
         val external = source == Source.SYSTEM_PLAYBACK
         val probe = AsrProbe()
         val mixer = StereoMixer()
@@ -105,7 +105,7 @@ class SessionController(private val context: Context, private val repository: Se
                         underruns = output?.underruns ?: 0,
                         message = if (outputPaused()) previous.message else if (silent) "NO_SIGNAL：可能安靜、暫停或來源政策限制；尚不能判定不支援"
                             else if (!verified) "正在等待有效 PCM；不代表已成功取得來源"
-                            else if (provider != null) "雲端字幕模式；音訊與辨識文字會送至 OpenAI，語音由 Android 離線引擎合成"
+                            else if (provider != null) "雲端字幕模式；音訊與辨識文字會送至 ${previous.cloudProvider.label}，語音由 Android 離線引擎合成"
                             else if (external) "取得非靜音 PCM；雲端字幕未啟用，來源控制不可用"
                             else if (fixtureMode) "測試音檔輸出中；ASR 分支僅量測，660Hz 為合成 fixture，非真實譯音"
                             else "WAV 播放／診斷中；雲端字幕未啟用，無真實 TTS",

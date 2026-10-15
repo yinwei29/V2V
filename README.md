@@ -1,10 +1,14 @@
 # V2V · Live Audio Translator
 
-Android 10+。目前 **0.4.0-studio**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
+Android 10+。目前 **0.5.0-gemini**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
 
 > 使用者已確認 M2 主畫面可見原文與翻譯；M2 CircleCI #2 success。此版加入 M3/M4 工程預覽，語音引擎、浮窗與 Bluetooth 仍需裝置驗收，不能宣稱完整產品完成。離線辨識／翻譯模型尚未交付；YouTube／Zoom／Meet 仍按版本與裝置驗證。
 
-## 0.4 · 翻譯工作台
+## 0.5 · Gemini API
+
+在「設定 → 引擎與金鑰」選擇 OpenAI 或 Google Gemini，各自加密保存 Key。Gemini 使用 gemini-3.8-flash，接收分段 WAV 辨識後翻譯成台灣繁中；字幕、紀錄、浮窗與離線播報共用既有流程。切換引擎需結束本次翻譯，並重新同意傳送給所選供應商。不自動切換供應商。設定與限制見 [GEMINI_SETUP](docs/GEMINI_SETUP.md)。
+
+## 翻譯工作台
 
 - 底部四個頁籤：翻譯、紀錄、聲音、設定。使用一致向量圖示、圓角卡片與高對比字幕；紀錄頁頂部提供文字匯出與清除。
 - 完成的譯文及原文只保存在手機私有noBackup目錄，最多1,000段／4MB，可關閉自動保存、搜尋、切換原文顯示，並匯出UTF-8 TXT。清除有確認，進行中已完成的舊片段不會重新灌回。
@@ -21,10 +25,10 @@ Android 10+。目前 **0.4.0-studio**：音訊擷取／混音、BYOK 雲端字�
 
 ## 測試者操作
 
-1. 開啟「引擎與診斷」確認 **技術事件記錄中**。
-2. 選「自有測試音檔」驗證 stereo mixer；440Hz / 660Hz 是原創測試音，不是真實 TTS。
+1. 開啟「設定 → 診斷與測試」確認 **技術事件記錄中**。
+2. 選「測試音訊」驗證 stereo mixer；440Hz / 660Hz 是原創測試音，不是真實 TTS。
 3. 選授權 WAV（**48kHz / mono / PCM16**）或其他 APP 擷取。外部擷取每次都需系統授權，不偷開麥克風。
-4. 雲端字幕需先在 App 儲存自己的 OpenAI Key、測試連線，並在主頁勾選音訊／文字傳送同意。選 en / id / auto → 台灣繁體中文。Key 不傳聊天、不放 Git 或 CircleCI。
+4. 雲端字幕需先在 App 儲存所選引擎的 OpenAI 或 Gemini Key、測試連線，並在主頁勾選音訊／文字傳送同意。選 en / id / auto → 台灣繁體中文。Key 不傳聊天、不放 Git 或 CircleCI。
 5. 雲端翻譯後自動嘗試離線台灣中文播報；若出現語音錯誤，按「Android 文字轉語音設定」安裝離線台灣中文語音、選擇引擎，再重新開始。語音引擎不可用時保留字幕。
 6. 按「設定浮動字幕權限」開啟上層顯示 → 返回 → 開始 →「顯示浮動字幕／小圈圈」。小圈圈可拖曳吸附，點一下開控制；隱藏字幕不停止翻譯；通知可恢復。混音頁可改語速、字級、行數、背景透明度與關閉播報。
 7. 不勾雲端同意時不送 ASR／MT。外部來源不重播原聲副本；只能調整本 APP 譯音，不能靜音來源 APP。
@@ -43,7 +47,7 @@ AGP 8.9.2 / Kotlin 2.1.20 / Gradle 8.13 / Java 17+ / compile & target SDK35 / mi
 ./scripts/package-apk.sh
 ```
 
-APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.4.0-studio-debug.apk，SHA-256 見 deliverables/SHA256SUMS。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
+APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.5.0-gemini-debug.apk，SHA-256 見 deliverables/SHA256SUMS。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
 
 ## CircleCI
 

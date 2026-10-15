@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-15",
+  "version": "0.5.0-gemini",
+  "junit": {
+    "tests": 69,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Error": 0,
+    "Fatal": 0,
+    "Warning": 10
+  },
+  "build": "2m 57s",
+  "localApkChecksum": "16bedb4654f25a6d59392835a8b25bd3208fb4649f894c174a05949d1e42fbf1  V2V-0.5.0-gemini-debug.apk",
+  "liveGeminiTested": false,
+  "androidDeviceTested": false
+}

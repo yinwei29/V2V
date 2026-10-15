@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.yinwei.v2v.providers.CloudProvider
 import com.yinwei.v2v.R
 import com.yinwei.v2v.audio.*
 import com.yinwei.v2v.diagnostics.*
@@ -76,21 +77,22 @@ private val CardShape = RoundedCornerShape(24.dp)
 
 @Composable internal fun AppScreen(state: SessionSnapshot, mix: MixSettings, presentation: PresentationSettings,
     savePresentation: (PresentationSettings) -> Unit, hasFile: Boolean, keys: ApiKeyStore, pickFile: () -> Unit,
-    start: (Source, Boolean, String) -> Unit, command: (String) -> Unit, save: (MixSettings) -> Unit,
+    start: (Source, Boolean, String, CloudProvider) -> Unit, command: (String) -> Unit, save: (MixSettings) -> Unit,
     diagnostics: Diagnostics, logEnabled: Boolean, setLogEnabled: (Boolean) -> Unit, logNotice: String, logBusy: Boolean,
     exportLog: () -> Unit, shareLog: () -> Unit, archive: List<HistoryEntry>, historyError: String, historyNotice: String,
-    historyBusy: Boolean, exportHistory: () -> Unit, clearHistory: () -> Unit) {
+    historyBusy: Boolean, exportHistory: () -> Unit, clearHistory: () -> Unit,
+    selectedProvider: CloudProvider, selectProvider: (CloudProvider) -> Unit) {
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var clearHistoryDialog by remember { mutableStateOf(false) }
     var sourceName by rememberSaveable { mutableStateOf(Source.SYSTEM_PLAYBACK.name) }
     var language by rememberSaveable { mutableStateOf("en") }
-    var consent by rememberSaveable { mutableStateOf(false) }
-    var configured by remember { mutableStateOf(false) }
+    var consent by rememberSaveable(selectedProvider.name) { mutableStateOf(false) }
+    var configured by remember(selectedProvider) { mutableStateOf(false) }
     var keyRefresh by remember { mutableIntStateOf(0) }
     val active = state.state in setOf(SessionState.STARTING, SessionState.RUNNING, SessionState.NO_SIGNAL, SessionState.PAUSED, SessionState.STOPPING, SessionState.REQUESTING_PERMISSION)
     val source = if (active) state.source else Source.valueOf(sourceName)
     val full = if (active) state.capabilities.ui == UiCapability.FULL_MIXER_CONTROL else source != Source.SYSTEM_PLAYBACK
-    LaunchedEffect(keyRefresh) { configured = withContext(Dispatchers.IO) { keys.configured() } }
+    LaunchedEffect(keyRefresh, selectedProvider) { configured = withContext(Dispatchers.IO) { keys.configured(selectedProvider) } }
     val names = listOf("翻譯", "紀錄", "聲音", "設定")
     val symbols = listOf(R.drawable.ic_captions, R.drawable.ic_history, R.drawable.ic_sound, R.drawable.ic_settings)
     Scaffold(containerColor = Color(0xFFF3F7F8), topBar = {
@@ -136,7 +138,7 @@ private val CardShape = RoundedCornerShape(24.dp)
                         0 -> {
                             CaptionHero(state, diagnostics) { tab = 1 }
                             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                Button(onClick = { if (active) command(TranslationForegroundService.STOP) else start(source, consent, language) },
+                                Button(onClick = { if (active) command(TranslationForegroundService.STOP) else start(source, consent, language, selectedProvider) },
                                     enabled = state.state != SessionState.STOPPING && (active || ((source != Source.OWNED_FILE || hasFile) && (!consent || configured || source == Source.TEST_FILE))),
                                     shape = RoundedCornerShape(18.dp), modifier = Modifier.weight(1f).height(56.dp)) {
                                     Symbol(if (active) R.drawable.ic_stop else R.drawable.ic_play); Spacer(Modifier.width(10.dp)); Text(if (active) "結束翻譯" else "開始翻譯")
@@ -165,11 +167,12 @@ private val CardShape = RoundedCornerShape(24.dp)
                                         FilterChip(selected = (if (active) state.sourceLanguage else language) == code, onClick = { language = code }, enabled = !active, modifier = Modifier.weight(1f), label = { Text(title) })
                                     }
                                 }
+                                TextButton(onClick = { tab = 3 }, enabled = !active) { Text("${if (active) state.cloudProvider.label else selectedProvider.label} · 更換引擎") }
                                 Text("翻譯成 繁體中文", style = MaterialTheme.typography.labelMedium, color = Teal)
                                 if (source != Source.TEST_FILE) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Checkbox(if (active) state.cloudEnabled else consent, { consent = it }, enabled = !active)
-                                        Text("我有權處理此音訊，並同意將音訊與文字送到 OpenAI 翻譯（可能收費）。", style = MaterialTheme.typography.bodySmall)
+                                        Text("我有權處理此音訊，並同意將音訊與文字送到 ${if (active) state.cloudProvider.label else selectedProvider.label} 翻譯（可能收費）。", style = MaterialTheme.typography.bodySmall)
                                     }
                                     if (!configured) TextButton(onClick = { tab = 3 }) { Symbol(R.drawable.ic_shield); Text(" 設定 API Key") }
                                     if (source == Source.SYSTEM_PLAYBACK) Text("其他 App 原聲仍由該 App 控制；會議音訊能否擷取需依 App 與系統測試。", style = MaterialTheme.typography.bodySmall, color = Muted)
@@ -186,7 +189,16 @@ private val CardShape = RoundedCornerShape(24.dp)
                         }
                         2 -> SoundPage(state, mix, presentation, full, save, savePresentation, command)
                         3 -> {
-                            Panel("引擎與金鑰", R.drawable.ic_shield) { KeyPanel(keys, configured, !active, diagnostics.journal) { keyRefresh++ } }
+                            Panel("引擎與金鑰", R.drawable.ic_shield) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    CloudProvider.entries.forEach { provider ->
+                                        FilterChip(selected = selectedProvider == provider, enabled = !active,
+                                            onClick = { selectProvider(provider) }, label = { Text(provider.label) })
+                                    }
+                                }
+                                if (active) Text("結束本次翻譯後可切換引擎。", style = MaterialTheme.typography.bodySmall, color = Muted)
+                                key(selectedProvider) { KeyPanel(selectedProvider, keys, configured, !active, diagnostics.journal) { keyRefresh++ } }
+                            }
                             Panel("語音引擎", R.drawable.ic_sound) {
                                 Text("播報使用手機已安裝的離線台灣中文語音；辨識與翻譯需要網路。", color = Muted)
                                 OutlinedButton(onClick = { command("ttsSettings") }) { Symbol(R.drawable.ic_settings); Text(" Android 語音設定") }

@@ -1,5 +1,7 @@
 package com.yinwei.v2v.session
 
+import com.yinwei.v2v.providers.CloudProvider
+
 import com.yinwei.v2v.audio.*
 import com.yinwei.v2v.transcript.TranscriptSegment
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +23,7 @@ data class SessionSnapshot(
     val ttsRate: Float = 1f, val ttsBufferedMs: Long = 0, val ttsPending: Int = 0,
     val overlayError: String = "",
     val outputPaused: Boolean = false, val cloudEnabled: Boolean = false, val sourceLanguage: String = "en",
+    val cloudProvider: CloudProvider = CloudProvider.OPENAI,
     val segments: List<TranscriptSegment> = emptyList(),
     val skippedSamples: Long = 0, val providerTokens: Long? = null,
     val providerError: String = "",
