@@ -15,6 +15,8 @@ import org.koin.dsl.module
 class V2VApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        // Remove abandoned synthesis output after a previous process termination.
+        cacheDir.listFiles()?.filter { it.name.startsWith("tts-") && it.name.endsWith(".wav") }?.forEach { it.delete() }
         val application = startKoin { androidContext(this@V2VApplication); modules(module {
             single { SessionRepository() }
             factory { SessionController(get(), get(), get()) }

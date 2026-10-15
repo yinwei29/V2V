@@ -20,13 +20,21 @@ class PcmOutput : AutoCloseable {
         }
         try { track.play() } catch (e: Exception) { track.release(); throw e }
     }
+    @Volatile private var paused = false
+    fun pauseAndFlush() { paused = true; runCatching { track.pause(); track.flush() } }
+    fun resume() { if (paused) { track.play(); paused = false } }
     fun write(pcm: ShortArray) {
         var offset = 0
-        while (offset < pcm.size) {
+        while (offset < pcm.size && !paused) {
             val count = track.write(pcm, offset, pcm.size - offset, AudioTrack.WRITE_BLOCKING)
+            if (paused) return
             check(count > 0) { "AudioTrack 輸出失敗 ($count)" }
             offset += count
         }
+    }
+    suspend fun drain() {
+        // Wait for at most one hardware buffer; cancellation/route pause still takes effect.
+        if (!paused) kotlinx.coroutines.delay((track.bufferSizeInFrames * 1000L / 48000 + 40).coerceAtMost(1000))
     }
     val route: String get() = track.routedDevice?.let {
         "${it.productName} · type=${it.type} · stereo 實體隔離待驗證"

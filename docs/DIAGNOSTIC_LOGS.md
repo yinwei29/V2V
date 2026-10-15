@@ -31,3 +31,8 @@ app noBackupFilesDir，JSON Lines UTF-8；最多 3 份 × 512KiB（輪替時包�
 4. 把 JSONL 檔附回聊天，附上預期和實際行為。Key 只輸入 App，勿貼聊天。
 
 自動測試：JSON 可解析、無 exception message／Key／逐字稿、輪替容量、順序、跨 journal instance 保留、清除、停用與 NaN 防護。Android SAF／分享 chooser／裝置崩潰重啟仍待真機驗證。
+
+
+## 0.3 預覽新增
+
+ASR_EMPTY、TRANSCRIPT_PUBLISHED、TRANSLATION_PUBLISHED、TRANSLATION_VISIBLE 記錄段號／revision／字數，沒有文字；VISIBLE 表示前景 Activity 已綁定該段，不是螢幕像素或使用者已讀證明。TTS_PCM_READY 表示引擎成功回傳 PCM，不能單獨當作耳機有聲的證據；TTS_DROPPED 記錄超長／過載捨棄。PROVIDER_STATE 含 TTS 狀態，PCM_SAMPLE 含累計 TTS_DROPPED。浮窗顯示／權限仍需操作驗證。

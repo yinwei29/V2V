@@ -29,6 +29,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.lifecycleScope
 import com.yinwei.v2v.audio.*
 import com.yinwei.v2v.providers.*
@@ -93,8 +96,9 @@ class MainActivity : ComponentActivity() {
                 background = Color(0xFFF4F7F8), surface = Color.White)) {
                 val state by repository.state.collectAsStateWithLifecycle()
                 val mix by settings.settings.collectAsStateWithLifecycle(MixSettings())
+                val presentation by settings.presentation.collectAsStateWithLifecycle(com.yinwei.v2v.settings.PresentationSettings())
                 val logEnabled by settings.diagnosticsEnabled.collectAsStateWithLifecycle(true)
-                AppScreen(state, mix, fileUri != null, keys, { filePicker.launch(arrayOf("audio/*", "application/octet-stream")) },
+                AppScreen(state, mix, presentation, { changed -> lifecycleScope.launch { settings.savePresentation(changed) } }, fileUri != null, keys, { filePicker.launch(arrayOf("audio/*", "application/octet-stream")) },
                     { source, cloud, language ->
                         pendingExternal = source == Source.SYSTEM_PLAYBACK
                         pendingCloud = cloud && source != Source.TEST_FILE
@@ -103,7 +107,13 @@ class MainActivity : ComponentActivity() {
                         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
                             notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
                         else continueStart()
-                    }, { command -> startService(Intent(this, TranslationForegroundService::class.java).setAction(command)) },
+                    }, { command ->
+                        when (command) {
+                            "overlayPermission" -> startActivity(Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:$packageName")))
+                            "ttsSettings" -> runCatching { startActivity(Intent("com.android.settings.TTS_SETTINGS")) }
+                            else -> startService(Intent(this, TranslationForegroundService::class.java).setAction(command))
+                        }
+                    },
                     { changed -> lifecycleScope.launch { settings.save(changed) } }, diagnostics, logEnabled,
                     { enabled -> lifecycleScope.launch { settings.setDiagnosticsEnabled(enabled) } }, logNotice, logBusy,
                     { exportLog.launch("V2V-technical-${System.currentTimeMillis()}.jsonl") }, ::shareLog)
@@ -155,21 +165,23 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun AppScreen(state: SessionSnapshot, mix: MixSettings, hasFile: Boolean, keys: ApiKeyStore,
+private fun AppScreen(state: SessionSnapshot, mix: MixSettings, presentation: com.yinwei.v2v.settings.PresentationSettings, savePresentation: (com.yinwei.v2v.settings.PresentationSettings) -> Unit, hasFile: Boolean, keys: ApiKeyStore,
     pickFile: () -> Unit, start: (Source, Boolean, String) -> Unit, command: (String) -> Unit, save: (MixSettings) -> Unit,
     diagnostics: Diagnostics, logEnabled: Boolean, setLogEnabled: (Boolean) -> Unit, logNotice: String, logBusy: Boolean,
     exportLog: () -> Unit, shareLog: () -> Unit) {
     var sourceName by rememberSaveable { mutableStateOf(Source.TEST_FILE.name) }
-    val source = Source.valueOf(sourceName)
+    val active = state.state in setOf(SessionState.STARTING, SessionState.RUNNING, SessionState.NO_SIGNAL, SessionState.PAUSED, SessionState.STOPPING, SessionState.REQUESTING_PERMISSION)
+    val source = if (active) state.source else Source.valueOf(sourceName)
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var language by rememberSaveable { mutableStateOf("en") }
     var consent by rememberSaveable { mutableStateOf(false) }
     var configured by remember { mutableStateOf(false) }
     var keyRefresh by remember { mutableIntStateOf(0) }
     LaunchedEffect(keyRefresh) { configured = withContext(Dispatchers.IO) { keys.configured() } }
-    val active = state.state in setOf(SessionState.STARTING, SessionState.RUNNING, SessionState.NO_SIGNAL, SessionState.PAUSED, SessionState.STOPPING, SessionState.REQUESTING_PERMISSION)
     val full = if (active) state.capabilities.ui == UiCapability.FULL_MIXER_CONTROL else source != Source.SYSTEM_PLAYBACK
-    Scaffold(bottomBar = {
+    Scaffold(topBar = {
+        if (tab == 0) LatestCaption(state, diagnostics)
+    }, bottomBar = {
         NavigationBar {
             listOf("字幕工作台", "混音控制", "引擎與診斷").forEachIndexed { i, label ->
                 NavigationBarItem(selected = tab == i, onClick = { tab = i }, icon = { Text(listOf("◉", "≋", "ⓘ")[i], fontSize = 24.sp) }, label = { Text(label) })
@@ -178,10 +190,10 @@ private fun AppScreen(state: SessionSnapshot, mix: MixSettings, hasFile: Boolean
     }) { inset ->
         Column(Modifier.padding(inset).fillMaxSize().background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text("V2V", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-            Text("即時音訊翻譯 · M2 工程預覽", color = MaterialTheme.colorScheme.secondary)
+            if (tab != 0) Text("V2V", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+            if (tab != 0) Text("即時音訊翻譯 · M3 / M4 工程預覽", color = MaterialTheme.colorScheme.secondary)
             Surface(color = Color(0xFFE1EFEA), shape = MaterialTheme.shapes.medium) {
-                Text("分段辨識 → 繁中字幕\n真實供應商尚待 Key／真機驗收；TTS 與浮窗尚未提供。", Modifier.padding(16.dp))
+                Text("分段辨識 → 繁中字幕\n離線中文播報＋浮動字幕預覽；需真機驗收。", Modifier.padding(16.dp))
             }
             when (tab) {
                 0 -> {
@@ -193,7 +205,7 @@ private fun AppScreen(state: SessionSnapshot, mix: MixSettings, hasFile: Boolean
                     if (source != Source.TEST_FILE) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             listOf("en" to "英文", "id" to "印尼文", "auto" to "自動").forEach { (code, label) ->
-                                FilterChip(selected = language == code, onClick = { language = code }, enabled = !active, label = { Text(label) })
+                                FilterChip(selected = (if (active) state.sourceLanguage else language) == code, onClick = { language = code }, enabled = !active, label = { Text(label) })
                             }
                         }
                         Text("目標：繁體中文（台灣）；whisper-1 只回傳 final，沒有串流 partial。")
@@ -216,6 +228,14 @@ private fun AppScreen(state: SessionSnapshot, mix: MixSettings, hasFile: Boolean
                     Button(onClick = { if (active) command(TranslationForegroundService.STOP) else start(source, consent, language) },
                         enabled = state.state != SessionState.STOPPING && (active || ((source != Source.OWNED_FILE || hasFile) && (!consent || configured || source == Source.TEST_FILE))),
                         modifier = Modifier.fillMaxWidth().height(52.dp)) { Text(if (active) "停止工作階段" else "開始") }
+                    if (active && !state.outputPaused) OutlinedButton(onClick = { command(TranslationForegroundService.PAUSE) }) { Text("暫停本 APP 播報（字幕持續）") }
+                    Text("播報：${state.ttsState} · 已跳過 ${state.ttsDropped} 段（過長／過載）")
+                    if (state.ttsError.isNotBlank()) Text(state.ttsError, color = MaterialTheme.colorScheme.error)
+                    OutlinedButton(onClick = { command("ttsSettings") }) { Text("Android 文字轉語音設定") }
+                    Text("首次浮窗設定：開啟上層顯示權限 → 返回本 App → 開始後按顯示浮窗。")
+                    OutlinedButton(onClick = { command("overlayPermission") }) { Text("設定浮動字幕權限") }
+                    OutlinedButton(onClick = { command(TranslationForegroundService.SHOW_OVERLAY) }, enabled = active) { Text("顯示浮動字幕／小圈圈") }
+                    if (state.overlayError.isNotBlank()) Text(state.overlayError, color = MaterialTheme.colorScheme.error)
                     if (state.outputPaused) OutlinedButton(onClick = { command(TranslationForegroundService.RESUME) }) { Text("確認路由並恢復本 APP 音訊") }
                     Text("字幕僅保留本次最近 200 段於記憶體，無自動歷史。停止／換語言後不接受舊 session 結果。", style = MaterialTheme.typography.bodySmall)
                     if (state.segments.isEmpty()) Text("尚無辨識結果；沒有使用 mock 字幕。", color = MaterialTheme.colorScheme.secondary)
@@ -230,20 +250,29 @@ private fun AppScreen(state: SessionSnapshot, mix: MixSettings, hasFile: Boolean
                     }
                 }
                 1 -> {
+                    Row { Switch(checked = presentation.speechEnabled, onCheckedChange = { savePresentation(presentation.copy(speechEnabled = it)) }); Text("播報翻譯", Modifier.padding(12.dp)) }
+                    Text("語速 %.2f×".format(presentation.speechRate))
+                    Slider(value = presentation.speechRate, onValueChange = { savePresentation(presentation.copy(speechRate = it)) }, valueRange = 0.75f..1.5f)
+                    Text("浮動字幕字體 ${presentation.captionSize.toInt()}sp")
+                    Slider(value = presentation.captionSize, onValueChange = { savePresentation(presentation.copy(captionSize = it)) }, valueRange = 14f..30f)
+                    Text("字幕背景 ${(presentation.backgroundOpacity * 100).toInt()}%（文字保持不透明）")
+                    Slider(value = presentation.backgroundOpacity, onValueChange = { savePresentation(presentation.copy(backgroundOpacity = it)) }, valueRange = 0f..1f)
+                    Text("字幕最多 ${presentation.captionLines} 行")
+                    Slider(value = presentation.captionLines.toFloat(), onValueChange = { savePresentation(presentation.copy(captionLines = it.toInt())) }, valueRange = 2f..6f, steps = 3)
                     Text("音訊混音器", style = MaterialTheme.typography.titleLarge)
-                    Text(if (full) "可控原聲進單一 stereo AudioTrack。只有測試音檔有 660Hz 譯音 fixture；其他來源尚無真實 TTS。"
+                    Text(if (full) "可控原聲進單一 stereo AudioTrack。只有測試音檔有 660Hz 譯音 fixture；雲端翻譯使用 Android 離線語音引擎。"
                         else "外部來源只擷取，不重播副本；來源 APP 可能仍有原聲。")
                     MixMode.entries.forEach { mode -> Choice(when (mode) {
                         MixMode.SPLIT -> "左譯音 / 右原聲"
-                        MixMode.TRANSLATION_ONLY -> "只聽譯音（真實 TTS 尚未接入）"
+                        MixMode.TRANSLATION_ONLY -> "只聽譯音"
                         MixMode.MIX -> "雙聲混音"
                     }, "50ms ramp / crossfade", mix.mode == mode, full) { save(mix.copy(mode = mode)) } }
                     Text("原聲 ${(if (mix.mode == MixMode.TRANSLATION_ONLY) 0 else (mix.originalGain * 100).toInt())}%")
                     Slider(value = if (mix.mode == MixMode.TRANSLATION_ONLY) 0f else mix.originalGain,
                         onValueChange = { save(mix.copy(originalGain = it)) }, enabled = full && mix.mode != MixMode.TRANSLATION_ONLY)
                     if (mix.mode == MixMode.TRANSLATION_ONLY) Text("此模式原聲鎖定 0；切回 MIX / SPLIT 保留先前增益。辨識輸入不受音量影響。")
-                    Text("譯音 ${(mix.translationGain * 100).toInt()}%（僅測試 fixture 有聲）")
-                    Slider(value = mix.translationGain, onValueChange = { save(mix.copy(translationGain = it)) }, enabled = full)
+                    Text("譯音 ${(mix.translationGain * 100).toInt()}%")
+                    Slider(value = mix.translationGain, onValueChange = { save(mix.copy(translationGain = it)) }, enabled = active || full)
                     Row { Checkbox(checked = mix.swap, onCheckedChange = { save(mix.copy(swap = it)) }, enabled = full && mix.mode == MixMode.SPLIT); Text("交換左右", Modifier.padding(top = 12.dp)) }
                     OutlinedButton(onClick = { save(mix.copy(mode = MixMode.MIX, originalGain = 0.2f, translationGain = 1f)) }, enabled = full) { Text("背景原聲 20 / 100") }
                     OutlinedButton(onClick = { save(mix.copy(mode = MixMode.MIX, originalGain = 1f, translationGain = 1f)) }, enabled = full) { Text("雙聲 100 / 100（limiter）") }
@@ -263,7 +292,7 @@ private fun AppScreen(state: SessionSnapshot, mix: MixSettings, hasFile: Boolean
                     Detail("AudioTrack underruns", state.underruns.toString())
                     Detail("MT provider usage", state.providerTokens?.let { "$it tokens（僅累計收到 usage 的片段；不是帳單）" } ?: "尚未取得 usage；不當作零用量或正式帳單")
                     Text("YouTube / Zoom / Meet：NOT_TESTED_ON_DEVICE；完整外部來源整合 BLOCKED。一般播放擷取不等於通話擷取。")
-                    Text("小圈圈／浮動字幕、真實 TTS、離線模型、歷史與匯出尚未交付。無離線回退；不會偷開麥克風。")
+                    Text("浮窗與離線 TTS 為工程預覽；離線辨識模型、字幕歷史與字幕匯出尚未交付。無離線回退；不會偷開麥克風。")
                 }
             }
         }
@@ -354,4 +383,37 @@ private fun DiagnosticPanel(diagnostics: Diagnostics, enabled: Boolean, setEnabl
     if (notice.isNotBlank()) Text(notice)
     if (clearNotice.isNotBlank()) Text(clearNotice)
     Text("測試方式：開啟記錄 → 重現問題 → 停止工作階段 → 匯出／分享 Log，附上發生問題的操作步驟。", style = MaterialTheme.typography.bodySmall)
+}
+
+
+@Composable
+private fun LatestCaption(state: SessionSnapshot, diagnostics: Diagnostics) {
+    val latest = state.segments.lastOrNull { it.translatedText.isNotBlank() }
+    val original = state.segments.lastOrNull()
+    val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
+    LaunchedEffect(state.id, latest?.id, latest?.revision, lifecycle) {
+        if (latest != null && lifecycle.isAtLeast(Lifecycle.State.RESUMED)) {
+            diagnostics.journal.record(DiagnosticEvent.TRANSLATION_VISIBLE, state.id,
+                metrics = mapOf(Metric.SEGMENT_ID to latest.id, Metric.REVISION to latest.revision,
+                    Metric.CHARACTERS to latest.translatedText.length))
+        }
+    }
+    Surface(color = MaterialTheme.colorScheme.surface, tonalElevation = 3.dp) {
+        Column(Modifier.fillMaxWidth().statusBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("V2V · 即時繁中字幕", fontWeight = FontWeight.Bold)
+            Text("完成 ${state.segments.count { it.translatedText.isNotBlank() }} 段 · Android 語音＋浮窗預覽",
+                style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.secondary)
+            Text(latest?.translatedText ?: when {
+                state.providerError.isNotBlank() -> state.providerError
+                state.mtState == StageState.RUNNING -> "已辨識原文，正在翻譯…"
+                state.asrState == StageState.RUNNING -> "正在辨識音訊…"
+                state.cloudEnabled -> "等待可辨識語音與翻譯結果…"
+                else -> "尚無繁中字幕；請選語音來源並啟用雲端翻譯"
+            }, fontSize = 22.sp, fontWeight = FontWeight.Bold, maxLines = 4, overflow = TextOverflow.Ellipsis)
+            if (latest != null) Text(latest.originalText, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodySmall)
+            else if (original != null) Text(original.originalText, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text("字幕固定顯示於此；完整紀錄可往下捲動。可授權浮窗，在其他 App 上方顯示。", style = MaterialTheme.typography.labelSmall)
+        }
+    }
 }

@@ -21,6 +21,20 @@ class SettingsStore(context: Context) {
             (p[original] ?: 0.2f).coerceIn(0f, 1f), (p[translation] ?: 1f).coerceIn(0f, 1f), p[swapped] ?: false,
         )
     }
+    val presentation = store.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }.map { p ->
+        PresentationSettings(p[booleanPreferencesKey("speech_enabled")] ?: true,
+            (p[floatPreferencesKey("speech_rate")] ?: 1f).coerceIn(0.75f, 1.5f),
+            (p[floatPreferencesKey("caption_size")] ?: 18f).coerceIn(14f, 30f),
+            (p[floatPreferencesKey("caption_opacity")] ?: 0.55f).coerceIn(0f, 1f),
+            (p[intPreferencesKey("caption_lines")] ?: 4).coerceIn(2, 6))
+    }
+    suspend fun savePresentation(s: PresentationSettings) { store.edit {
+        it[booleanPreferencesKey("speech_enabled")] = s.speechEnabled
+        it[floatPreferencesKey("speech_rate")] = s.speechRate.coerceIn(0.75f, 1.5f)
+        it[floatPreferencesKey("caption_size")] = s.captionSize.coerceIn(14f, 30f)
+        it[floatPreferencesKey("caption_opacity")] = s.backgroundOpacity.coerceIn(0f, 1f)
+        it[intPreferencesKey("caption_lines")] = s.captionLines.coerceIn(2, 6)
+    } }
     val diagnosticsEnabled = store.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[booleanPreferencesKey("diagnostics_enabled")] ?: true }
     suspend fun setDiagnosticsEnabled(enabled: Boolean) { store.edit { it[booleanPreferencesKey("diagnostics_enabled")] = enabled } }

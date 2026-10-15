@@ -1,5 +1,7 @@
 package com.yinwei.v2v.session
 
+import com.yinwei.v2v.speech.PcmSpeech
+import com.yinwei.v2v.settings.PresentationSettings
 import android.content.Context
 import android.net.Uri
 import com.yinwei.v2v.providers.OpenAiProvider
@@ -15,9 +17,14 @@ import java.nio.ByteOrder
 /** Service-owned source lifetime; UI only observes repository state. */
 class SessionController(private val context: Context, private val repository: SessionRepository, private val diagnostics: Diagnostics) {
     @Volatile private var capture: PlaybackCapture? = null
-    fun interrupt() { capture?.interrupt() }
+    @Volatile private var speech: PcmSpeech? = null
+    @Volatile private var activeOutput: PcmOutput? = null
+    fun resumeOutput() { activeOutput?.resume() }
+    fun clearSpeech() { speech?.clear() }
+    fun pauseOutput() { speech?.clear(); activeOutput?.pauseAndFlush() }
+    fun interrupt() { pauseOutput(); capture?.interrupt() }
     suspend fun run(id: String, source: Source, projection: MediaProjection?, mix: () -> MixSettings,
-        outputPaused: () -> Boolean, fileUri: Uri? = null, provider: OpenAiProvider? = null, language: String = "en") = coroutineScope {
+        outputPaused: () -> Boolean, fileUri: Uri? = null, provider: OpenAiProvider? = null, language: String = "en", presentation: () -> PresentationSettings = { PresentationSettings() }) = coroutineScope {
         val external = source == Source.SYSTEM_PLAYBACK
         val probe = AsrProbe()
         val mixer = StereoMixer()
@@ -40,12 +47,15 @@ class SessionController(private val context: Context, private val repository: Se
                 val stream = context.contentResolver.openInputStream(checkNotNull(fileUri)) ?: error("無法讀取選取檔案")
                 try { reader = WavReader(stream) } catch (e: Exception) { stream.close(); throw e }
             }
-            if (provider != null) subtitles = SubtitlePipeline(id, language, provider, repository, this)
+            if (provider != null) {
+                speech = PcmSpeech(context, id, repository, this, diagnostics.journal, outputPaused, presentation)
+                subtitles = SubtitlePipeline(id, language, provider, repository, this, diagnostics.journal) { speech?.offer(it) }
+            }
             if (external) {
                 capture = PlaybackCapture(checkNotNull(projection))
                 checkNotNull(capture).start()
             }
-            else output = PcmOutput()
+            if (!external || provider != null) { output = PcmOutput(); activeOutput = output }
             repository.update { it.copy(capabilities = it.capabilities.copy(
                 captureAvailable = true,
                 stereoOutputSupported = !external,
@@ -65,11 +75,13 @@ class SessionController(private val context: Context, private val repository: Se
                 subtitles?.offer(frame) // Ownership shared read-only until bounded queue consumes it.
                 val level = frame.rms()
                 if (level > 0.001f) { lastSignal = now; verified = true }
-                if (!external) {
-                    val t = if (fixtureMode) ShortArray(pcm.size) { translated[(offset + it) % translated.size] } else ShortArray(pcm.size)
-                    if (fixtureMode) offset = (offset + pcm.size) % original.size
-                    val mixed = mixer.render(pcm, t, mix())
-                    output!!.write(if (outputPaused()) ShortArray(mixed.size) else mixed)
+                if (output != null) {
+                    val t = if (fixtureMode) ShortArray(pcm.size) { translated[(offset + it) % translated.size] } else speech?.take(pcm.size) ?: ShortArray(pcm.size)
+                    if (fixtureMode) { offset = (offset + pcm.size) % original.size }
+                    if (!outputPaused()) {
+                        val mixed = mixer.render(if (external) ShortArray(pcm.size) else pcm, t, if (external) mix().copy(mode = MixMode.TRANSLATION_ONLY) else mix())
+                        output.write(mixed)
+                    } else if (!external) delay(20)
                 }
                 currentCoroutineContext().ensureActive()
                 if (now - report >= 100) {
@@ -85,11 +97,11 @@ class SessionController(private val context: Context, private val repository: Se
                         capabilities = previous.capabilities.copy(inputVerified = verified,
                             reason = if (external && verified) "曾收到非靜音 PCM；來源內容、版本與原聲控制仍未驗證" else previous.capabilities.reason),
                         level = level, frames = sequence, asrSamples = probe.samples, elapsedMs = now - began,
-                        route = output?.route ?: "擷取模式不重播來源副本；真實 TTS 尚未接入",
+                        route = output?.route ?: "擷取模式不重播來源副本；語音由 Android 離線引擎合成",
                         underruns = output?.underruns ?: 0,
                         message = if (outputPaused()) previous.message else if (silent) "NO_SIGNAL：可能安靜、暫停或來源政策限制；尚不能判定不支援"
                             else if (!verified) "正在等待有效 PCM；不代表已成功取得來源"
-                            else if (provider != null) "雲端字幕模式；音訊與辨識文字會送至 OpenAI，真實 TTS 尚未接入"
+                            else if (provider != null) "雲端字幕模式；音訊與辨識文字會送至 OpenAI，語音由 Android 離線引擎合成"
                             else if (external) "取得非靜音 PCM；雲端字幕未啟用，來源控制不可用"
                             else if (fixtureMode) "測試音檔輸出中；ASR 分支僅量測，660Hz 為合成 fixture，非真實譯音"
                             else "WAV 播放／診斷中；雲端字幕未啟用，無真實 TTS",
@@ -101,9 +113,18 @@ class SessionController(private val context: Context, private val repository: Se
             if (source == Source.OWNED_FILE) repository.update {
                 if (it.id == id) it.copy(level = 0f, message = "音檔已播完，等待最後字幕；可按停止取消") else it
             }
-            subtitles?.finish()
+            val finishing = launch { subtitles?.finish(); speech?.finish() }
+            while (!finishing.isCompleted || speech?.hasAudio() == true) {
+                if (!outputPaused() && output != null) {
+                    output.write(mixer.render(ShortArray(960), speech?.take(960) ?: ShortArray(960), mix()))
+                } else { speech?.clear(); delay(20) }
+            }
+            finishing.join()
+            output?.drain()
         } finally {
             subtitles?.cancel()
+            speech?.close(); speech = null
+            activeOutput = null
             capture?.close(); capture = null
             output?.close()
             reader?.close()

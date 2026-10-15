@@ -1,5 +1,6 @@
 package com.yinwei.v2v.session
 
+import com.yinwei.v2v.overlay.CaptionOverlay
 import android.app.*
 import android.content.*
 import android.content.pm.ServiceInfo
@@ -13,6 +14,7 @@ import com.yinwei.v2v.providers.OpenAiProvider
 import com.yinwei.v2v.diagnostics.*
 import com.yinwei.v2v.audio.*
 import com.yinwei.v2v.settings.SettingsStore
+import com.yinwei.v2v.settings.PresentationSettings
 import com.yinwei.v2v.ui.MainActivity
 import kotlinx.coroutines.*
 import org.koin.android.ext.android.inject
@@ -25,8 +27,10 @@ class TranslationForegroundService : Service() {
     private val diagnostics: Diagnostics by inject()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var job: Job? = null
+    private var overlay: CaptionOverlay? = null
     private var projection: MediaProjection? = null
     private val controller: SessionController by inject()
+    @Volatile private var presentation = PresentationSettings()
     @Volatile private var mix = MixSettings()
     @Volatile private var outputPaused = false
     @Volatile private var ending = false
@@ -50,9 +54,19 @@ class TranslationForegroundService : Service() {
     override fun onCreate() {
         super.onCreate()
         audio = getSystemService(AudioManager::class.java)
+        overlay = CaptionOverlay(this, {
+            startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }, { stopReason = StopReason.USER; end("使用者已停止") }, {
+            if (outputPaused) resumeOutput() else pauseOutput("播報已暫停；字幕持續")
+        }, { message -> repository.update { it.copy(overlayError = message) } })
+        scope.launch { repository.state.collect { overlay?.update(it) } }
         audio.registerAudioDeviceCallback(devices, Handler(mainLooper))
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(noisy, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY), RECEIVER_NOT_EXPORTED)
         else @Suppress("DEPRECATION") registerReceiver(noisy, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY))
+        scope.launch { settings.presentation.collect {
+            if (presentation.speechEnabled && !it.speechEnabled) controller.clearSpeech()
+            presentation = it; overlay?.configure(it)
+        } }
         scope.launch { settings.settings.collect { mix = it; diagnostics.mix(it) } }
         getSystemService(NotificationManager::class.java).createNotificationChannel(
             NotificationChannel(CHANNEL, "音訊驗證工作階段", NotificationManager.IMPORTANCE_LOW))
@@ -61,7 +75,9 @@ class TranslationForegroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             STOP -> { stopReason = StopReason.USER; end("使用者已停止") }
-            RESUME -> { outputPaused = false; repository.update { it.copy(outputPaused = false, message = "已恢復測試音訊；非真實翻譯") } }
+            RESUME -> resumeOutput()
+            SHOW_OVERLAY -> if (job != null) overlay?.show() else stopSelf()
+            PAUSE -> pauseOutput("播報已暫停；字幕持續")
             START -> if (job == null) begin(intent)
             else -> if (job == null) stopSelf()
         }
@@ -80,13 +96,13 @@ class TranslationForegroundService : Service() {
             stopSelf(); return
         }
         val id = UUID.randomUUID().toString()
-        diagnostics.journal.record(DiagnosticEvent.SESSION_START, id, mapOf(Metric.CLOUD_ENABLED to if (cloud) 1 else 0), mapOf(Tag.SOURCE to source))
+        diagnostics.journal.record(DiagnosticEvent.SESSION_START, id, mapOf(Metric.CLOUD_ENABLED to if (cloud) 1 else 0), mapOf(Tag.SOURCE to source, Tag.LANGUAGE to DiagnosticLanguage.valueOf(language.uppercase(java.util.Locale.ROOT))))
         terminalState = SessionState.STOPPED
         terminalMessage = "來源結束"
         stopReason = StopReason.SOURCE_FINISHED
         ending = false
         outputPaused = false
-        repository.set(SessionSnapshot(id = id, state = SessionState.STARTING, source = source,
+        repository.set(SessionSnapshot(id = id, state = SessionState.STARTING, source = source, cloudEnabled = cloud, sourceLanguage = language,
             capabilities = if (external) SourceCapabilities() else SourceCapabilities(
                 originalControl = OriginalGainControlCapability.APP_OWNED, externalDirectOutputPresent = false,
                 reason = if (source == Source.TEST_FILE) "本 APP 自有測試音檔；440Hz 原聲／660Hz 模擬譯音，不是 TTS"
@@ -94,8 +110,13 @@ class TranslationForegroundService : Service() {
             asrState = if (cloud) StageState.IDLE else StageState.NOT_CONFIGURED,
             mtState = if (cloud) StageState.IDLE else StageState.NOT_CONFIGURED))
         try {
-            startForeground(1, notification(), if (external) ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
-                else ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+            val serviceType = if (external) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION or
+                    (if (provider != null) ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK else 0)
+            } else {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            }
+            startForeground(1, notification(), serviceType)
             if (external) {
                 val consent = if (Build.VERSION.SDK_INT >= 33) intent.getParcelableExtra("consent", Intent::class.java)
                     else @Suppress("DEPRECATION") (intent.getParcelableExtra("consent") as? Intent)
@@ -114,9 +135,10 @@ class TranslationForegroundService : Service() {
             end("啟動失敗：${e.javaClass.simpleName}", SessionState.ERROR)
             return
         }
+        if (android.provider.Settings.canDrawOverlays(this)) overlay?.show()
         job = scope.launch {
             try {
-                withContext(Dispatchers.IO) { controller.run(id, source, projection, { mix }, { outputPaused }, fileUri, provider, language) }
+                withContext(Dispatchers.IO) { controller.run(id, source, projection, { mix }, { outputPaused }, fileUri, provider, language, { presentation }) }
             } catch (_: CancellationException) {
                 // Explicit end owns terminal state.
             } catch (e: Exception) {
@@ -142,9 +164,15 @@ class TranslationForegroundService : Service() {
             }
         }
     }
+    private fun resumeOutput() {
+        outputPaused = false
+        controller.resumeOutput()
+        repository.update { it.copy(outputPaused = false, message = "已恢復本 APP 音訊；舊播報不會重播") }
+    }
     private fun pauseOutput(message: String) {
         diagnostics.journal.record(DiagnosticEvent.OUTPUT_PAUSE, repository.state.value.id)
         outputPaused = true
+        controller.pauseOutput()
         repository.update { it.copy(outputPaused = true, message = message) }
     }
     private fun end(message: String, state: SessionState = SessionState.STOPPED) {
@@ -168,6 +196,7 @@ class TranslationForegroundService : Service() {
         runCatching { previous?.stop() }
     }
     override fun onDestroy() {
+        overlay?.close(); overlay = null
         if (job?.isActive == true && !ending) {
             terminalState = SessionState.STOPPED
             terminalMessage = "系統已停止服務；請由主畫面重新開始"
@@ -184,14 +213,17 @@ class TranslationForegroundService : Service() {
     }
     private fun notification(): Notification {
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
+        val restore = PendingIntent.getService(this, 2, Intent(this, javaClass).setAction(SHOW_OVERLAY), PendingIntent.FLAG_IMMUTABLE)
         val stop = PendingIntent.getService(this, 1, Intent(this, javaClass).setAction(STOP), PendingIntent.FLAG_IMMUTABLE)
         return Notification.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_wave)
             .setContentTitle("V2V · 音訊工作階段").setContentText("擷取／字幕工作中 · 按停止結束；無自動重新錄音")
-            .setContentIntent(open).setOngoing(true).addAction(Notification.Action.Builder(null, "停止", stop).build()).build()
+            .setContentIntent(open).setOngoing(true).addAction(Notification.Action.Builder(null, "顯示字幕", restore).build()).addAction(Notification.Action.Builder(null, "停止", stop).build()).build()
     }
     companion object {
         const val START = "com.yinwei.v2v.START"
         const val STOP = "com.yinwei.v2v.STOP"
+        const val SHOW_OVERLAY = "com.yinwei.v2v.SHOW_OVERLAY"
+        const val PAUSE = "com.yinwei.v2v.PAUSE"
         const val RESUME = "com.yinwei.v2v.RESUME"
         private const val CHANNEL = "session"
     }

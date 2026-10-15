@@ -2,6 +2,9 @@ package com.yinwei.v2v.transcript
 
 import com.yinwei.v2v.providers.*
 import com.yinwei.v2v.session.*
+import com.yinwei.v2v.diagnostics.*
+import java.nio.file.Files
+import java.io.ByteArrayOutputStream
 import com.yinwei.v2v.audio.*
 import kotlinx.coroutines.*
 import okhttp3.mockwebserver.*
@@ -91,7 +94,7 @@ class ProviderTest {
             try {
                 delay(100); sendSentence(0)
                 withContext(Dispatchers.IO) { assertNotNull(server.takeRequest(2, TimeUnit.SECONDS)) }
-                sendSentence(80)
+                sendSentence(80); sendSentence(160); sendSentence(240); sendSentence(320)
                 withTimeout(2000) { while (repository.state.value.skippedSamples == 0L) delay(10) }
                 assertTrue(repository.state.value.skippedSamples >= 48000)
             } finally { pipeline.cancel(); pipelineScope.cancel() }
@@ -102,6 +105,30 @@ class ProviderTest {
             server.enqueue(MockResponse().setBody("""{"choices":[{"finish_reason":"length","message":{"content":"incomplete"}}]}"""))
             try { provider.translate("original", "en"); fail("Truncated text accepted") }
             catch (e: ProviderFailure) { assertTrue(e.message!!.contains("未完整")) }
+        }
+    }
+    @Test fun successfulTranslationPublishesRevisionTwoAndLogsOnlyMetadata() = runBlocking {
+        fixture { server, provider ->
+            server.enqueue(MockResponse().setBody("{\"text\":\"private original example\"}"))
+            server.enqueue(MockResponse().setBody("""{"choices":[{"finish_reason":"stop","message":{"content":"測試用私人譯文"}}]}"""))
+            val session = "12345678-abcd-abcd-abcd-123456789abc"
+            val repository = SessionRepository().apply { set(SessionSnapshot(id = session, cloudEnabled = true)) }
+            val directory = Files.createTempDirectory("publish-log-test").toFile()
+            val journal = DiagnosticJournal(directory, DiagnosticEnvironment("test", 35, "test", "test"))
+            val pipelineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+            val pipeline = SubtitlePipeline(session, "en", provider, repository, pipelineScope, journal)
+            try {
+                delay(100)
+                repeat(80) { i -> pipeline.offer(AudioFrame(session, Source.OWNED_FILE, i.toLong(), i * 20000L, 48000,
+                    ShortArray(960) { if (i < 50) 3000 else 0 }, i * 960L)) }
+                withTimeout(3000) { while (repository.state.value.segments.none { it.revision == 2 }) delay(10) }
+                val segment = repository.state.value.segments.single()
+                assertEquals("測試用私人譯文", segment.translatedText)
+                assertEquals("private original example", segment.originalText)
+                val log = ByteArrayOutputStream().also(journal::export).toString("UTF-8")
+                assertTrue(log.contains("TRANSLATION_PUBLISHED")); assertTrue(log.contains("TRANSCRIPT_PUBLISHED"))
+                assertFalse(log.contains("測試用私人譯文")); assertFalse(log.contains("private original example")); assertFalse(log.contains(fixtureKey))
+            } finally { pipeline.cancel(); pipelineScope.cancel(); journal.close(); directory.deleteRecursively() }
         }
     }
     @Test fun cancelledPipelineCannotPublishLateResponseToNewSession() = runBlocking {

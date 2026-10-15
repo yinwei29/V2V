@@ -33,7 +33,7 @@ class Diagnostics(context: Context) {
             previousSamples = snapshot.asrSamples; sampledAt = now
             journal.record(DiagnosticEvent.PCM_SAMPLE, snapshot.id, metrics = mapOf(Metric.RMS to snapshot.level, Metric.FRAMES to snapshot.frames,
                 Metric.SAMPLES to snapshot.asrSamples, Metric.ELAPSED_MS to snapshot.elapsedMs, Metric.UNDERRUNS to snapshot.underruns,
-                Metric.DROPPED_SAMPLES to snapshot.skippedSamples))
+                Metric.DROPPED_SAMPLES to snapshot.skippedSamples, Metric.TTS_DROPPED to snapshot.ttsDropped))
         }
     }
     @Synchronized fun mix(settings: MixSettings) {

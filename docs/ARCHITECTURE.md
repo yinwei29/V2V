@@ -1,3 +1,5 @@
+> 本文件前半保留 M1/M2 設計演進；目前 0.3 的語音與浮窗如下段所述。
+
 # 架構與 M1 邊界
 
 單一 app module，套件按 ui / session / audio / settings 分層，避免形式拆分。Application 用 Koin 注入 SessionRepository、SettingsStore；Activity 訂閱 StateFlow 並發 Intent，前景服務持有獨立注入的 SessionController，controller 持有音訊生命週期。
@@ -20,3 +22,12 @@ WavReader 使用串流讀 RIFF chunks，只接受48k mono PCM16；未實作格�
 ASR/MT worker 串行處理穩定 final，ledger按session/id/revision驗證，最多200段；MT先顯示原文再revision2譯文。沒有假partial、confidence、說話者或TTS。OkHttp Call 的 cancellable continuation涵蓋 body read，取消不是只關到headers。provider錯誤保留原文並顯示，不重新播放舊 session。
 
 Diagnostics用型別化事件禁止自由文字，背景單writer queue128，檔案輪替3×512KiB；App監看StateFlow、服務錄路由/啟停/權限/錯誤class，provider只記status/latency。匯出barrier後取快照、FileProvider僅cache/diagnostics。純JVM測JSON、保存、輪替、刪除與隱私；Android整合待裝置。
+
+
+## 0.3 PCM 語音與浮窗
+
+SubtitlePipeline 的 final revision2 譯文才交給 session-owned PcmSpeech。Android TextToSpeech 用 synthesizeToFile 觸發 PCM callbacks，私人暫存檔清除後僅保留有界 PCM。8–48k mono/stereo PCM16 轉 mono48k（只有上採樣，超48k拒絕），與可控來源在 StereoMixer 混入同一 AudioTrack。外部來源原聲分支固定0，不會多播來源副本。SpeechBuffer 最多10秒；pending counter 將文字等待、合成中、PCM待播合計限制3段，overflow只丟TTS，不丟字幕。暫停／關閉／停止時 generation 失效，晚到合成不再加入播放。
+
+前景服務持有 CaptionOverlay 的兩個小型 TYPE_APPLICATION_OVERLAY 視窗：可拖曳吸邊的小圈圈與可拖曳、調整寬度的字幕。普通模式白字黑描邊的paint與背景alpha獨立；閱讀模式FLAG_NOT_TOUCHABLE，Android12+依系統不可信浮窗安全上限降低整窗alpha以允許觸控穿透。Activity與overlay僅發命令與訂閱repository。通知能恢復字幕與停止；服務銷毀移除全部視窗。權限拒絕／撤銷降級主畫面字幕。
+
+DataStore 保存語音開關、語速、字級、背景alpha、行數；overlay-placement 私有偏好保存視窗座標與寬度。耳機移除立即pause/flush AudioTrack並清除語音queue，保留ASR/MT，只有使用者確認才resume。實際OEM處理延遲與防回灌需裝置證據。

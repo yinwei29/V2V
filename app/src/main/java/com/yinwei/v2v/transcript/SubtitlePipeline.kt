@@ -1,6 +1,7 @@
 package com.yinwei.v2v.transcript
 
 import com.yinwei.v2v.audio.AudioFrame
+import com.yinwei.v2v.diagnostics.*
 import com.yinwei.v2v.providers.*
 import com.yinwei.v2v.session.*
 import kotlinx.coroutines.*
@@ -10,17 +11,23 @@ import kotlinx.coroutines.channels.Channel
 class SubtitlePipeline(
     private val sessionId: String, private val language: String, private val provider: OpenAiProvider,
     private val repository: SessionRepository, scope: CoroutineScope,
+    private val diagnostics: DiagnosticJournal? = null,
+    private val translated: (String) -> Unit = {},
 ) {
     private val frames = Channel<AudioFrame>(250)
-    private val chunks = Channel<AudioChunk>(Channel.RENDEZVOUS)
+    private val chunks = ChunkMailbox()
     private val ledger = TranscriptLedger(sessionId)
     private val worker = scope.launch(Dispatchers.IO) {
         try {
-            for (chunk in chunks) {
+            while (true) {
+                val chunk = chunks.receive() ?: break
                 stage(asr = StageState.RUNNING, mt = StageState.IDLE)
                 val original = provider.transcribe(chunk, language)
                 currentCoroutineContext().ensureActive()
-                if (original.isBlank()) { stage(StageState.IDLE, StageState.IDLE); continue }
+                if (original.isBlank()) {
+                    diagnostics?.record(DiagnosticEvent.ASR_EMPTY, sessionId, mapOf(Metric.SEGMENT_ID to chunk.id))
+                    stage(StageState.IDLE, StageState.IDLE); continue
+                }
                 var segment = TranscriptSegment(sessionId, chunk.id, startMs = chunk.startMs, endMs = chunk.endMs,
                     originalText = original, sourceLanguage = language)
                 publish(segment)
@@ -30,6 +37,7 @@ class SubtitlePipeline(
                 currentCoroutineContext().ensureActive()
                 segment = segment.copy(revision = 2, translatedText = translated.text, translationLatencyMs = (System.nanoTime() - began) / 1_000_000)
                 publish(segment)
+                if (repository.state.value.id == sessionId) translated(segment.translatedText)
                 repository.update { if (it.id == sessionId) it.copy(providerTokens = translated.tokens?.let { tokens -> (it.providerTokens ?: 0) + tokens } ?: it.providerTokens) else it }
                 stage(StageState.IDLE, StageState.IDLE)
             }
@@ -44,11 +52,11 @@ class SubtitlePipeline(
             for (frame in frames) {
                 if (frame.sessionId != sessionId) continue
                 for (chunk in splitter.offer(frame.pcm, frame.sourcePositionSamples)) {
-                    if (chunks.trySend(chunk).isFailure) dropped(chunk.pcm.size.toLong())
+                    if (!chunks.tryOffer(chunk)) dropped(chunk.pcm.size.toLong())
                 }
             }
             val tail = splitter.flush()
-            if (tail != null) chunks.send(tail)
+            if (tail != null) chunks.sendTail(tail)
         } catch (e: CancellationException) { throw e }
         catch (_: kotlinx.coroutines.channels.ClosedSendChannelException) { /* Provider has failed, already reported. */ }
         finally { chunks.close() }
@@ -62,7 +70,15 @@ class SubtitlePipeline(
         if (it.id == sessionId) it.copy(skippedSamples = it.skippedSamples + samples) else it
     }
     private fun publish(segment: TranscriptSegment) {
-        if (ledger.accept(segment)) repository.update { if (it.id == sessionId) it.copy(segments = ledger.snapshot()) else it }
+        if (repository.state.value.id != sessionId) return
+        if (ledger.accept(segment)) {
+            val snapshot = ledger.snapshot()
+            repository.update { if (it.id == sessionId) it.copy(segments = snapshot) else it }
+            diagnostics?.record(if (segment.translatedText.isNotBlank()) DiagnosticEvent.TRANSLATION_PUBLISHED else DiagnosticEvent.TRANSCRIPT_PUBLISHED,
+                sessionId, mapOf(Metric.SEGMENT_ID to segment.id, Metric.REVISION to segment.revision,
+                    Metric.CHARACTERS to if (segment.translatedText.isNotBlank()) segment.translatedText.length else segment.originalText.length,
+                    Metric.PUBLISHED_SEGMENTS to snapshot.size, Metric.LATENCY_MS to segment.translationLatencyMs))
+        }
     }
     private fun stage(asr: StageState, mt: StageState) = repository.update {
         if (it.id == sessionId) it.copy(asrState = asr, mtState = mt) else it
