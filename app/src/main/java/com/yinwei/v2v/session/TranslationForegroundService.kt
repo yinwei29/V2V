@@ -58,7 +58,9 @@ class TranslationForegroundService : Service() {
             startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }, { stopReason = StopReason.USER; end("使用者已停止") }, {
             if (outputPaused) resumeOutput() else pauseOutput("播報已暫停；字幕持續")
-        }, { message -> repository.update { it.copy(overlayError = message) } })
+        }, { message -> repository.update { it.copy(overlayError = message) } },
+            { delta -> scope.launch { settings.savePresentation(presentation.copy(speechRate = (presentation.speechRate + delta).coerceIn(0.75f, 2f))) } },
+            { delta -> scope.launch { settings.save(mix.copy(translationGain = (mix.translationGain + delta).coerceIn(0f, 2f))) } })
         scope.launch { repository.state.collect { overlay?.update(it) } }
         audio.registerAudioDeviceCallback(devices, Handler(mainLooper))
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(noisy, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY), RECEIVER_NOT_EXPORTED)
@@ -67,7 +69,7 @@ class TranslationForegroundService : Service() {
             if (presentation.speechEnabled && !it.speechEnabled) controller.clearSpeech()
             presentation = it; overlay?.configure(it)
         } }
-        scope.launch { settings.settings.collect { mix = it; diagnostics.mix(it) } }
+        scope.launch { settings.settings.collect { mix = it; diagnostics.mix(it); overlay?.setTranslationGain(it.translationGain) } }
         getSystemService(NotificationManager::class.java).createNotificationChannel(
             NotificationChannel(CHANNEL, "音訊驗證工作階段", NotificationManager.IMPORTANCE_LOW))
     }

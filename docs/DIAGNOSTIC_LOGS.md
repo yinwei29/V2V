@@ -36,3 +36,8 @@ app noBackupFilesDir，JSON Lines UTF-8；最多 3 份 × 512KiB（輪替時包�
 ## 0.3 預覽新增
 
 ASR_EMPTY、TRANSCRIPT_PUBLISHED、TRANSLATION_PUBLISHED、TRANSLATION_VISIBLE 記錄段號／revision／字數，沒有文字；VISIBLE 表示前景 Activity 已綁定該段，不是螢幕像素或使用者已讀證明。TTS_PCM_READY 表示引擎成功回傳 PCM，不能單獨當作耳機有聲的證據；TTS_DROPPED 記錄超長／過載捨棄。PROVIDER_STATE 含 TTS 狀態，PCM_SAMPLE 含累計 TTS_DROPPED。浮窗顯示／權限仍需操作驗證。
+
+
+## 0.3.1 修正
+
+TTS_FAILURE包含段號與enum原因（TOO_LONG／FORMAT／EMPTY_AUDIO／ENGINE_ERROR／TIMEOUT／INTERRUPTED），不含文字或引擎錯誤訊息。TTS_PHRASE_SPLIT表示單次超長合成改為更短片語重試；TTS_PCM_READY現在是短片語，不再以事件數當作整段數。PCM_SAMPLE新增BUFFERED_MS、PENDING_SEGMENTS、TTS_FAILURES、SPEECH_RATE（請求速度）。畫面分開顯示過載捨棄與合成失敗，避免舊版只顯示0 dropped卻已漏播。DataStore診斷開關flow去重，修正調整外觀／語速時反覆記APP_START並重置統計的雜訊。

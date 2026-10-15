@@ -15,7 +15,8 @@ import kotlin.math.abs
 
 /** Two small service-owned windows. No full-screen touch interception. */
 class CaptionOverlay(private val context: Context, private val open: () -> Unit,
-    private val stop: () -> Unit, private val pause: () -> Unit, private val failed: (String) -> Unit) {
+    private val stop: () -> Unit, private val pause: () -> Unit, private val failed: (String) -> Unit,
+    private val changeRate: (Float) -> Unit, private val changeGain: (Float) -> Unit) {
     private val manager = context.getSystemService(WindowManager::class.java)
     private val preferences = context.getSharedPreferences("overlay-placement", Context.MODE_PRIVATE)
     private var circle: TextView? = null
@@ -24,6 +25,8 @@ class CaptionOverlay(private val context: Context, private val open: () -> Unit,
     private var visible = true
     private var controls = false
     private var appearance = PresentationSettings()
+    private var translationGain = 1f
+    fun setTranslationGain(gain: Float) { translationGain = gain; render() }
     private var reading = false
     fun configure(settings: PresentationSettings) { appearance = settings; render() }
     private var latest = "等待下一段翻譯…"
@@ -90,9 +93,19 @@ class CaptionOverlay(private val context: Context, private val open: () -> Unit,
         }
         while (panel.childCount > 1) panel.removeViewAt(1)
         if (!controls) return
+        val controlList = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
+        panel.addView(ScrollView(context).apply { addView(controlList) }, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, minOf(dp(260), context.resources.displayMetrics.heightPixels / 3)))
+        controlList.addView(TextView(context).apply {
+            text = "語速 %.2f× · 譯音 %d%%".format(appearance.speechRate, (translationGain * 100).toInt()); setTextColor(Color.WHITE)
+        })
         fun button(label: String, action: () -> Unit) {
-            panel.addView(Button(context).apply { text = label; setOnClickListener { action() } })
+            controlList.addView(Button(context).apply { text = label; setOnClickListener { action() } })
         }
+        button("語速 +0.1（最高 2×）") { changeRate(0.1f) }
+        button("語速 −0.1") { changeRate(-0.1f) }
+        button("譯音 +10%（最高 200%）") { changeGain(0.1f) }
+        button("譯音 −10%") { changeGain(-0.1f) }
         button(if (reading) "允許拖曳字幕" else "閱讀模式（觸控穿透，文字略透明）") { reading = !reading; controls = false; render() }
         button("字幕加寬") { resize(dp(40)) }
         button("字幕縮窄") { resize(-dp(40)) }

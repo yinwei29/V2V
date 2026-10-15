@@ -12,7 +12,7 @@ class SubtitlePipeline(
     private val sessionId: String, private val language: String, private val provider: OpenAiProvider,
     private val repository: SessionRepository, scope: CoroutineScope,
     private val diagnostics: DiagnosticJournal? = null,
-    private val translated: (String) -> Unit = {},
+    private val translated: (TranscriptSegment) -> Unit = {},
 ) {
     private val frames = Channel<AudioFrame>(250)
     private val chunks = ChunkMailbox()
@@ -37,7 +37,7 @@ class SubtitlePipeline(
                 currentCoroutineContext().ensureActive()
                 segment = segment.copy(revision = 2, translatedText = translated.text, translationLatencyMs = (System.nanoTime() - began) / 1_000_000)
                 publish(segment)
-                if (repository.state.value.id == sessionId) translated(segment.translatedText)
+                if (repository.state.value.id == sessionId) translated(segment)
                 repository.update { if (it.id == sessionId) it.copy(providerTokens = translated.tokens?.let { tokens -> (it.providerTokens ?: 0) + tokens } ?: it.providerTokens) else it }
                 stage(StageState.IDLE, StageState.IDLE)
             }

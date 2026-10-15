@@ -17,13 +17,14 @@ data class SessionSnapshot(
     val asrState: StageState = StageState.NOT_CONFIGURED,
     val mtState: StageState = StageState.NOT_CONFIGURED,
     val ttsState: StageState = StageState.NOT_CONFIGURED,
-    val ttsError: String = "", val ttsDropped: Int = 0,
+    val ttsError: String = "", val ttsDropped: Int = 0, val ttsFailures: Int = 0,
+    val ttsRate: Float = 1f, val ttsBufferedMs: Long = 0, val ttsPending: Int = 0,
     val overlayError: String = "",
     val outputPaused: Boolean = false, val cloudEnabled: Boolean = false, val sourceLanguage: String = "en",
     val segments: List<TranscriptSegment> = emptyList(),
     val skippedSamples: Long = 0, val providerTokens: Long? = null,
     val providerError: String = "",
-    val message: String = "M0 / M1 音訊驗證版 · 尚未接入 ASR、翻譯及真實 TTS",
+    val message: String = "選擇其他 App 音訊、同意雲端翻譯後開始；需本次系統授權",
 )
 class SessionRepository {
     private val mutable = MutableStateFlow(SessionSnapshot())

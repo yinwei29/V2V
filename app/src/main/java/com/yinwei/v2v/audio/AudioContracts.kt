@@ -5,6 +5,7 @@ import kotlin.math.sqrt
 enum class Source { TEST_FILE, SYSTEM_PLAYBACK, OWNED_FILE }
 enum class SessionState { IDLE, REQUESTING_PERMISSION, STARTING, RUNNING, NO_SIGNAL, PAUSED, STOPPING, ERROR, STOPPED }
 enum class SourceStatus { UNKNOWN, AVAILABLE, NO_SIGNAL, UNSUPPORTED, BLOCKED_SOURCE_INTEGRATION, ERROR }
+enum class TranslationChannel { BOTH, LEFT, RIGHT }
 enum class MixMode { SPLIT, TRANSLATION_ONLY, MIX }
 enum class UiCapability { FULL_MIXER_CONTROL, TRANSLATION_OUTPUT_ONLY, CAPTURE_ONLY, UNSUPPORTED }
 enum class OriginalGainControlCapability { APP_OWNED, PROVIDER_CONTROLLED, PLATFORM_VERIFIED, UNAVAILABLE }
@@ -12,6 +13,7 @@ enum class OriginalGainControlCapability { APP_OWNED, PROVIDER_CONTROLLED, PLATF
 data class SourceCapabilities(
     val captureAvailable: Boolean = false,
     val stereoOutputSupported: Boolean = false,
+    val translationOutputAvailable: Boolean = false,
     val verificationEvidence: String = "NOT_TESTED_ON_DEVICE",
     val inputVerified: Boolean = false,
     val originalControl: OriginalGainControlCapability = OriginalGainControlCapability.UNAVAILABLE,
@@ -20,7 +22,7 @@ data class SourceCapabilities(
 ) {
     val originalOutputControlled: Boolean get() = originalControl != OriginalGainControlCapability.UNAVAILABLE
     val ui: UiCapability get() = if (originalControl == OriginalGainControlCapability.APP_OWNED && !externalDirectOutputPresent)
-        UiCapability.FULL_MIXER_CONTROL else UiCapability.CAPTURE_ONLY
+        UiCapability.FULL_MIXER_CONTROL else if (translationOutputAvailable) UiCapability.TRANSLATION_OUTPUT_ONLY else UiCapability.CAPTURE_ONLY
 }
 
 /** PCM16 mono, immutable by convention. Producer allocates; consumers must not retain beyond consume(). */
@@ -40,4 +42,10 @@ data class MixSettings(
     val originalGain: Float = 0.2f,
     val translationGain: Float = 1f,
     val swap: Boolean = false,
+    val translationChannel: TranslationChannel = TranslationChannel.BOTH,
 )
+
+/** External direct playback cannot be controlled. Route only V2V's translation branch. */
+fun MixSettings.forExternalOutput(): MixSettings = copy(originalGain = 0f,
+    mode = if (translationChannel == TranslationChannel.BOTH) MixMode.TRANSLATION_ONLY else MixMode.SPLIT,
+    swap = translationChannel == TranslationChannel.RIGHT)

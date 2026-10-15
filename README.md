@@ -1,8 +1,15 @@
 # V2V · Live Audio Translator
 
-Android 10+。目前 **0.3.0-speech-overlay-preview**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
+Android 10+。目前 **0.3.1-speech-fix**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
 
 > 使用者已確認 M2 主畫面可見原文與翻譯；M2 CircleCI #2 success。此版加入 M3/M4 工程預覽，語音引擎、浮窗與 Bluetooth 仍需裝置驗收，不能宣稱完整產品完成。離線辨識／翻譯模型尚未交付；YouTube／Zoom／Meet 仍按版本與裝置驗證。
+
+## 0.3.1 · 以其他 App 為主要流程
+
+- 長譯文分成短句接續合成，避免舊版超過10秒時整段漏播。三段待播與10秒PCM上限保留，PCM滿先等播放釋出；真正過載與合成失敗分別計數。
+- 語速0.75–2×、可關閉的自動追趕、譯音增益0–200%；引擎實際速度與音壓需裝置驗證。
+- 浮窗可直接加減語速與譯音增益；初始來源改為其他App。外部來源可選V2V譯音雙耳／左／右，不能操控來源App的原聲、單獨靜音或隔離它的聲道。
+- Samsung可手動嘗試 [Sound Assistant 個別應用程式音量](https://galaxystore.samsung.com/detail/com.samsung.android.soundassistant)，來源先調低、V2V保持較高。部分機型不支援；會議／擷取是否受連動影響仍需實測。App不宣稱已透過該設定取得原聲控制能力。
 
 ## 測試者操作
 
@@ -28,7 +35,7 @@ AGP 8.9.2 / Kotlin 2.1.20 / Gradle 8.13 / Java 17+ / compile & target SDK35 / mi
 ./scripts/package-apk.sh
 ```
 
-APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.3.0-speech-overlay-preview-debug.apk，SHA-256 見 deliverables/SHA256SUMS。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
+APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.3.1-speech-fix-debug.apk，SHA-256 見 deliverables/SHA256SUMS。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
 
 ## CircleCI
 

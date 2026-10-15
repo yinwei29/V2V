@@ -21,28 +21,3 @@ object SpeechPcm {
         }
     }
 }
-
-/** Bounded playback storage; never truncates an utterance to make room. */
-class SpeechBuffer {
-    private val queue = ArrayDeque<ShortArray>()
-    private var offset = 0
-    private var samples = 0
-    @Synchronized fun offer(pcm: ShortArray): Boolean {
-        if (queue.size >= 3 || pcm.size > 480000 - samples) return false
-        if (pcm.isNotEmpty()) { queue.addLast(pcm); samples += pcm.size }
-        return true
-    }
-    @Synchronized fun take(size: Int): ShortArray = ShortArray(size).also { out ->
-        var written = 0
-        while (written < size && queue.isNotEmpty()) {
-            val first = queue.first()
-            val count = minOf(size - written, first.size - offset)
-            first.copyInto(out, written, offset, offset + count)
-            written += count; offset += count; samples -= count
-            if (offset == first.size) { queue.removeFirst(); offset = 0 }
-        }
-    }
-    @Synchronized fun clear() { queue.clear(); offset = 0; samples = 0 }
-    @Synchronized fun utterances() = queue.size
-    @Synchronized fun hasAudio() = samples > 0
-}

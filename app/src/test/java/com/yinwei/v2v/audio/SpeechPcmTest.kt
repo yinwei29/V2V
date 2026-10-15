@@ -17,21 +17,4 @@ class SpeechPcmTest {
     @Test(expected = IllegalArgumentException::class) fun rejectsUnsupportedDownsampling() {
         SpeechPcm.decode(bytes(0, 0), 96000, 1)
     }
-    @Test fun bufferBoundsAndClearPreventOldPlayback() {
-        val buffer = SpeechBuffer()
-        assertTrue(buffer.offer(ShortArray(480000) { 123 }))
-        assertFalse(buffer.offer(shortArrayOf(8)))
-        assertArrayEquals(shortArrayOf(123, 123), buffer.take(2))
-        buffer.clear()
-        assertFalse(buffer.hasAudio())
-        assertArrayEquals(shortArrayOf(0, 0), buffer.take(2))
-    }
-    @Test fun bufferMaintainsFifoAndThreeUtteranceLimit() {
-        val buffer = SpeechBuffer()
-        assertTrue(buffer.offer(shortArrayOf(1, 2)))
-        assertTrue(buffer.offer(shortArrayOf(3)))
-        assertTrue(buffer.offer(shortArrayOf(4)))
-        assertFalse(buffer.offer(shortArrayOf(5)))
-        assertArrayEquals(shortArrayOf(1, 2, 3, 4, 0), buffer.take(5))
-    }
 }

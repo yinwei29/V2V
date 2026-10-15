@@ -58,7 +58,7 @@ class SessionController(private val context: Context, private val repository: Se
             if (!external || provider != null) { output = PcmOutput(); activeOutput = output }
             repository.update { it.copy(capabilities = it.capabilities.copy(
                 captureAvailable = true,
-                stereoOutputSupported = !external,
+                stereoOutputSupported = output != null, translationOutputAvailable = output != null,
                 verificationEvidence = if (external) "AudioRecord initialized; source content and physical device still unverified"
                     else "48k stereo AudioTrack initialized; physical channel isolation still unverified",
             )) }
@@ -79,7 +79,7 @@ class SessionController(private val context: Context, private val repository: Se
                     val t = if (fixtureMode) ShortArray(pcm.size) { translated[(offset + it) % translated.size] } else speech?.take(pcm.size) ?: ShortArray(pcm.size)
                     if (fixtureMode) { offset = (offset + pcm.size) % original.size }
                     if (!outputPaused()) {
-                        val mixed = mixer.render(if (external) ShortArray(pcm.size) else pcm, t, if (external) mix().copy(mode = MixMode.TRANSLATION_ONLY) else mix())
+                        val mixed = mixer.render(if (external) ShortArray(pcm.size) else pcm, t, if (external) mix().forExternalOutput() else mix())
                         output.write(mixed)
                     } else if (!external) delay(20)
                 }
@@ -96,6 +96,7 @@ class SessionController(private val context: Context, private val repository: Se
                         sourceStatus = if (silent) SourceStatus.NO_SIGNAL else if (verified) SourceStatus.AVAILABLE else SourceStatus.UNKNOWN,
                         capabilities = previous.capabilities.copy(inputVerified = verified,
                             reason = if (external && verified) "曾收到非靜音 PCM；來源內容、版本與原聲控制仍未驗證" else previous.capabilities.reason),
+                        ttsBufferedMs = speech?.bufferedMs() ?: 0, ttsPending = speech?.pending() ?: 0,
                         level = level, frames = sequence, asrSamples = probe.samples, elapsedMs = now - began,
                         route = output?.route ?: "擷取模式不重播來源副本；語音由 Android 離線引擎合成",
                         underruns = output?.underruns ?: 0,

@@ -15,7 +15,7 @@ class StereoMixer(private val sampleRate: Int = 48000, rampMs: Int = 50) {
 
     fun render(original: ShortArray, translation: ShortArray, config: MixSettings): ShortArray {
         require(original.size == translation.size)
-        require(config.originalGain in 0f..1f && config.translationGain in 0f..1f)
+        require(config.originalGain in 0f..1f && config.translationGain in 0f..2f)
         if (config != settings) {
             val o = config.originalGain
             val t = config.translationGain

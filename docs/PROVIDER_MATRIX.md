@@ -4,7 +4,7 @@
 |---|---|---|---|---|
 | ASR | OpenAI POST /v1/audio/transcriptions，whisper-1 | 48k mono PCM16 WAV；en / id / auto，<=10秒片段 | final only，無 partial、confidence、diarization 或逐字時間戳；時間由輸入樣本推算 | USER_REPORTED_SUBTITLES；語言品質與受控測試待驗收 |
 | MT | POST /v1/chat/completions，gpt-4o-mini | 指定台灣繁體中文 zh-TW | 不補事實／保留術語指令，獨立片段；無術語表與跨段上下文 UI；截斷回應不當成功 | USER_REPORTED_SUBTITLES；語言品質與受控測試待驗收 |
-| TTS | Android TextToSpeech.synthesizeToFile + PCM callbacks | 已安裝、非網路 zh-TW voice；PCM16 mono/stereo 8–48kHz → mono48k | 單一 mixer / AudioTrack，語速0.75–1.5；缺語音降級字幕，格式不支援明示錯誤，不降採樣 | M3 工程預覽；NOT_TESTED_ON_DEVICE |
+| TTS | Android TextToSpeech.synthesizeToFile + PCM callbacks | 已安裝、非網路 zh-TW voice；PCM16 mono/stereo 8–48kHz → mono48k | 單一 mixer / AudioTrack，語速0.75–2；缺語音降級字幕，格式不支援明示錯誤，不降採樣 | M3 工程預覽；NOT_TESTED_ON_DEVICE |
 | 離線 | 無 | 未支援 | 不自動回退或偷偷改供應商 | M5 未完成 |
 
 官方文件已於 2026-10-15 線上讀取：
@@ -21,3 +21,6 @@ HTTPS 固定 endpoint、15秒 connect / 30秒 read / 40秒 call timeout、不跟
 
 
 TTS 僅接收已完成 final 翻譯。合成中、等候合成與 PCM 待播合計最多3段，已產生待播PCM最多10秒；不截斷一段填滿queue，過長或超載捨棄譯音而保留字幕。採線性插值上採樣；48k直接通過，超過48k的引擎格式明確拒絕，沒有未驗證的降採樣支援。預設只選離線 zh-TW voice，語音包由使用者在系統設定安裝。引擎需要的暫存WAV位於私有cache，完成／取消刪除，程序被殺後下次啟動清理。沒有直接呼叫 speak()，不建立第二個播放器。
+
+
+0.3.1：一個final段拆多個短句，順序合成與有界PCM等待，容量上限以原始翻譯段計數，短句數不占額外翻譯段名額。聲線仍為Android離線zh-TW，未新增雲端TTS。外部來源新增譯音聲道與200%增益，來源App直出原聲不受控制；不能因此解除完整來源整合BLOCKED狀態。

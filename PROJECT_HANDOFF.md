@@ -1,31 +1,26 @@
-# PROJECT_HANDOFF · 2026-10-15
+# PROJECT_HANDOFF · 0.3.1-speech-fix
 
-版本 **0.3.0-speech-overlay-preview / versionCode4**。使用者已完成 CircleCI 設定；M2 bdfdcc1 的 [CircleCI #2](https://circleci.com/gh/yinwei29/V2V/2) 已success。使用者已確認原文與翻譯字幕，本次新增播報與浮窗，不將此回報誤判為ASR/MT完全失敗。
+使用者主流程為其他App（YouTube／Zoom／Google Meet）；優先背景浮窗操作，不再以owned WAV為主要建議。M3遠端045f099已通過CircleCI #3。本版修正漏播、2×語速、200%譯音增益與外部譯音聲道控制；沒有宣稱能靜音其他App原聲。
 
-## 本次交付
+## 變更
 
-- Android離線zh-TW TTS，以synthesizeToFile的PCM callbacks取得音訊，PCM16 8–48k mono/stereo轉mono48k，進既有單一mixer/AudioTrack；缺語音／格式／超長明示錯誤並保留字幕。
-- 語音等待、合成中、PCM待播合計上限3段，PCM最多10秒；暫停／關閉清除舊語音，停止取消合成、刪私有暫存；程序被殺後下次啟動清殘留。
-- 服務持有浮動小圈圈與字幕，移動／吸邊／寬度／閱讀與調整模式，隱藏／通知恢復／開主畫面／停止。上層顯示權限有明確入口與拒絕降級。
-- DataStore保存播報開關、語速、字幕字級／行數／背景alpha；座標與寬度私有保存。普通模式黑描邊白字不隨背景alpha變；Android12+閱讀模式因系統觸控安全上限而降低整窗alpha。
-- 耳機移除pause/flush輸出、清queue，ASR/MT繼續，使用者確認恢復；未宣稱OEM零瞬間外洩。
-- 原有主畫面字幕固定顯示、前景可見metadata事件、短chunk有限backlog、TTS PCM ready與drop事件。log不含音訊／字幕／Key。
+舊版完整譯文若超10秒會整段TTS_ERROR，畫面仍顯示0 dropped。現按<=18 code points分短句合成，第一片可先播；PCM滿等待釋放，超長單片再分短重試。三個翻譯段總上限與10秒PCM容量保留，過載與合成失敗分開計數。有界自動追趕依長度／時長／積壓推算，基準0.75–2×，可關閉，無摘要／省略字幕。
 
-## 驗證與APK
+外部模式新增V2V譯音雙耳／左／右、0–200%增益；不重播來源PCM，來源App直出原聲仍不受控制。浮動控制中能直接加減語速與譯音增益，控制清單可捲動。初始來源改為SYSTEM_PLAYBACK。原有owned來源完整mixer維持。Android引擎仍只選離線zh-TW，不新增雲端TTS。
 
-本機 build / 37 tests / lint通過，0 errors / 7 warnings；debug v2簽章通過。證據 docs/evidence/m3/；詳細 docs/TEST_REPORT.md。
+SettingsStore flow去重，修正設定改動反覆APP_START的log雜訊。TTS_FAILURE、TTS_PHRASE_SPLIT、逐片PCM ready及queue／rate／failure metrics皆不含字幕、Key或原始音訊。停止／暫停／關閉播報清queue並讓舊callback失效。
 
-APK `deliverables/V2V-0.3.0-speech-overlay-preview-debug.apk`，本機 SHA-256 `e2878e75b8199fe3ae0f5498344a1348e7bb445692e226e1e503f9d2b030dd98`。CircleCI會使用CI自己的debug key與建置環境，下載時以其Artifacts內SHA256SUMS為準，不比較本機APK checksum。
+## 驗證與交付
 
-## 使用者手動設定（已提早告知）
+本機 build/test/lint成功（2m1s），43項單元測試全過，lint0 errors/8 warnings，debug APK v2簽章通過。詳見 docs/TEST_REPORT.md 與 docs/evidence/speech-fix/。
+APK：deliverables/V2V-0.3.1-speech-fix-debug.apk，本機SHA256：149808fef133881780472ec8fa1c99d018b11e1f22a8d88481abee04e3e9fc4f。CircleCI的APK用該次Artifacts內SHA256SUMS；優先使用同CI簽章更新，卸載會刪Key與設定。
 
-1. CircleCI不用重設，也不放OpenAI Key。新版推送main後自動建置，Artifacts下載同來源APK以延續簽章；卸載會失去Key與設定，先匯出Log。
-2. 透過「設定浮動字幕權限」開啟顯示在其他應用程式上層，再回App開始／顯示浮窗。
-3. 若顯示沒有離線台灣中文聲線，進「Android文字轉語音設定」安裝語音包／選引擎，再停止並重啟工作階段。無聲先看TTS錯誤與譯音音量，不重設已成功的OpenAI Key。
-4. 測短句播報與切換其他App浮窗，再測耳機拔除／接回、停止／重啟與匯出Log。操作細節 docs/SPEECH_AND_OVERLAY.md。
+## 手動設定與限制
 
-## 尚待驗收與後續
+- CircleCI不需重設，main更新自動建置；API Key只留App內。
+- 浮窗權限既已授權不需重設；語音引擎不需因本次問題更換，先更新再測。
+- Samsung可試官方Sound Assistant的Individual application volume：來源App先調低，V2V維持較高；機型與會議／擷取是否相容需測，未經證實不可升級原聲控制能力。來源調低後若無訊號先恢復。
+- 其他App實際可擷取性、2×實際速度、TTS漏播改善、防回灌、Bluetooth、鎖屏、30分鐘均需真機測，Zoom/Meet不得僅因MediaProjection成功就標支援。
+- 離線ASR/MT、模型管理、歷史/SRT、來源整合授權、完整外觀設定及穩定性後續；完整產品仍未完成。
 
-M3/M4為工程預覽，Android TTS、浮窗、實際聲道／防回灌、Bluetooth、旋轉、鎖屏與30分鐘均NOT_TESTED_ON_DEVICE。完整色票／行距／描邊設定、來源授權整合、離線辨識與翻譯、模型管理、術語／上下文、歷史與SRT、穩定性未完成。外部原聲無控制證據，完整目標仍blocked，不以字幕與合成API接上便宣稱全功能完成。
-
-本機前次M2文件commit c212d10 與遠端 bdfdcc1 具有相同tree，但commit不同；本次以遠端main為parent使用GitHub API fast-forward，禁止用本機舊history強推覆蓋。
+遠端main與本機history先前使用不同commit但相同tree。本次以遠端045f099為parent、ad90a5bef6f8a02f04007a5f1cc5cda27599f3fb為base tree fast-forward更新，不強推本機history。

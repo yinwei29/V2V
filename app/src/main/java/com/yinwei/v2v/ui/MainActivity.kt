@@ -169,7 +169,7 @@ private fun AppScreen(state: SessionSnapshot, mix: MixSettings, presentation: co
     pickFile: () -> Unit, start: (Source, Boolean, String) -> Unit, command: (String) -> Unit, save: (MixSettings) -> Unit,
     diagnostics: Diagnostics, logEnabled: Boolean, setLogEnabled: (Boolean) -> Unit, logNotice: String, logBusy: Boolean,
     exportLog: () -> Unit, shareLog: () -> Unit) {
-    var sourceName by rememberSaveable { mutableStateOf(Source.TEST_FILE.name) }
+    var sourceName by rememberSaveable { mutableStateOf(Source.SYSTEM_PLAYBACK.name) }
     val active = state.state in setOf(SessionState.STARTING, SessionState.RUNNING, SessionState.NO_SIGNAL, SessionState.PAUSED, SessionState.STOPPING, SessionState.REQUESTING_PERMISSION)
     val source = if (active) state.source else Source.valueOf(sourceName)
     var tab by rememberSaveable { mutableIntStateOf(0) }
@@ -229,7 +229,8 @@ private fun AppScreen(state: SessionSnapshot, mix: MixSettings, presentation: co
                         enabled = state.state != SessionState.STOPPING && (active || ((source != Source.OWNED_FILE || hasFile) && (!consent || configured || source == Source.TEST_FILE))),
                         modifier = Modifier.fillMaxWidth().height(52.dp)) { Text(if (active) "停止工作階段" else "開始") }
                     if (active && !state.outputPaused) OutlinedButton(onClick = { command(TranslationForegroundService.PAUSE) }) { Text("暫停本 APP 播報（字幕持續）") }
-                    Text("播報：${state.ttsState} · 已跳過 ${state.ttsDropped} 段（過長／過載）")
+                    Text("播報：${state.ttsState} · 過載跳過 ${state.ttsDropped} 段 · 合成失敗 ${state.ttsFailures} 段")
+                    Text("待播 ${state.ttsPending} 段 · 已合成音訊 %.1f 秒 · 本句語速 %.2f×".format(state.ttsBufferedMs / 1000.0, state.ttsRate))
                     if (state.ttsError.isNotBlank()) Text(state.ttsError, color = MaterialTheme.colorScheme.error)
                     OutlinedButton(onClick = { command("ttsSettings") }) { Text("Android 文字轉語音設定") }
                     Text("首次浮窗設定：開啟上層顯示權限 → 返回本 App → 開始後按顯示浮窗。")
@@ -251,8 +252,10 @@ private fun AppScreen(state: SessionSnapshot, mix: MixSettings, presentation: co
                 }
                 1 -> {
                     Row { Switch(checked = presentation.speechEnabled, onCheckedChange = { savePresentation(presentation.copy(speechEnabled = it)) }); Text("播報翻譯", Modifier.padding(12.dp)) }
-                    Text("語速 %.2f×".format(presentation.speechRate))
-                    Slider(value = presentation.speechRate, onValueChange = { savePresentation(presentation.copy(speechRate = it)) }, valueRange = 0.75f..1.5f)
+                    Row { Switch(checked = presentation.autoCatchUp, onCheckedChange = { savePresentation(presentation.copy(autoCatchUp = it)) }); Text("自動追趕（最多 2×）", Modifier.padding(12.dp)) }
+                    Text("長譯文會分短句接續播報；追趕不會摘要或改寫字幕。字幕先顯示，播報仍需朗讀時間。", style = MaterialTheme.typography.bodySmall)
+                    Text("基準語速 %.2f×".format(presentation.speechRate))
+                    Slider(value = presentation.speechRate, onValueChange = { savePresentation(presentation.copy(speechRate = it)) }, valueRange = 0.75f..2f)
                     Text("浮動字幕字體 ${presentation.captionSize.toInt()}sp")
                     Slider(value = presentation.captionSize, onValueChange = { savePresentation(presentation.copy(captionSize = it)) }, valueRange = 14f..30f)
                     Text("字幕背景 ${(presentation.backgroundOpacity * 100).toInt()}%（文字保持不透明）")
@@ -261,21 +264,34 @@ private fun AppScreen(state: SessionSnapshot, mix: MixSettings, presentation: co
                     Slider(value = presentation.captionLines.toFloat(), onValueChange = { savePresentation(presentation.copy(captionLines = it.toInt())) }, valueRange = 2f..6f, steps = 3)
                     Text("音訊混音器", style = MaterialTheme.typography.titleLarge)
                     Text(if (full) "可控原聲進單一 stereo AudioTrack。只有測試音檔有 660Hz 譯音 fixture；雲端翻譯使用 Android 離線語音引擎。"
-                        else "外部來源只擷取，不重播副本；來源 APP 可能仍有原聲。")
-                    MixMode.entries.forEach { mode -> Choice(when (mode) {
-                        MixMode.SPLIT -> "左譯音 / 右原聲"
-                        MixMode.TRANSLATION_ONLY -> "只聽譯音"
-                        MixMode.MIX -> "雙聲混音"
-                    }, "50ms ramp / crossfade", mix.mode == mode, full) { save(mix.copy(mode = mode)) } }
-                    Text("原聲 ${(if (mix.mode == MixMode.TRANSLATION_ONLY) 0 else (mix.originalGain * 100).toInt())}%")
-                    Slider(value = if (mix.mode == MixMode.TRANSLATION_ONLY) 0f else mix.originalGain,
-                        onValueChange = { save(mix.copy(originalGain = it)) }, enabled = full && mix.mode != MixMode.TRANSLATION_ONLY)
-                    if (mix.mode == MixMode.TRANSLATION_ONLY) Text("此模式原聲鎖定 0；切回 MIX / SPLIT 保留先前增益。辨識輸入不受音量影響。")
+                        else "其他 App 的原聲仍由該 App 直接播放，V2V 無法靜音或重新分配它的左右聲道。下方只控制 V2V 譯音；完整混音／只聽翻譯請改用由 V2V 播放的授權 WAV。")
+                    if (full) {
+                        MixMode.entries.forEach { mode -> Choice(when (mode) {
+                            MixMode.SPLIT -> "左譯音 / 右原聲"
+                            MixMode.TRANSLATION_ONLY -> "只聽譯音"
+                            MixMode.MIX -> "雙聲混音"
+                        }, "50ms ramp / crossfade", mix.mode == mode, full) { save(mix.copy(mode = mode)) } }
+                        Text("原聲 ${(if (mix.mode == MixMode.TRANSLATION_ONLY) 0 else (mix.originalGain * 100).toInt())}%")
+                        Slider(value = if (mix.mode == MixMode.TRANSLATION_ONLY) 0f else mix.originalGain,
+                            onValueChange = { save(mix.copy(originalGain = it)) }, enabled = full && mix.mode != MixMode.TRANSLATION_ONLY)
+                        if (mix.mode == MixMode.TRANSLATION_ONLY) Text("此模式原聲鎖定 0；切回 MIX / SPLIT 保留先前增益。辨識輸入不受音量影響。")
+                    } else {
+                        Text("譯音輸出聲道（來源 App 原聲不變）")
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TranslationChannel.entries.forEach { channel ->
+                                FilterChip(selected = mix.translationChannel == channel, onClick = { save(mix.copy(translationChannel = channel)) },
+                                    label = { Text(when (channel) { TranslationChannel.BOTH -> "雙耳"; TranslationChannel.LEFT -> "左耳"; TranslationChannel.RIGHT -> "右耳" }) })
+                            }
+                        }
+                    }
                     Text("譯音 ${(mix.translationGain * 100).toInt()}%")
-                    Slider(value = mix.translationGain, onValueChange = { save(mix.copy(translationGain = it)) }, enabled = active || full)
-                    Row { Checkbox(checked = mix.swap, onCheckedChange = { save(mix.copy(swap = it)) }, enabled = full && mix.mode == MixMode.SPLIT); Text("交換左右", Modifier.padding(top = 12.dp)) }
-                    OutlinedButton(onClick = { save(mix.copy(mode = MixMode.MIX, originalGain = 0.2f, translationGain = 1f)) }, enabled = full) { Text("背景原聲 20 / 100") }
-                    OutlinedButton(onClick = { save(mix.copy(mode = MixMode.MIX, originalGain = 1f, translationGain = 1f)) }, enabled = full) { Text("雙聲 100 / 100（limiter）") }
+                    Slider(value = mix.translationGain, onValueChange = { save(mix.copy(translationGain = it)) }, valueRange = 0f..2f)
+                    Text("譯音增益可達 200%；超過 100% 會限幅。其他 App 原聲無法由 V2V 單獨調低；可手動降低手機媒體音量，再補強譯音。", style = MaterialTheme.typography.bodySmall)
+                    if (full) {
+                        Row { Checkbox(checked = mix.swap, onCheckedChange = { save(mix.copy(swap = it)) }, enabled = full && mix.mode == MixMode.SPLIT); Text("交換左右", Modifier.padding(top = 12.dp)) }
+                        OutlinedButton(onClick = { save(mix.copy(mode = MixMode.MIX, originalGain = 0.2f, translationGain = 1f)) }, enabled = full) { Text("背景原聲 20 / 100") }
+                        OutlinedButton(onClick = { save(mix.copy(mode = MixMode.MIX, originalGain = 1f, translationGain = 1f)) }, enabled = full) { Text("雙聲 100 / 100（limiter）") }
+                    }
                     Text("軟體 stereo PCM 不保證 Bluetooth/HFP 的實際左右隔離。", style = MaterialTheme.typography.bodySmall)
                 }
                 else -> {

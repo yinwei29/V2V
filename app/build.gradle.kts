@@ -10,8 +10,8 @@ android {
         applicationId = "com.yinwei.v2v"
         minSdk = 29
         targetSdk = 35
-        versionCode = 4
-        versionName = "0.3.0-speech-overlay-preview"
+        versionCode = 5
+        versionName = "0.3.1-speech-fix"
     }
     buildFeatures { compose = true; buildConfig = true }
     compileOptions {

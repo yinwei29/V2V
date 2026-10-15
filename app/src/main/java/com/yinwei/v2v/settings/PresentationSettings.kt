@@ -6,4 +6,5 @@ data class PresentationSettings(
     val captionSize: Float = 18f,
     val backgroundOpacity: Float = 0.55f,
     val captionLines: Int = 4,
+    val autoCatchUp: Boolean = true,
 )
