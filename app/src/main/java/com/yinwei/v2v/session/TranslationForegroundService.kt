@@ -90,6 +90,11 @@ class TranslationForegroundService : Service() {
         val fileUri = intent.getStringExtra("fileUri")?.let(android.net.Uri::parse)
         val source = if (external) Source.SYSTEM_PLAYBACK else if (fileUri != null) Source.OWNED_FILE else Source.TEST_FILE
         val cloud = intent.getBooleanExtra("cloudConsent", false) && source != Source.TEST_FILE
+        if (!cloud && source != Source.TEST_FILE) {
+            repository.update { it.copy(state = SessionState.ERROR,
+                message = "尚未同意雲端辨識與翻譯；請在翻譯頁勾選音訊授權（僅需一次）後重新開始，本次沒有擷取或傳送") }
+            stopSelf(); return
+        }
         val language = intent.getStringExtra("language") ?: "en"
         if (language !in setOf("en", "id", "auto")) { stopSelf(); return }
         val selectedProvider = CloudProvider.parse(intent.getStringExtra("provider"))

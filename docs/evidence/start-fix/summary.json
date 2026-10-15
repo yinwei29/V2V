@@ -1,0 +1,20 @@
+{
+  "version": "0.5.1-start-fix",
+  "date": "2026-10-15",
+  "junit": {
+    "tests": 71,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Error": 0,
+    "Fatal": 0,
+    "Warning": 10
+  },
+  "build": "3m 24s",
+  "localApkChecksum": "ead9947df54058af86b665d78fbf42353539f0b3617c64732b05832274697332  V2V-0.5.1-start-fix-debug.apk",
+  "liveGeminiTested": false,
+  "androidDeviceTested": false,
+  "screenshotStaticCheck": "Compiled MainActivity contains no Window.addFlags call"
+}

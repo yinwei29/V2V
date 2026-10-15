@@ -1,3 +1,13 @@
+# 測試報告 · 0.5.1-start-fix
+
+2026-10-15。本機 assembleDebug / testDebugUnitTest / lintDebug 通過，71項測試，0 failure/error/skipped；完整驗證3m 24s，lint0 errors/fatal、10 warnings。原始輸出、JUnit與lint見evidence/start-fix/；前版結果保留於下方。APK checksum：`ead9947df54058af86b665d78fbf42353539f0b3617c64732b05832274697332  V2V-0.5.1-start-fix-debug.apk`。
+
+新增2項真實PreferenceDataStore檔案測試：首次預設未授權，勾選後結束scope並重開仍保留，切換Gemini／OpenAI不重設；手動取消後再次重開仍為false。原有69項完整回歸。編譯後MainActivity bytecode不再呼叫Window.addFlags，來源中沒有FLAG_SECURE。截圖及Key欄位遮蔽的實際外觀仍需Android手機驗證；沒有宣稱做過裝置截圖測試。
+
+使用者這份Log最新Gemini工作階段CLOUD_ENABLED=0，沒有HTTP請求；較早的成功翻譯屬舊run，不能當Gemini成功證據。本次修正啟動與授權保存，沒有證據需要更換Gemini API／Key。真實Gemini雲端品質及Key可用性仍待啟用後手機測試。詳見CONSENT_AND_SCREENSHOTS.md。
+
+---
+
 # 測試報告 · 0.5.0-gemini
 
 2026-10-15。本機 assembleDebug / testDebugUnitTest / lintDebug 通過，69 項測試，0 failure/error/skipped；最後完整驗證 2m 57s。lint 0 errors/fatal，10 warnings。原始輸出、JUnit及lint見 evidence/gemini/；前版報告與證據保留於下方與 evidence/studio/。本版 CircleCI 請以 main 的本次提交狀態為準。

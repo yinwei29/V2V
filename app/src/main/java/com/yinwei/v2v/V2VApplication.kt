@@ -23,7 +23,7 @@ class V2VApplication : Application() {
             single { SessionRepository() }
             single { HistoryStore(File(androidContext().noBackupFilesDir, "history/translations.json")) }
             factory { SessionController(get(), get(), get(), get()) }
-            single { SettingsStore(get()) }
+            single { SettingsStore(get<android.content.Context>()) }
             single { ApiKeyStore(get()) }
             single { Diagnostics(get()) }
         }) }

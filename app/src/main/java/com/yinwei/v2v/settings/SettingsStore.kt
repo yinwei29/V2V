@@ -2,6 +2,7 @@ package com.yinwei.v2v.settings
 
 import com.yinwei.v2v.providers.CloudProvider
 import android.content.Context
+import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import com.yinwei.v2v.audio.*
@@ -11,8 +12,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import java.io.IOException
 
 private val Context.dataStore by preferencesDataStore(name = "settings")
-class SettingsStore(context: Context) {
-    private val store = context.dataStore
+class SettingsStore internal constructor(private val store: DataStore<Preferences>) {
+    constructor(context: Context) : this(context.dataStore)
     private val mode = stringPreferencesKey("mode")
     private val original = floatPreferencesKey("original_gain")
     private val translation = floatPreferencesKey("translation_gain")
@@ -43,6 +44,9 @@ class SettingsStore(context: Context) {
         it[floatPreferencesKey("caption_opacity")] = s.backgroundOpacity.coerceIn(0f, 1f)
         it[intPreferencesKey("caption_lines")] = s.captionLines.coerceIn(2, 6)
     } }
+    val cloudConsent = store.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { it[booleanPreferencesKey("cloud_consent")] ?: false }.distinctUntilChanged()
+    suspend fun saveCloudConsent(enabled: Boolean) { store.edit { it[booleanPreferencesKey("cloud_consent")] = enabled } }
     val cloudProvider = store.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { CloudProvider.parse(it[stringPreferencesKey("cloud_provider")]) ?: CloudProvider.OPENAI }.distinctUntilChanged()
     suspend fun saveCloudProvider(provider: CloudProvider) { store.edit { it[stringPreferencesKey("cloud_provider")] = provider.name } }

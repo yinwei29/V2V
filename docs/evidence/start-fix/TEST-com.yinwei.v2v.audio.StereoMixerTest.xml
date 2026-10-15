@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yinwei.v2v.audio.StereoMixerTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-15T14:11:51.992Z" hostname="e9af72b1bf16" time="0.114">
+  <properties/>
+  <testcase name="rapidModeChangesRampWithoutDiscontinuityOrReplaying" classname="com.yinwei.v2v.audio.StereoMixerTest" time="0.012"/>
+  <testcase name="silentTranslationDoesNotChangeAsrInput" classname="com.yinwei.v2v.audio.StereoMixerTest" time="0.003"/>
+  <testcase name="splitIsolatesAndSwapsDistinctFrequencies" classname="com.yinwei.v2v.audio.StereoMixerTest" time="0.013"/>
+  <testcase name="translationOnlySuppressesOriginalInBothEars" classname="com.yinwei.v2v.audio.StereoMixerTest" time="0.005"/>
+  <testcase name="limiterIsBoundedContinuousAndDoesNotHardClip" classname="com.yinwei.v2v.audio.StereoMixerTest" time="0.003"/>
+  <testcase name="originalGainIsRestoredByChangingMode" classname="com.yinwei.v2v.audio.StereoMixerTest" time="0.0"/>
+  <testcase name="externalCapabilityNeverGrantsOriginalControl" classname="com.yinwei.v2v.audio.StereoMixerTest" time="0.001"/>
+  <testcase name="downmixRetainsHeadroomAndDocumentsPhaseCancellation" classname="com.yinwei.v2v.audio.StereoMixerTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -9,7 +9,6 @@ import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.view.WindowManager
 import androidx.core.content.FileProvider
 import com.yinwei.v2v.diagnostics.*
 import java.io.File
@@ -108,8 +107,7 @@ class MainActivity : ComponentActivity() {
         pendingCloud = savedInstanceState?.getBoolean("cloud") ?: false
         pendingLanguage = savedInstanceState?.getString("language") ?: "en"
         pendingProvider = CloudProvider.parse(savedInstanceState?.getString("provider")) ?: CloudProvider.OPENAI
-        // Includes the credential form: keys never appear in screenshots or app-switcher previews.
-        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        // Screenshots are enabled at the user's request; credentials remain masked in the form.
         setContent {
             MaterialTheme(colorScheme = lightColorScheme(primary = Color(0xFF086B63), secondary = Color(0xFF486C7A),
                 background = Color(0xFFF4F7F8), surface = Color.White,
@@ -119,6 +117,8 @@ class MainActivity : ComponentActivity() {
                 val presentation by settings.presentation.collectAsStateWithLifecycle(com.yinwei.v2v.settings.PresentationSettings())
                 val storedProvider by settings.cloudProvider.collectAsStateWithLifecycle<CloudProvider?>(null)
                 val selectedProvider = storedProvider ?: return@MaterialTheme
+                val storedConsent by settings.cloudConsent.collectAsStateWithLifecycle<Boolean?>(null)
+                val cloudConsent = storedConsent ?: return@MaterialTheme
                 val archive by history.entries.collectAsStateWithLifecycle()
                 val historyError by history.error.collectAsStateWithLifecycle()
                 val logEnabled by settings.diagnosticsEnabled.collectAsStateWithLifecycle(true)
@@ -153,7 +153,8 @@ class MainActivity : ComponentActivity() {
                         }; historyNotice = "已清除翻譯紀錄" }
                         catch (_: Exception) { historyNotice = "清除失敗，請稍後重試" }
                         finally { historyBusy = false }
-                    } }, selectedProvider, { provider -> lifecycleScope.launch { settings.saveCloudProvider(provider) } })
+                    } }, selectedProvider, { provider -> lifecycleScope.launch { settings.saveCloudProvider(provider) } },
+                    cloudConsent, { enabled -> lifecycleScope.launch { settings.saveCloudConsent(enabled) } })
             }
         }
     }

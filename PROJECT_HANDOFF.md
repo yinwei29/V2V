@@ -1,25 +1,25 @@
-# PROJECT_HANDOFF · 0.5.0-gemini
+# PROJECT_HANDOFF · 0.5.1-start-fix
 
-使用者本次要求增加Gemini API。已新增OpenAI／Google Gemini切換、獨立Key、雲端同意與設定保存，延續0.4工作台／翻譯紀錄／響度增強及現有其他App音訊流程。CircleCI仍使用既有android-verify，不需雲端Key或帳號新設定。
+本次使用者回報Gemini無法翻譯並提供Log，接著明確要求音訊授權勾一次就記住、App內可以截圖。這三項要求均納入本版。CircleCI沿用android-verify，不需新手動設定。
 
-## 交付
+## 發現與修改
 
-- TranslationProvider介面與工廠；Gemini gemini-3.8-flash，固定GoogleHTTPS endpoint，x-goog-api-key header，先辨識後翻譯兩個獨立請求，結構化text回應；來源語言en/id/auto，zh-TW譯文。OpenAI API／模型保留。
-- 共用ProviderHttp：40秒call、取消涵蓋body讀取、成功body上限1MiB、429／5xx最多再試一次，1–8秒退避；不跟redirect、不記錄Key、字幕或HTTP正文。Gemini阻擋／非STOP／格式錯誤不產生成功字幕或播報。
-- ApiKeyStore保留既有OpenAI檔名provider-key.bin與alias v2v.provider.aes.v1；Gemini另有gemini-key.bin及v2v.gemini.aes.v1。各自儲存／移除，不互相覆蓋，均noBackup與AES-GCM。
-- DataStore保存所選引擎，Activity等載入後才顯示操作；開始請求固定provider至session，工作中不能切換；切換provider重設雲端同意與Key輸入欄位。服務檢查所選引擎有效與相應Key存在，錯誤不啟動擷取。SessionSnapshot與技術SESSION_START均記provider，TranscriptSegment使用實際模型description。
-- 主頁顯示目前引擎並可跳至設定切換；Key面板提供測試連線（僅查模型）。Gemini與OpenAI共用字幕、浮窗、紀錄及Android離線TTS，未新增雲端TTS或麥克風回退。
+最新0.5.0的Gemini session有非靜音PCM，但CLOUD_ENABLED=0，沒有HTTP／字幕發布；Log混有舊版成功工作階段，已按runId分辨。原因為未勾選仍可按開始翻譯，實際只做擷取，且同意僅存Compose狀態。本次沒有把這份Log當作API認證失敗，沒有更換模型或偷偷送測試音訊。原始使用者Log不提交Git。
 
-## 驗證／交付狀態
+cloud_consent現保存於DataStore，首次false；勾選一次後重開App／重開翻譯／切換provider皆保留，手動取消亦持久化。Activity等儲存狀態載入；未勾選停用開始並明示提示，沒有每次確認框。Key缺失可直接按主按鈕前往設定。服務拒絕未同意的非測試音訊啟動，測試tone仍可單獨驗證，按鈕標為音訊測試。Android系統本身的擷取同意不由此設定略過。
 
-本機69項單元測試及build/lint成功，最後2m 57s；lint0 errors/fatal、10 warnings。docs/evidence/gemini/、docs/TEST_REPORT.md記實際結果。APK deliverables/V2V-0.5.0-gemini-debug.apk，checksum `16bedb4654f25a6d59392835a8b25bd3208fb4649f894c174a05949d1e42fbf1  V2V-0.5.0-gemini-debug.apk`。本版CI以對應main提交查詢，不沿用舊版#5結果。
+依使用者要求移除Activity FLAG_SECURE，各頁允許截圖／app preview。已儲存Key不回顯，輸入仍密碼遮蔽；Key的AES-GCM／Keystore與Log不含字幕／Key等保護保留。
 
-## 需要使用者設定與待測
+## 驗證與交付
 
-在Google AI Studio建立Gemini API Key，手機設定→Google Gemini→儲存→測試連線，返回主頁重新同意雲端傳送。Key不傳聊天、不放Git／CI。原OpenAI Key不需重填。詳見docs/GEMINI_SETUP.md。
+本機71項測試、build/lint通過，完整3m 24s；lint0 errors/fatal、10 warnings。新增2項實際DataStore關閉重開／撤銷／provider切換測試。編譯bytecode檢查沒有Window.addFlags。docs/evidence/start-fix/及docs/TEST_REPORT.md為原始證據。
 
-沒有真實Gemini生成測試與Android裝置；模型權限／額度、語言品質／延遲、Key保存／切換／移除、浮窗／離線播報需手機驗證。加入Gemini無法解除YouTube／Zoom／Meet音訊擷取政策或單獨控制其他App原聲。既有藍牙路由、鎖屏、30分鐘、離線ASR／MT等仍待驗收或未實作。
+APK deliverables/V2V-0.5.1-start-fix-debug.apk，checksum `ead9947df54058af86b665d78fbf42353539f0b3617c64732b05832274697332  V2V-0.5.1-start-fix-debug.apk`。CI結果以本次main提交為準，不能沿用舊#6；實際提交與狀態記 /workspace/tooling/start-fix-github-upload.json。
 
-## Git注意
+## 手機驗收
 
-本機baseline e44a767，遠端baseline7f841f315610979ccd81e4a0c02c2738a978552d，tree同為366fe9c594236c2f47e64225089a761104d2a63a。本次用遠端parent建立等同本機tree的新commit並以expected SHA推main，禁止從舊本機history強推。遠端實際commit與CI結果另存 /workspace/tooling/gemini-github-upload.json。
+更新後主頁勾選音訊授權一次→開始→Log應CLOUD_ENABLED=1並出現HTTP事件；結束重開App應維持勾選，取消後重開應維持未勾，各頁可截圖。沒有Android真機／emulator，未證明實際Gemini Key／品質／延遲或截圖效果。既有其他App擷取政策、原聲不能獨立控制及裝置待測限制不變。詳細操作見docs/CONSENT_AND_SCREENSHOTS.md及docs/GEMINI_SETUP.md。
+
+## Git
+
+本機base d1ef69e403cbca2c46686c26d8518ff61289736a，遠端base332d09b9e0d427fb087b1658a7f64084ba7fb437，tree同為4d7f15366508a72d1536d4eb03aab06d42f1b539。本次以遠端parent建立與本機一致tree，expected SHA推main；不要用舊本機history強推。

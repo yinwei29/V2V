@@ -1,12 +1,18 @@
 # V2V · Live Audio Translator
 
-Android 10+。目前 **0.5.0-gemini**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
+Android 10+。目前 **0.5.1-start-fix**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
 
 > 使用者已確認 M2 主畫面可見原文與翻譯；M2 CircleCI #2 success。此版加入 M3/M4 工程預覽，語音引擎、浮窗與 Bluetooth 仍需裝置驗收，不能宣稱完整產品完成。離線辨識／翻譯模型尚未交付；YouTube／Zoom／Meet 仍按版本與裝置驗證。
 
-## 0.5 · Gemini API
+## 0.5.1 · 記住授權與允許截圖
 
-在「設定 → 引擎與金鑰」選擇 OpenAI 或 Google Gemini，各自加密保存 Key。Gemini 使用 gemini-3.8-flash，接收分段 WAV 辨識後翻譯成台灣繁中；字幕、紀錄、浮窗與離線播報共用既有流程。切換引擎需結束本次翻譯，並重新同意傳送給所選供應商。不自動切換供應商。設定與限制見 [GEMINI_SETUP](docs/GEMINI_SETUP.md)。
+音訊授權只需勾一次，會保存到裝置設定；重開App、重新翻譯及切換引擎都會保留，可手動取消。未勾選時明示提示並停用開始翻譯，不再誤啟動為只擷取音訊的模式；未設定Key時可直接前往設定。測試音訊仍可單獨使用。依使用者要求，App內各頁允許截圖，Key欄位仍遮蔽。
+
+Android本身的音訊／螢幕擷取授權仍依系統每次要求，這與App內保存的雲端同意不同。
+
+## Gemini API
+
+在「設定 → 引擎與金鑰」選擇 OpenAI 或 Google Gemini，各自加密保存 Key。Gemini 使用 gemini-3.8-flash，接收分段 WAV 辨識後翻譯成台灣繁中；字幕、紀錄、浮窗與離線播報共用既有流程。切換引擎需結束本次翻譯；音訊授權依已儲存的勾選套用。不自動切換供應商。設定與限制見 [GEMINI_SETUP](docs/GEMINI_SETUP.md)。
 
 ## 翻譯工作台
 
@@ -47,7 +53,7 @@ AGP 8.9.2 / Kotlin 2.1.20 / Gradle 8.13 / Java 17+ / compile & target SDK35 / mi
 ./scripts/package-apk.sh
 ```
 
-APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.5.0-gemini-debug.apk，SHA-256 見 deliverables/SHA256SUMS。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
+APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.5.1-start-fix-debug.apk，SHA-256 見 deliverables/SHA256SUMS。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
 
 ## CircleCI
 
@@ -57,6 +63,6 @@ cimg/android:2025.04 / medium，cache 使用 dependency lockfile 與 wrapper che
 
 ## 限制與文件
 
-Key 是 AES-GCM ciphertext，AES 金鑰在 Android Keystore；排除 backup / device transfer。Key 表單不保存到 saved state，Activity 禁止 screenshot / app preview。即時字幕仍保留最近200段於記憶體；使用者要求新增的翻譯紀錄另存手機私有目錄，可停用／匯出／清除，沒有SRT匯出。Log 是獨立的技術資訊，最多 3×512KiB，開關可持久化、可刪除。
+Key 是 AES-GCM ciphertext，AES 金鑰在 Android Keystore；排除 backup / device transfer。Key 表單不保存到 saved state，App 允許 screenshot / app preview，Key欄位仍以密碼遮蔽。即時字幕仍保留最近200段於記憶體；使用者要求新增的翻譯紀錄另存手機私有目錄，可停用／匯出／清除，沒有SRT匯出。Log 是獨立的技術資訊，最多 3×512KiB，開關可持久化、可刪除。
 
 無真機不能證明第三方擷取、Bluetooth 實體左右隔離、鎖屏、30分鐘與20次啟停。詳見 [PROJECT_HANDOFF](PROJECT_HANDOFF.md)、[TEST_REPORT](docs/TEST_REPORT.md)、[PROVIDER_MATRIX](docs/PROVIDER_MATRIX.md) 與來源矩陣。

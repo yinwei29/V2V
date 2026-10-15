@@ -81,18 +81,24 @@ private val CardShape = RoundedCornerShape(24.dp)
     diagnostics: Diagnostics, logEnabled: Boolean, setLogEnabled: (Boolean) -> Unit, logNotice: String, logBusy: Boolean,
     exportLog: () -> Unit, shareLog: () -> Unit, archive: List<HistoryEntry>, historyError: String, historyNotice: String,
     historyBusy: Boolean, exportHistory: () -> Unit, clearHistory: () -> Unit,
-    selectedProvider: CloudProvider, selectProvider: (CloudProvider) -> Unit) {
+    selectedProvider: CloudProvider, selectProvider: (CloudProvider) -> Unit,
+    cloudConsent: Boolean, saveCloudConsent: (Boolean) -> Unit) {
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var clearHistoryDialog by remember { mutableStateOf(false) }
     var sourceName by rememberSaveable { mutableStateOf(Source.SYSTEM_PLAYBACK.name) }
     var language by rememberSaveable { mutableStateOf("en") }
-    var consent by rememberSaveable(selectedProvider.name) { mutableStateOf(false) }
+    val consent = cloudConsent
     var configured by remember(selectedProvider) { mutableStateOf(false) }
+    var keysLoaded by remember(selectedProvider) { mutableStateOf(false) }
     var keyRefresh by remember { mutableIntStateOf(0) }
     val active = state.state in setOf(SessionState.STARTING, SessionState.RUNNING, SessionState.NO_SIGNAL, SessionState.PAUSED, SessionState.STOPPING, SessionState.REQUESTING_PERMISSION)
     val source = if (active) state.source else Source.valueOf(sourceName)
     val full = if (active) state.capabilities.ui == UiCapability.FULL_MIXER_CONTROL else source != Source.SYSTEM_PLAYBACK
-    LaunchedEffect(keyRefresh, selectedProvider) { configured = withContext(Dispatchers.IO) { keys.configured(selectedProvider) } }
+    LaunchedEffect(keyRefresh, selectedProvider) {
+        keysLoaded = false
+        configured = withContext(Dispatchers.IO) { keys.configured(selectedProvider) }
+        keysLoaded = true
+    }
     val names = listOf("翻譯", "紀錄", "聲音", "設定")
     val symbols = listOf(R.drawable.ic_captions, R.drawable.ic_history, R.drawable.ic_sound, R.drawable.ic_settings)
     Scaffold(containerColor = Color(0xFFF3F7F8), topBar = {
@@ -138,15 +144,33 @@ private val CardShape = RoundedCornerShape(24.dp)
                         0 -> {
                             CaptionHero(state, diagnostics) { tab = 1 }
                             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                Button(onClick = { if (active) command(TranslationForegroundService.STOP) else start(source, consent, language, selectedProvider) },
-                                    enabled = state.state != SessionState.STOPPING && (active || ((source != Source.OWNED_FILE || hasFile) && (!consent || configured || source == Source.TEST_FILE))),
+                                Button(onClick = {
+                                    when {
+                                        active -> command(TranslationForegroundService.STOP)
+                                        source == Source.TEST_FILE -> start(source, false, language, selectedProvider)
+                                        !configured -> tab = 3
+                                        !consent -> Unit
+                                        else -> start(source, true, language, selectedProvider)
+                                    }
+                                }, enabled = state.state != SessionState.STOPPING && (active ||
+                                    ((source != Source.OWNED_FILE || hasFile) && (source == Source.TEST_FILE ||
+                                        (keysLoaded && (!configured || consent))))),
                                     shape = RoundedCornerShape(18.dp), modifier = Modifier.weight(1f).height(56.dp)) {
-                                    Symbol(if (active) R.drawable.ic_stop else R.drawable.ic_play); Spacer(Modifier.width(10.dp)); Text(if (active) "結束翻譯" else "開始翻譯")
+                                    Symbol(if (active) R.drawable.ic_stop else R.drawable.ic_play); Spacer(Modifier.width(10.dp)); Text(when {
+                                        active && !state.cloudEnabled -> "結束音訊測試"
+                                        active -> "結束翻譯"
+                                        source == Source.TEST_FILE -> "開始音訊測試"
+                                        !configured -> "設定 API Key"
+                                        else -> "開始翻譯"
+                                    })
                                 }
                                 if (active) FilledTonalIconButton(onClick = { command(if (state.outputPaused) TranslationForegroundService.RESUME else TranslationForegroundService.PAUSE) }, modifier = Modifier.size(56.dp), shape = RoundedCornerShape(18.dp)) {
                                     Symbol(if (state.outputPaused) R.drawable.ic_play else R.drawable.ic_pause, if (state.outputPaused) "恢復播報" else "暫停播報")
                                 }
                             }
+                            if (!active && source != Source.TEST_FILE && !consent) Text(
+                                "請勾選下方音訊授權以啟用翻譯；只需勾選一次，之後開啟 App 會記住。",
+                                style = MaterialTheme.typography.bodySmall, color = Muted)
                             Panel("音訊與語言", R.drawable.ic_mic) {
                                 var sourceMenu by remember { mutableStateOf(false) }
                                 Box {
@@ -171,9 +195,10 @@ private val CardShape = RoundedCornerShape(24.dp)
                                 Text("翻譯成 繁體中文", style = MaterialTheme.typography.labelMedium, color = Teal)
                                 if (source != Source.TEST_FILE) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Checkbox(if (active) state.cloudEnabled else consent, { consent = it }, enabled = !active)
-                                        Text("我有權處理此音訊，並同意將音訊與文字送到 ${if (active) state.cloudProvider.label else selectedProvider.label} 翻譯（可能收費）。", style = MaterialTheme.typography.bodySmall)
+                                        Checkbox(if (active) state.cloudEnabled else consent, saveCloudConsent, enabled = !active)
+                                        Text("我有權處理此音訊，並同意將音訊與文字送到所選雲端引擎辨識及翻譯（目前：${if (active) state.cloudProvider.label else selectedProvider.label}，可能收費）。", style = MaterialTheme.typography.bodySmall)
                                     }
+                                    Text("記住此選擇，下次不需重勾；可隨時取消。", style = MaterialTheme.typography.bodySmall, color = Muted)
                                     if (!configured) TextButton(onClick = { tab = 3 }) { Symbol(R.drawable.ic_shield); Text(" 設定 API Key") }
                                     if (source == Source.SYSTEM_PLAYBACK) Text("其他 App 原聲仍由該 App 控制；會議音訊能否擷取需依 App 與系統測試。", style = MaterialTheme.typography.bodySmall, color = Muted)
                                 } else Text("測試音不是實際翻譯播報，不會傳到雲端。", style = MaterialTheme.typography.bodySmall, color = Muted)
