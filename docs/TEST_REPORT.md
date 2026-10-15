@@ -1,3 +1,13 @@
+# 測試報告 · 0.5.2-gemini-fix
+
+2026-10-15。本機assembleDebug / testDebugUnitTest / lintDebug通過，79項測試，0 failure/error/skipped；完整驗證3m 23s，lint0 errors/fatal、10 warnings。原始輸出及JUnit／lint見evidence/gemini-400/。本機checksum：`a7d6b98c25f67647ac6a1c69b63447e2b0033dfd59699b4b04f700af23418f99  V2V-0.5.2-gemini-fix-debug.apk`。
+
+新增8項：獨立Google discovery enum快照驗證實際送出的responseFormat.text.mimeType與thinkingLevel，並確認舊值application/json及low不在對應REST列舉；HTTP400 INVALID_ARGUMENT分類、Google ErrorInfo.API_KEY_INVALID優先辨認且不漏正文；超過64KiB失敗body丟棄並保留HTTP狀態；取消涵蓋失敗body讀取；其他Key限制／帳務／服務／專案／額度分類；任意錯誤message及未知reason不能變成Log字串。原有71項完整回歸，包括實際DataStore持久化、Gemini與OpenAI、語音與紀錄。
+
+新Log已CLOUD_ENABLED=1，ASR首個請求400；不同於第一份Log的未啟用。核對官方機器可讀定義後發現前版REST列舉值有誤並修正。沒有使用真實Key或Google生成服務，不能宣稱使用者帳號可用性及實際翻譯已驗收。首次真機測試仍須更新此版並啟用翻譯；若仍失敗，Log的PROVIDER_REASON有安全分類可供排查。記住勾選及允許截圖已包括在此版。
+
+---
+
 # 測試報告 · 0.5.1-start-fix
 
 2026-10-15。本機 assembleDebug / testDebugUnitTest / lintDebug 通過，71項測試，0 failure/error/skipped；完整驗證3m 24s，lint0 errors/fatal、10 warnings。原始輸出、JUnit與lint見evidence/start-fix/；前版結果保留於下方。APK checksum：`ead9947df54058af86b665d78fbf42353539f0b3617c64732b05832274697332  V2V-0.5.1-start-fix-debug.apk`。

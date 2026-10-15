@@ -1,0 +1,16 @@
+{
+  "source": "https://generativelanguage.googleapis.com/$discovery/rest?version=v1beta",
+  "retrieved": "2026-10-15",
+  "ThinkingConfig.thinkingLevel": [
+    "THINKING_LEVEL_UNSPECIFIED",
+    "MINIMAL",
+    "LOW",
+    "MEDIUM",
+    "HIGH"
+  ],
+  "TextResponseFormat.mimeType": [
+    "MIME_TYPE_UNSPECIFIED",
+    "APPLICATION_JSON",
+    "TEXT_PLAIN"
+  ]
+}

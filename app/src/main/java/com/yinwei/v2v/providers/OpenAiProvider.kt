@@ -10,7 +10,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 
-class ProviderFailure(val status: Int, message: String) : Exception(message)
+class ProviderFailure(val status: Int, message: String, val issue: ProviderIssue? = null) : Exception(message)
 data class TranslatedText(val text: String, val tokens: Long?)
 
 /** Fixed HTTPS endpoint. No HTTP logger, key in URL, or response body in errors. */

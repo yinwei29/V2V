@@ -1,10 +1,14 @@
 # V2V · Live Audio Translator
 
-Android 10+。目前 **0.5.1-start-fix**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
+Android 10+。目前 **0.5.2-gemini-fix**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
 
 > 使用者已確認 M2 主畫面可見原文與翻譯；M2 CircleCI #2 success。此版加入 M3/M4 工程預覽，語音引擎、浮窗與 Bluetooth 仍需裝置驗收，不能宣稱完整產品完成。離線辨識／翻譯模型尚未交付；YouTube／Zoom／Meet 仍按版本與裝置驗證。
 
-## 0.5.1 · 記住授權與允許截圖
+## 0.5.2 · Gemini REST 格式修正
+
+修正generateContent的REST列舉值：responseFormat.text.mimeType使用APPLICATION_JSON，thinkingConfig.thinkingLevel使用LOW。前版送出的MIME字串與小寫thinking不符Google discovery列舉定義，可能造成400。增加獨立官方enum契約測試，以及安全的參數／Key／專案錯誤分類；實際Google帳號仍需手機驗證。
+
+## 記住授權與允許截圖
 
 音訊授權只需勾一次，會保存到裝置設定；重開App、重新翻譯及切換引擎都會保留，可手動取消。未勾選時明示提示並停用開始翻譯，不再誤啟動為只擷取音訊的模式；未設定Key時可直接前往設定。測試音訊仍可單獨使用。依使用者要求，App內各頁允許截圖，Key欄位仍遮蔽。
 
@@ -53,7 +57,7 @@ AGP 8.9.2 / Kotlin 2.1.20 / Gradle 8.13 / Java 17+ / compile & target SDK35 / mi
 ./scripts/package-apk.sh
 ```
 
-APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.5.1-start-fix-debug.apk，SHA-256 見 deliverables/SHA256SUMS。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
+APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.5.2-gemini-fix-debug.apk，SHA-256 見 deliverables/SHA256SUMS。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
 
 ## CircleCI
 

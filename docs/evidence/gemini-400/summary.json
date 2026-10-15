@@ -1,0 +1,20 @@
+{
+  "version": "0.5.2-gemini-fix",
+  "date": "2026-10-15",
+  "junit": {
+    "tests": 79,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Error": 0,
+    "Fatal": 0,
+    "Warning": 10
+  },
+  "build": "3m 23s",
+  "localApkChecksum": "a7d6b98c25f67647ac6a1c69b63447e2b0033dfd59699b4b04f700af23418f99  V2V-0.5.2-gemini-fix-debug.apk",
+  "liveGeminiTested": false,
+  "androidDeviceTested": false,
+  "restContract": "Official v1beta discovery enums APPLICATION_JSON / LOW"
+}

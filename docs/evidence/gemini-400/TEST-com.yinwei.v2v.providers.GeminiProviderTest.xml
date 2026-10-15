@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yinwei.v2v.providers.GeminiProviderTest" tests="16" skipped="0" failures="0" errors="0" timestamp="2026-10-15T15:02:31.118Z" hostname="e9af72b1bf16" time="6.696">
+  <properties/>
+  <testcase name="sendsRealWavAndUsesHeaderAuthenticationWithNoKeyInUrl" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="0.895"/>
+  <testcase name="thoughtTextIsNeverSpokenAndUnspecifiedBlockReasonDoesNotHideValidTranslation" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="0.019"/>
+  <testcase name="absentUsageRemainsUnknown" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="0.02"/>
+  <testcase name="truncatedOrSafetyStoppedResponsesAreNeverPublished" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="0.237"/>
+  <testcase name="rateLimitsRetryAtMostOnce" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="1.127"/>
+  <testcase name="unexpectedToolOutputCannotBeUsedAsTranslation" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="0.017"/>
+  <testcase name="cancellationDuringResponseBodyReadDoesNotWaitForTimeout" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="3.093"/>
+  <testcase name="malformedResponsesAndOversizedTextFailWithoutExposingBody" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="0.21"/>
+  <testcase name="blockedPromptDoesNotBecomeASubtitle" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="0.076"/>
+  <testcase name="emptyTranslationIsAnError" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="0.031"/>
+  <testcase name="cancellationDuringBackoffPreventsRetry" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="0.277"/>
+  <testcase name="translatesOnlyTheTranscriptIntoTaiwanChineseWithStructuredOutputAndKnownUsage" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="0.065"/>
+  <testcase name="silenceDoesNotProduceInventedWords" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="0.033"/>
+  <testcase name="healthCheckAuthenticatesWithoutSendingAudioOrGeneratingText" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="0.03"/>
+  <testcase name="invalidKeyAndPermissionErrorsDoNotRetryOrLeakResponse" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="0.337"/>
+  <testcase name="geminiPipelinePublishesOriginalTranslationAndSpeechCallbackWithoutLoggingContent" classname="com.yinwei.v2v.providers.GeminiProviderTest" time="0.226"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

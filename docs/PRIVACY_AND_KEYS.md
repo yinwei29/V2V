@@ -8,7 +8,7 @@
 
 來源 PCM / ASR uploads 全在記憶體，不保存來源錄音或完整 HTTP response；原文／譯文依下述本機紀錄設定保存；即時字幕最近200段保留在工作階段記憶體。0.4依使用者要求，另將完成原文／譯文保存在手機私有noBackup目錄，最多1,000段／4MB，可關閉自動保存、清除或經SAF匯出TXT；不自動上傳、不進技術Log，沒有Room或SRT。App allowBackup=false + fullBackupContent=false，Android12+ dataExtractionRules 排除 cloud / device transfer 所有資料域。卸載移除 Key、log、設定。
 
-技術 Log 為新功能，不含音訊／字幕／Key／檔案 URI／response body。只保存 enum、計數、RMS、權限與路由 type、錯誤 class，加上裝置廠牌型號／SDK／App版本；不是裝置識別碼。DataStore 記住記錄開關，可清除，最多3×512KiB；啟用後在 noBackupFilesDir 輪替，離開 App／程序重啟後已寫事件仍可匯出。沒有自動傳送。SAF 匯出與 FileProvider 分享必須由使用者按鈕操作，系統 chooser 由使用者選對象；分享快取最多3份，僅暴露 cache/diagnostics/。詳見 DIAGNOSTIC_LOGS。
+技術 Log 不含音訊／字幕／Key／檔案 URI／response body。0.5.2的Gemini錯誤body只在記憶體讀取最多64KiB，僅解析已知status及ErrorInfo.reason為App自有enum，Log只保存該PROVIDER_REASON enum，不記錄或顯示Google message、metadata、任意body字串。OpenAI仍不讀取失敗body。只保存 enum、計數、RMS、權限與路由 type、錯誤 class，加上裝置廠牌型號／SDK／App版本；不是裝置識別碼。DataStore 記住記錄開關，可清除，最多3×512KiB；啟用後在 noBackupFilesDir 輪替，離開 App／程序重啟後已寫事件仍可匯出。沒有自動傳送。SAF 匯出與 FileProvider 分享必須由使用者按鈕操作，系統 chooser 由使用者選對象；分享快取最多3份，僅暴露 cache/diagnostics/。詳見 DIAGNOSTIC_LOGS。
 
 公眾發佈或後端代理、provider 資料保留／帳號條款尚待確認，本版不宣稱已完成公開產品合規。不要把真實 Key 貼聊天或放 CircleCI。
 

@@ -20,7 +20,7 @@ class GeminiProvider(
 ) : TranslationProvider {
     override val description = "Google Gemini / $MODEL"
     override val partialSupported = false
-    private val http = ProviderHttp(client, "x-goog-api-key", key, diagnostics)
+    private val http = ProviderHttp(client, "x-goog-api-key", key, diagnostics, GeminiErrorClassifier::classify)
 
     override suspend fun healthCheck() {
         val body = http.execute { Request.Builder().url(baseUrl + "models/$MODEL").get() }
@@ -58,8 +58,8 @@ class GeminiProvider(
         val body = JSONObject().put("systemInstruction", JSONObject().put("parts", JSONArray().put(JSONObject().put("text", instruction))))
             .put("contents", JSONArray().put(JSONObject().put("role", "user").put("parts", parts)))
             .put("generationConfig", JSONObject().put("candidateCount", 1).put("maxOutputTokens", 4096)
-                .put("thinkingConfig", JSONObject().put("thinkingLevel", "low"))
-                .put("responseFormat", JSONObject().put("text", JSONObject().put("mimeType", "application/json").put("schema", schema))))
+                .put("thinkingConfig", JSONObject().put("thinkingLevel", "LOW"))
+                .put("responseFormat", JSONObject().put("text", JSONObject().put("mimeType", "APPLICATION_JSON").put("schema", schema))))
         val response = http.execute { Request.Builder().url(baseUrl + "models/$MODEL:generateContent")
             .post(body.toString().toRequestBody("application/json".toMediaType())) }
         return parse {
