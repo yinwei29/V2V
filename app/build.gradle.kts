@@ -10,8 +10,8 @@ android {
         applicationId = "com.yinwei.v2v"
         minSdk = 29
         targetSdk = 35
-        versionCode = 5
-        versionName = "0.3.1-speech-fix"
+        versionCode = 6
+        versionName = "0.4.0-studio"
     }
     buildFeatures { compose = true; buildConfig = true }
     compileOptions {

@@ -6,7 +6,7 @@ M2 preview 支援個人 BYOK。Key 只由使用者在 App 輸入，Android Keyst
 
 只有使用者勾選「有權處理且同意傳送」並開始來源，才會把 audio chunks 及辨識文字送 OpenAI。測試 tone 永不送雲端。不勾選就是播放／診斷；擷取失敗不改用麥克風、不切未配置供應商或離線。固定 HTTPS，不允許 redirect 或 cleartext（JVM unit fixture 的 local MockWebServer 除外，不是 App 流程）。
 
-來源 PCM / ASR uploads 全在記憶體，沒有原始錄音或雲端 payload 落盤；字幕僅最近200段保留在工作階段記憶體，沒有 Room 歷史、TXT/SRT 或持久逐字稿。App allowBackup=false + fullBackupContent=false，Android12+ dataExtractionRules 排除 cloud / device transfer 所有資料域。卸載移除 Key、log、設定。
+來源 PCM / ASR uploads 全在記憶體，不保存來源錄音或完整 HTTP response；原文／譯文依下述本機紀錄設定保存；即時字幕最近200段保留在工作階段記憶體。0.4依使用者要求，另將完成原文／譯文保存在手機私有noBackup目錄，最多1,000段／4MB，可關閉自動保存、清除或經SAF匯出TXT；不自動上傳、不進技術Log，沒有Room或SRT。App allowBackup=false + fullBackupContent=false，Android12+ dataExtractionRules 排除 cloud / device transfer 所有資料域。卸載移除 Key、log、設定。
 
 技術 Log 為新功能，不含音訊／字幕／Key／檔案 URI／response body。只保存 enum、計數、RMS、權限與路由 type、錯誤 class，加上裝置廠牌型號／SDK／App版本；不是裝置識別碼。DataStore 記住記錄開關，可清除，最多3×512KiB；啟用後在 noBackupFilesDir 輪替，離開 App／程序重啟後已寫事件仍可匯出。沒有自動傳送。SAF 匯出與 FileProvider 分享必須由使用者按鈕操作，系統 chooser 由使用者選對象；分享快取最多3份，僅暴露 cache/diagnostics/。詳見 DIAGNOSTIC_LOGS。
 

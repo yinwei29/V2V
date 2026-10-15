@@ -41,3 +41,8 @@ ASR_EMPTY、TRANSCRIPT_PUBLISHED、TRANSLATION_PUBLISHED、TRANSLATION_VISIBLE �
 ## 0.3.1 修正
 
 TTS_FAILURE包含段號與enum原因（TOO_LONG／FORMAT／EMPTY_AUDIO／ENGINE_ERROR／TIMEOUT／INTERRUPTED），不含文字或引擎錯誤訊息。TTS_PHRASE_SPLIT表示單次超長合成改為更短片語重試；TTS_PCM_READY現在是短片語，不再以事件數當作整段數。PCM_SAMPLE新增BUFFERED_MS、PENDING_SEGMENTS、TTS_FAILURES、SPEECH_RATE（請求速度）。畫面分開顯示過載捨棄與合成失敗，避免舊版只顯示0 dropped卻已漏播。DataStore診斷開關flow去重，修正調整外觀／語速時反覆記APP_START並重置統計的雜訊。
+
+
+## 0.4
+
+本機翻譯紀錄是獨立資料，不會寫入技術Log，也不會因按分享Log而附帶。TTS_PCM_READY新增INPUT_RMS、OUTPUT_RMS及NORMALIZATION_GAIN；數字代表合成PCM響度，不是實際耳機音壓。測試紀錄時可確認新資料可重開／匯出／清除，請勿將包含敏感會議內容的TXT誤當匿名技術Log。

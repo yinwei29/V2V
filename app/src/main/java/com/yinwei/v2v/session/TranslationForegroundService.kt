@@ -59,8 +59,8 @@ class TranslationForegroundService : Service() {
         }, { stopReason = StopReason.USER; end("使用者已停止") }, {
             if (outputPaused) resumeOutput() else pauseOutput("播報已暫停；字幕持續")
         }, { message -> repository.update { it.copy(overlayError = message) } },
-            { delta -> scope.launch { settings.savePresentation(presentation.copy(speechRate = (presentation.speechRate + delta).coerceIn(0.75f, 2f))) } },
-            { delta -> scope.launch { settings.save(mix.copy(translationGain = (mix.translationGain + delta).coerceIn(0f, 2f))) } })
+            { changed -> scope.launch { settings.savePresentation(changed) } },
+            { value -> scope.launch { settings.save(mix.copy(translationGain = value.coerceIn(0f, 4f))) } })
         scope.launch { repository.state.collect { overlay?.update(it) } }
         audio.registerAudioDeviceCallback(devices, Handler(mainLooper))
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(noisy, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY), RECEIVER_NOT_EXPORTED)
@@ -217,7 +217,7 @@ class TranslationForegroundService : Service() {
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
         val restore = PendingIntent.getService(this, 2, Intent(this, javaClass).setAction(SHOW_OVERLAY), PendingIntent.FLAG_IMMUTABLE)
         val stop = PendingIntent.getService(this, 1, Intent(this, javaClass).setAction(STOP), PendingIntent.FLAG_IMMUTABLE)
-        return Notification.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_wave)
+        return Notification.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_captions)
             .setContentTitle("V2V · 音訊工作階段").setContentText("擷取／字幕工作中 · 按停止結束；無自動重新錄音")
             .setContentIntent(open).setOngoing(true).addAction(Notification.Action.Builder(null, "顯示字幕", restore).build()).addAction(Notification.Action.Builder(null, "停止", stop).build()).build()
     }

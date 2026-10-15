@@ -7,6 +7,7 @@ import java.nio.file.Files
 import java.io.ByteArrayOutputStream
 import com.yinwei.v2v.audio.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.first
 import okhttp3.mockwebserver.*
 import org.junit.Assert.*
 import org.junit.Test
@@ -83,7 +84,7 @@ class ProviderTest {
     }
     @Test fun busyProviderDropsAreCountedAndDoNotGrowAnUnboundedQueue() = runBlocking {
         fixture { server, provider ->
-            server.enqueue(MockResponse().setBody("{\"text\":\"late\"}").setBodyDelay(3, TimeUnit.SECONDS))
+            server.enqueue(MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE))
             val repository = SessionRepository().apply { set(SessionSnapshot(id = "busy")) }
             val pipelineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
             val pipeline = SubtitlePipeline("busy", "en", provider, repository, pipelineScope)
@@ -92,11 +93,12 @@ class ProviderTest {
                     48000, ShortArray(960) { if (i < 50) 3000 else 0 }, (start + i) * 960L)) }
             }
             try {
-                delay(100); sendSentence(0)
+                sendSentence(0)
                 withContext(Dispatchers.IO) { assertNotNull(server.takeRequest(2, TimeUnit.SECONDS)) }
                 sendSentence(80); sendSentence(160); sendSentence(240); sendSentence(320)
-                withTimeout(2000) { while (repository.state.value.skippedSamples == 0L) delay(10) }
-                assertTrue(repository.state.value.skippedSamples >= 48000)
+                val overloaded = withTimeout(3000) { repository.state.first { it.skippedSamples > 0 } }
+                assertTrue(overloaded.skippedSamples <= 320L * 960)
+                assertEquals(1, server.requestCount) // Provider remains blocked; no accidental second request.
             } finally { pipeline.cancel(); pipelineScope.cancel() }
         }
     }

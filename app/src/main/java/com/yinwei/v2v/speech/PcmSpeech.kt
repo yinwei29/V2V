@@ -62,12 +62,15 @@ class PcmSpeech(private val context: Context, private val id: String, private va
                         update(StageState.RUNNING)
                         val began = System.nanoTime()
                         // Retry oversized engine output as smaller phrases; never discard the whole paragraph.
-                        synthesizePhrase(tts, phrase) { audio ->
+                        synthesizePhrase(tts, phrase) { rawAudio ->
+                            val level = withContext(Dispatchers.Default) { SpeechLoudness.process(rawAudio, options().enhanceSpeech) }
+                            val audio = level.pcm
                             while (epoch == generation && queue.active(request.key) && !paused() && options().speechEnabled) {
                                 if (queue.append(request.key, audio)) {
                                     journal.record(DiagnosticEvent.TTS_PCM_READY, id, mapOf(Metric.SAMPLES to audio.size,
                                         Metric.SEGMENT_ID to request.segmentId, Metric.PHRASE_INDEX to index,
-                                        Metric.LATENCY_MS to (System.nanoTime() - began) / 1_000_000, Metric.SPEECH_RATE to rate))
+                                        Metric.LATENCY_MS to (System.nanoTime() - began) / 1_000_000, Metric.SPEECH_RATE to rate,
+                                        Metric.INPUT_RMS to level.inputRms, Metric.OUTPUT_RMS to level.outputRms, Metric.NORMALIZATION_GAIN to level.appliedGain))
                                     break
                                 }
                                 delay(20) // Playback frees space; do not throw away valid speech because PCM is temporarily full.

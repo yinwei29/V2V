@@ -1,6 +1,8 @@
 package com.yinwei.v2v
 
 import android.app.Application
+import com.yinwei.v2v.history.HistoryStore
+import java.io.File
 import com.yinwei.v2v.session.SessionRepository
 import com.yinwei.v2v.session.SessionController
 import com.yinwei.v2v.settings.SettingsStore
@@ -19,12 +21,14 @@ class V2VApplication : Application() {
         cacheDir.listFiles()?.filter { it.name.startsWith("tts-") && it.name.endsWith(".wav") }?.forEach { it.delete() }
         val application = startKoin { androidContext(this@V2VApplication); modules(module {
             single { SessionRepository() }
-            factory { SessionController(get(), get(), get()) }
+            single { HistoryStore(File(androidContext().noBackupFilesDir, "history/translations.json")) }
+            factory { SessionController(get(), get(), get(), get()) }
             single { SettingsStore(get()) }
             single { ApiKeyStore(get()) }
             single { Diagnostics(get()) }
         }) }
         val diagnostics = application.koin.get<Diagnostics>()
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { application.koin.get<HistoryStore>().load() }
         diagnostics.journal.enabled = false
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
             application.koin.get<SettingsStore>().diagnosticsEnabled.collect { enabled ->

@@ -1,13 +1,21 @@
 # V2V · Live Audio Translator
 
-Android 10+。目前 **0.3.1-speech-fix**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
+Android 10+。目前 **0.4.0-studio**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
 
 > 使用者已確認 M2 主畫面可見原文與翻譯；M2 CircleCI #2 success。此版加入 M3/M4 工程預覽，語音引擎、浮窗與 Bluetooth 仍需裝置驗收，不能宣稱完整產品完成。離線辨識／翻譯模型尚未交付；YouTube／Zoom／Meet 仍按版本與裝置驗證。
 
-## 0.3.1 · 以其他 App 為主要流程
+## 0.4 · 翻譯工作台
+
+- 底部四個頁籤：翻譯、紀錄、聲音、設定。使用一致向量圖示、圓角卡片與高對比字幕；紀錄頁頂部提供文字匯出與清除。
+- 完成的譯文及原文只保存在手機私有noBackup目錄，最多1,000段／4MB，可關閉自動保存、搜尋、切換原文顯示，並匯出UTF-8 TXT。清除有確認，進行中已完成的舊片段不會重新灌回。
+- 浮窗分播報／字幕兩組；語速、增益、字級、行數、背景與寬度均為「一列數值＋減／加」，不用捲過重複大按鈕。設定值更新不重建面板，保留捲動位置。
+- 新增可關閉的語音響度增強：偏小的合成語音朝0.18 RMS補強，最多4×（約12dB），近靜音不放大；手動譯音增益上限400%，仍經limiter，不改手機媒體音量或其他App原聲。這不是保證實際聲壓四倍，設備／系統安全上限仍有效。
+- 字幕與音量實際效果、摺疊／放大字體／浮窗觸控仍需裝置複測；建置與單元測試不能代替Android真機驗收。
+
+## 外部 App 主要流程
 
 - 長譯文分成短句接續合成，避免舊版超過10秒時整段漏播。三段待播與10秒PCM上限保留，PCM滿先等播放釋出；真正過載與合成失敗分別計數。
-- 語速0.75–2×、可關閉的自動追趕、譯音增益0–200%；引擎實際速度與音壓需裝置驗證。
+- 語速0.75–2×、可關閉的自動追趕、譯音增益0–400%；引擎實際速度與音壓需裝置驗證。
 - 浮窗可直接加減語速與譯音增益；初始來源改為其他App。外部來源可選V2V譯音雙耳／左／右，不能操控來源App的原聲、單獨靜音或隔離它的聲道。
 - Samsung可手動嘗試 [Sound Assistant 個別應用程式音量](https://galaxystore.samsung.com/detail/com.samsung.android.soundassistant)，來源先調低、V2V保持較高。部分機型不支援；會議／擷取是否受連動影響仍需實測。App不宣稱已透過該設定取得原聲控制能力。
 
@@ -35,7 +43,7 @@ AGP 8.9.2 / Kotlin 2.1.20 / Gradle 8.13 / Java 17+ / compile & target SDK35 / mi
 ./scripts/package-apk.sh
 ```
 
-APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.3.1-speech-fix-debug.apk，SHA-256 見 deliverables/SHA256SUMS。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
+APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.4.0-studio-debug.apk，SHA-256 見 deliverables/SHA256SUMS。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
 
 ## CircleCI
 
@@ -45,6 +53,6 @@ cimg/android:2025.04 / medium，cache 使用 dependency lockfile 與 wrapper che
 
 ## 限制與文件
 
-Key 是 AES-GCM ciphertext，AES 金鑰在 Android Keystore；排除 backup / device transfer。Key 表單不保存到 saved state，Activity 禁止 screenshot / app preview。逐字稿只在本次記憶體內留最近 200 段，沒有 Room 歷史或匯出。Log 是獨立的技術資訊，最多 3×512KiB，開關可持久化、可刪除。
+Key 是 AES-GCM ciphertext，AES 金鑰在 Android Keystore；排除 backup / device transfer。Key 表單不保存到 saved state，Activity 禁止 screenshot / app preview。即時字幕仍保留最近200段於記憶體；使用者要求新增的翻譯紀錄另存手機私有目錄，可停用／匯出／清除，沒有SRT匯出。Log 是獨立的技術資訊，最多 3×512KiB，開關可持久化、可刪除。
 
 無真機不能證明第三方擷取、Bluetooth 實體左右隔離、鎖屏、30分鐘與20次啟停。詳見 [PROJECT_HANDOFF](PROJECT_HANDOFF.md)、[TEST_REPORT](docs/TEST_REPORT.md)、[PROVIDER_MATRIX](docs/PROVIDER_MATRIX.md) 與來源矩陣。

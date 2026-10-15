@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yinwei.v2v.transcript.ProviderTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-15T10:00:26.419Z" hostname="e9af72b1bf16" time="6.978">
+  <properties/>
+  <testcase name="unauthorizedNeverRetriesOrExposesSensitiveErrorBody" classname="com.yinwei.v2v.transcript.ProviderTest" time="0.295"/>
+  <testcase name="cancellationDuringBackoffPreventsOldSessionRetry" classname="com.yinwei.v2v.transcript.ProviderTest" time="0.239"/>
+  <testcase name="absentUsageIsUnknownRatherThanPretendingZeroBilling" classname="com.yinwei.v2v.transcript.ProviderTest" time="0.014"/>
+  <testcase name="cancellationWhileReadingBodyClosesCallWithoutWaitingForReadTimeout" classname="com.yinwei.v2v.transcript.ProviderTest" time="3.01"/>
+  <testcase name="sendsActualWavWithIndonesianHintAndRequestsTaiwanTraditionalChinese" classname="com.yinwei.v2v.transcript.ProviderTest" time="0.061"/>
+  <testcase name="successfulTranslationPublishesRevisionTwoAndLogsOnlyMetadata" classname="com.yinwei.v2v.transcript.ProviderTest" time="0.178"/>
+  <testcase name="busyProviderDropsAreCountedAndDoNotGrowAnUnboundedQueue" classname="com.yinwei.v2v.transcript.ProviderTest" time="0.041"/>
+  <testcase name="cancelledPipelineCannotPublishLateResponseToNewSession" classname="com.yinwei.v2v.transcript.ProviderTest" time="2.116"/>
+  <testcase name="truncatedTranslationNeverBecomesSuccessfulSubtitle" classname="com.yinwei.v2v.transcript.ProviderTest" time="0.011"/>
+  <testcase name="rateLimitRetriesOnlyOnceAndThenReportsQuota" classname="com.yinwei.v2v.transcript.ProviderTest" time="1.012"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

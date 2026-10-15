@@ -15,7 +15,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /** Service-owned source lifetime; UI only observes repository state. */
-class SessionController(private val context: Context, private val repository: SessionRepository, private val diagnostics: Diagnostics) {
+class SessionController(private val context: Context, private val repository: SessionRepository, private val diagnostics: Diagnostics, private val history: com.yinwei.v2v.history.HistoryStore) {
     @Volatile private var capture: PlaybackCapture? = null
     @Volatile private var speech: PcmSpeech? = null
     @Volatile private var activeOutput: PcmOutput? = null
@@ -49,7 +49,10 @@ class SessionController(private val context: Context, private val repository: Se
             }
             if (provider != null) {
                 speech = PcmSpeech(context, id, repository, this, diagnostics.journal, outputPaused, presentation)
-                subtitles = SubtitlePipeline(id, language, provider, repository, this, diagnostics.journal) { speech?.offer(it) }
+                subtitles = SubtitlePipeline(id, language, provider, repository, this, diagnostics.journal) { segment ->
+                    speech?.offer(segment)
+                    history.record(segment, presentation().saveHistory)
+                }
             }
             if (external) {
                 capture = PlaybackCapture(checkNotNull(projection))

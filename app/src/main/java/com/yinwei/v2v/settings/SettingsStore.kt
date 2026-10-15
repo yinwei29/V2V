@@ -19,7 +19,7 @@ class SettingsStore(context: Context) {
     val settings = store.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }.map { p ->
         MixSettings(
             runCatching { MixMode.valueOf(p[mode].orEmpty()) }.getOrDefault(MixMode.TRANSLATION_ONLY),
-            (p[original] ?: 0.2f).coerceIn(0f, 1f), (p[translation] ?: 1f).coerceIn(0f, 2f), p[swapped] ?: false,
+            (p[original] ?: 0.2f).coerceIn(0f, 1f), (p[translation] ?: 1f).coerceIn(0f, 4f), p[swapped] ?: false,
             runCatching { TranslationChannel.valueOf(p[stringPreferencesKey("translation_channel")].orEmpty()) }.getOrDefault(TranslationChannel.BOTH),
         )
     }.distinctUntilChanged()
@@ -29,10 +29,13 @@ class SettingsStore(context: Context) {
             (p[floatPreferencesKey("caption_size")] ?: 18f).coerceIn(14f, 30f),
             (p[floatPreferencesKey("caption_opacity")] ?: 0.55f).coerceIn(0f, 1f),
             (p[intPreferencesKey("caption_lines")] ?: 4).coerceIn(2, 6),
-            p[booleanPreferencesKey("speech_auto_catch_up")] ?: true)
+            p[booleanPreferencesKey("speech_auto_catch_up")] ?: true,
+            p[booleanPreferencesKey("save_history")] ?: true, p[booleanPreferencesKey("enhance_speech")] ?: true)
     }.distinctUntilChanged()
     suspend fun savePresentation(s: PresentationSettings) { store.edit {
         it[booleanPreferencesKey("speech_enabled")] = s.speechEnabled
+        it[booleanPreferencesKey("save_history")] = s.saveHistory
+        it[booleanPreferencesKey("enhance_speech")] = s.enhanceSpeech
         it[booleanPreferencesKey("speech_auto_catch_up")] = s.autoCatchUp
         it[floatPreferencesKey("speech_rate")] = s.speechRate.coerceIn(0.75f, 2f)
         it[floatPreferencesKey("caption_size")] = s.captionSize.coerceIn(14f, 30f)

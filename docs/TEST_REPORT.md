@@ -1,26 +1,20 @@
-# 測試報告 · 0.3.1-speech-fix
+# 測試報告 · 0.4.0-studio
 
-2026-10-15。本機 assembleDebug testDebugUnitTest lintDebug **BUILD SUCCESSFUL，2m1s**。JUnit與build/lint輸出見 evidence/speech-fix/。
+2026-10-15。OpenJDK17 / Gradle8.13 / SDK35。本機assembleDebug、testDebugUnitTest及lintDebug已通過；53項測試，0 failure/error/skipped。最後完整build/test/lint為2m15s；lint 0 errors, 10 warnings。最後輸出與JUnit、lint見 evidence/studio/。完整CI以本版main commit的CircleCI狀態為準，不以舊版#4冒充本版結果。
 
-- 43項測試，0 failure/error/skipped。Mixer8、PCM3、ExternalTranslation2、Segmentation7、Provider10、Journal4、ChunkMailbox3、SpeechPlan6。
-- lint：0 errors，8 warnings（既有依賴版本與KTX／本地化建議）。
-- APK：versionCode5，0.3.1-speech-fix；apksigner verify通過，debug v2，1 signer。
-- CI：main推送後，以該commit的CircleCI狀態為準。M3 #3已success，不能代表本版CI。
+## 新增回歸
 
-## 本次回報與根因判讀
+- HistoryStore6項：final資料持久化與重新載入、revision去重／拒絕回退、關閉保存／partial／空譯文不落盤、清除watermark拒絕晚到舊完成段而接受新段、容量上限移除最舊、損壞檔不覆寫、UTF-8與時區日期／原文譯文匯出（多個斷言合併6方法）。
+- SpeechLoudness4項：偏小PCM最多4×補強、近靜音不增強、關閉或已足夠響亮時原樣保留、含大峰值語句與400%混音不溢位／不反轉正負號。
+- 其餘43項涵蓋DSP、語音格式、來源能力、分段、有限queue、provider取消／401／429、日誌隱私。新測試使用合成語音／虛構文字，沒有真實會議內容、API Key或使用者log。
+- 修正舊provider overload測試時序：舊測試收到首個丟frame後立即要求整秒，可能在剩餘處理完成前誤判。新fixture以NO_RESPONSE保持供應商忙碌，等Flow超載事件，驗證丟棄計數上限及沒有第二請求，去掉任意startup sleep；專用ChunkMailbox測試另驗證精確容量。
 
-使用者本次0.3測試：16個final翻譯、3個TTS_PCM_READY，其餘13段後出現TTS_ERROR，未出現TTS_DROPPED，輸入丟棄0、underrun0。成功譯文較短，8字／1.67秒、43字／8.55秒、51字／9.73秒；較長段多數在合成後很快ERROR。舊程式將整個譯文一次合成，超過10秒時整段捨棄且只顯示一般錯誤，因此高度符合超長合成漏播；舊log不含詳細錯誤enum，不能單憑log排除每個引擎錯誤。原始JSONL與裝置識別資訊不提交Git。
+## 介面與裝置驗收
 
-另有大量同一runId的APP_START／狀態重設，符合DataStore每次設定變更重發相同診斷開關值；現加distinctUntilChanged，避免調語速／外觀造成事件風暴。
+四頁籤、固定紀錄工具列、搜尋／原文切換、清除確認、四組動作圖示、兩組浮窗stepper、48dp觸控目標與窄螢幕捲動皆已實作；Compose／View能編譯，lint無阻擋錯誤。沒有可操作Android裝置／emulator，不宣稱已做實際視覺、TalkBack、SAF、摺疊／放大字體／旋轉或OEM浮窗驗證。
 
-## 回歸證據
+錄音來源／YouTube／Zoom／Meet、防回灌、實際2×語速、實際音壓、耳機路由、鎖屏與30分鐘運作仍NOT_TESTED_ON_DEVICE。響度數值測量為合成PCM，不是耳機音壓；最高400%與響度增強不能繞過系統音量／安全限制，外部來源原聲仍不可單獨控制。
 
-- 66字、13.75秒的合成假PCM，分片進入10秒上限的queue，容量滿先讀取釋放，再接續加入；660000個有聲sample完整且按序輸出，不整段捨棄。
-- Unicode／emoji、數字、標點、空白與普通英文詞不遺失；每片<=18code points；語速手動可達2×，自動追趕上限2×、關閉時尊重手動值。
-- 三個翻譯段在全部短句產生／播放完以前保留名額；清除後晚到PCM不接受，新段可處理。
-- 外部譯音BOTH/LEFT/RIGHT軟體PCM驗證，來源分支始終0，不錯誤賦予原聲控制能力；200%譯音增益與原聲20%互不干擾，limiter不溢位。
-- Android語音callback、超長再分短重試、Sound Assistant、浮窗按鈕及實際2×聲速仍NOT_TESTED_ON_DEVICE，不以純JVM測試冒充真機。
+測試者：更新同CircleCI簽章APK → 開新翻譯 → 紀錄頁確認保存 → 重開App確認仍在 → 匯出TXT核對繁中與原文 → 清除後確認舊片段不回來 → 背景浮窗測播報／字幕stepper與捲動不重置 → 低音量起逐步測響度。細節見 STUDIO_UI_AND_HISTORY.md。
 
-## 裝置待測
-
-以其他App為主要流程：YouTube、指定版本Zoom／Meet分別測；外部原聲仍無獨立靜音／左右隔離權限。個別App音量須使用者在支援的Samsung Sound Assistant手動設定，可能受來源及通話路由限制。先測短影片、長段、不停說話、背景浮窗加減語速／音量，再測會議與耳機斷線；聲線、漏播改善與可懂度需使用者複測，無受控數據不宣稱完成。
+APK debug v2簽章已通過（1 signer）。本機SHA-256：`4a5817bd347504964af7329ae32ba35ec1ca0bc812b2b343e9abd8c68aa28c2f  V2V-0.4.0-studio-debug.apk`。
