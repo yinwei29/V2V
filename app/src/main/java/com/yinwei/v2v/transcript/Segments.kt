@@ -16,7 +16,7 @@ data class TranscriptSegment(
 /** Endpoint on silence; hard ceiling also handles uninterrupted speech. No partial/fake transcripts. */
 class SpeechSegmenter(
     private val rate: Int = 48000, private val silenceMs: Int = 600,
-    private val maxMs: Int = 10000, private val threshold: Float = 0.005f,
+    private val maxMs: Int = 10000, private val threshold: Float = 0.005f, private val minMs: Int = 0,
 ) {
     private var position = 0L
     private var start = 0L
@@ -24,7 +24,7 @@ class SpeechSegmenter(
     private var count = 0
     private var nextId = 0L
     private val buffer = ShortArray(rate * maxMs / 1000)
-    init { require(rate > 0 && silenceMs in 300..1500 && maxMs in 1000..12000) }
+    init { require(rate > 0 && silenceMs in 300..1500 && maxMs in 1000..12000 && minMs in 0..maxMs) }
     fun offer(frame: ShortArray, sourcePosition: Long = position): List<AudioChunk> {
         val chunks = mutableListOf<AudioChunk>()
         require(sourcePosition >= position) { "來源時間不可倒退" }
@@ -41,7 +41,7 @@ class SpeechSegmenter(
             frame.copyInto(buffer, count, offset, offset + take)
             count += take; position += take; offset += take
             silentSamples = if (voiced) 0 else silentSamples + take
-            if (count == buffer.size || silentSamples >= rate * silenceMs / 1000) flush()?.let(chunks::add)
+            if (count == buffer.size || (silentSamples >= rate * silenceMs / 1000 && count >= rate * minMs / 1000)) flush()?.let(chunks::add)
         }
         return chunks
     }

@@ -11,6 +11,18 @@ import java.nio.ByteOrder
 class SegmentationTest {
     private fun speech(ms: Int) = ShortArray(48 * ms) { 3000 }
     private fun silence(ms: Int) = ShortArray(48 * ms)
+    @Test fun geminiGroupsShortSpeechWithoutLosingTailOrChangingTimeline() {
+        val segmenter = SpeechSegmenter(minMs = 4000)
+        assertTrue(segmenter.offer(speech(1000)).isEmpty())
+        assertTrue(segmenter.offer(silence(600)).isEmpty())
+        assertTrue(segmenter.offer(speech(1800)).isEmpty())
+        val chunk = segmenter.offer(silence(600)).single()
+        assertEquals(0L, chunk.startMs); assertEquals(4000L, chunk.endMs)
+        assertArrayEquals(speech(1000) + silence(600) + speech(1800) + silence(600), chunk.pcm)
+        segmenter.offer(speech(1000))
+        assertEquals(5000L, segmenter.flush()!!.endMs)
+        assertNull(segmenter.flush())
+    }
     @Test fun silenceDoesNotCreateHallucinatedInputAndSpeechEndpointsBeforeWholeFileEnds() {
         val s = SpeechSegmenter()
         assertTrue(s.offer(silence(1000)).isEmpty())

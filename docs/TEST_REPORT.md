@@ -1,3 +1,11 @@
+# 測試報告 · 0.7.0-global
+
+2026-10-16。全主程式及全部106項測試來源以快取Kotlin／Compose compiler直接編譯成功，本機執行67項不需網路JUnit全部通過。aapt2 compile全資源成功；193項UI文字的4語言資源鍵、格式參數及Kotlin／XML引用檢查通過。輸出見evidence/global/。完整APK、全部provider MockWebServer測試與Android lint由本版CircleCI驗證，不沿用舊APK或checksum。
+
+新增涵蓋Gemini一次音訊請求的schema／auth／WAV與雙欄完整性、單次請求字幕與播報callback、4秒合併及最後短尾無損、30秒FIFO保序與溢位／取消、語音頭尾靜音裁切與句內停頓保留、6sp與10行設定保存及重開。無真實API Key或Android手機，尚未驗收真實Gemini漏句量、離線語音下載介面、四語言畫面外觀或音質。部分後端錯誤仍為既有技術訊息。
+
+---
+
 # 測試報告 · 0.6.1-speech-flow
 
 新增4項播報分句回歸測試：英／印尼短句完整合成、長段落保持完整詞與內容、中文日文原策略保持、小數及超長詞／遞迴分段保持有界且無損。程式不記錄原始翻譯內容或Key，原始使用者Log不提交。本機全主程式及所有測試來源直接編譯成功，61項不需網路的JUnit全部通過，輸出見evidence/speech-flow/；完整APK／所有JUnit／lint以本版CircleCI及Artifacts驗證資料為準。實體手機試聽仍待驗收。

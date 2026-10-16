@@ -1,3 +1,11 @@
+# PROJECT_HANDOFF · 0.7.0-global
+
+本版處理使用者Gemini漏句、播報停頓、離線語音下載入口、多國語言介面，以及最新字幕範圍要求。Gemini一次音訊請求取得原文與譯文、短段合併4秒、等待FIFO最多30秒／12段，仍有界並保留丟棄計數；TTS裁切頭尾靜音但保留句內停頓。介面繁中／英文／印尼文／日文與跟隨系統，新增語音資料安裝入口。字幕6–30sp／2–10行並保存。詳見 docs/GLOBAL_AND_AUDIO_FLOW.md；原始使用者Log不提交。
+
+APK由CircleCI本版Artifacts交付。裝置仍須安裝目的語言離線語音；Samsung／Google設定選單不同，App提供安裝與語音設定兩個入口及說明。不需要新增API Key或CircleCI手動設定。持續慢於即時的供應商仍可能延遲或漏段，需新版真機Log驗證。部分後端技術錯誤訊息仍保留原診斷文字。
+
+---
+
 # PROJECT_HANDOFF · 0.6.1-speech-flow
 
 修正英文／印尼文被空格切成短詞而反覆合成的問題。目的語言中文及日文維持原策略，其餘語言以句子與完整詞優先、最多120 code points。過長PCM遞迴縮短及有界佇列保留。詳見 docs/SPEECH_FLOW.md；真機流暢度仍須使用者試聽。本版APK由CircleCI提供，不沿用舊APK。無新增手動設定要求。

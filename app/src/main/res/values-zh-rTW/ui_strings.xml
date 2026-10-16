@@ -1,0 +1,195 @@
+<resources>
+    <string name="ui_6a0feacd" formatted="false">"降低 %s"</string>
+    <string name="ui_c4edcf06" formatted="false">"提高 %s"</string>
+    <string name="ui_100ad4" formatted="false">"翻譯"</string>
+    <string name="ui_fb604" formatted="false">"紀錄"</string>
+    <string name="ui_1025c1" formatted="false">"聲音"</string>
+    <string name="ui_11170d" formatted="false">"設定"</string>
+    <string name="ui_40b0a2ef" formatted="false">"聽懂每一句"</string>
+    <string name="ui_bb017159" formatted="false">"匯出文字檔"</string>
+    <string name="ui_412bad57" formatted="false">"清除翻譯紀錄"</string>
+    <string name="ui_182e5eb" formatted="false">"授權中"</string>
+    <string name="ui_1a931ca" formatted="false">"準備中"</string>
+    <string name="ui_1e33bfe" formatted="false">"結束中"</string>
+    <string name="ui_398456d3" formatted="false">"等待音訊"</string>
+    <string name="ui_d2cc6d4f" formatted="false">"等待服務恢復"</string>
+    <string name="ui_2af42d6f" formatted="false">"字幕暫停"</string>
+    <string name="ui_4725e7c5" formatted="false">"音訊模式"</string>
+    <string name="ui_1f19dd9" formatted="false">"翻譯中"</string>
+    <string name="ui_fd567470" formatted="false">"顯示浮動字幕"</string>
+    <string name="ui_ce1f8500" formatted="false">"結束音訊測試"</string>
+    <string name="ui_3a8ad723" formatted="false">"結束翻譯"</string>
+    <string name="ui_67c53611" formatted="false">"開始音訊測試"</string>
+    <string name="ui_3b67906" formatted="false">"設定 API Key"</string>
+    <string name="ui_455b9874" formatted="false">"開始翻譯"</string>
+    <string name="ui_2d43ceeb" formatted="false">"恢復播報"</string>
+    <string name="ui_2fe5c7f5" formatted="false">"暫停播報"</string>
+    <string name="ui_218ff39c" formatted="false">"請勾選下方音訊授權以啟用翻譯；只需勾選一次，之後開啟 App 會記住。"</string>
+    <string name="ui_9df69792" formatted="false">"音訊與語言"</string>
+    <string name="ui_c53135dc" formatted="false">"手機播放音訊"</string>
+    <string name="ui_29bd6e2" formatted="false">"本機 WAV 音檔"</string>
+    <string name="ui_342f4bb1" formatted="false">"測試音訊"</string>
+    <string name="ui_65913eb3" formatted="false">"手機播放音訊 · 不限 App 名稱"</string>
+    <string name="ui_189caee5" formatted="false">"本機 WAV · 48k mono PCM16"</string>
+    <string name="ui_6e55907b" formatted="false">"測試音訊 · 440 / 660 Hz"</string>
+    <string name="ui_457a18b3" formatted="false">" 重新選擇音檔"</string>
+    <string name="ui_44fc0cb0" formatted="false">" 選擇音檔"</string>
+    <string name="ui_25d6986c" formatted="false">"來源語言"</string>
+    <string name="ui_37de32f8" formatted="false">"目的語言"</string>
+    <string name="ui_1f2beb3b" formatted="false">"%s · 更換引擎"</string>
+    <string name="ui_6844c09b" formatted="false">"我有權處理此音訊，並同意送到 %s 辨識及翻譯，可能收費。"</string>
+    <string name="ui_7223ef78" formatted="false">"記住此選擇，下次不需重勾；可隨時取消。"</string>
+    <string name="ui_a04cd126" formatted="false">" 設定 API Key"</string>
+    <string name="ui_c10baa2b" formatted="false">"不需選 App；接收系統允許擷取的播放音訊。部分通話或受保護內容可能無法取得；原聲音量由來源 App 控制。"</string>
+    <string name="ui_83cfa3ae" formatted="false">"測試音不是實際翻譯播報，不會傳到雲端。"</string>
+    <string name="ui_3300d345" formatted="false">"浮動字幕"</string>
+    <string name="ui_1366cb" formatted="false">" 顯示"</string>
+    <string name="ui_cf0a2" formatted="false">" 授權"</string>
+    <string name="ui_1bf3b3fd" formatted="false">"切到其他 App 後，從小圈圈調整播報與字幕。"</string>
+    <string name="ui_6bade60d" formatted="false">"引擎與金鑰"</string>
+    <string name="ui_8d6f48fa" formatted="false">"結束本次翻譯後可切換引擎。"</string>
+    <string name="ui_5a510f35" formatted="false">"Gemini 模型"</string>
+    <string name="ui_4eaea695" formatted="false">"服務忙碌時，可結束本次翻譯後切換模型再試；不會自動切換供應商。"</string>
+    <string name="ui_261ad359" formatted="false">"介面語言"</string>
+    <string name="ui_42c2de3f" formatted="false">"跟隨系統"</string>
+    <string name="ui_fb071fb5" formatted="false">"介面語言與翻譯的來源、目的語言分開設定。進行翻譯時請先停止再切換。"</string>
+    <string name="ui_4149582e" formatted="false">"語音引擎"</string>
+    <string name="ui_10470239" formatted="false">"播報使用手機已安裝、符合目的語言的離線語音；辨識與翻譯需要網路。"</string>
+    <string name="ui_9eb6e2e1" formatted="false">" 安裝離線語音"</string>
+    <string name="ui_d4254355" formatted="false">"開啟語音設定 → 選擇語音引擎旁的齒輪 → 安裝語音資料 → 下載目的語言。Samsung 或 Google 的選單可能不同；下載完成後重新開始翻譯。"</string>
+    <string name="ui_dcb11233" formatted="false">" Android 語音設定"</string>
+    <string name="ui_cc0f8624" formatted="false">"診斷與測試"</string>
+    <string name="ui_2162c7e8" formatted="false">" 收合技術資訊"</string>
+    <string name="ui_593e64df" formatted="false">" 展開技術資訊與 Log"</string>
+    <string name="ui_6793de20" formatted="false">"辨識 / 翻譯 / 播報"</string>
+    <string name="ui_a0fca" formatted="false">"來源"</string>
+    <string name="ui_472a53d9" formatted="false">"音訊路由"</string>
+    <string name="ui_3c766742" formatted="false">"遺漏 / 失敗"</string>
+    <string name="ui_4727ac0" formatted="false">"MT 用量"</string>
+    <string name="ui_814671ae" formatted="false">"供應商未回傳用量"</string>
+    <string name="ui_12b8b4" formatted="false">"%d 段"</string>
+    <string name="ui_1f484d61" formatted="false">"正在翻譯這一句…"</string>
+    <string name="ui_ff9e4feb" formatted="false">"正在聆聽與辨識…"</string>
+    <string name="ui_23fbc129" formatted="false">"等待下一句話…"</string>
+    <string name="ui_9ca7ff05" formatted="false">"讓語言，不再是距離。"</string>
+    <string name="ui_b4389cdf" formatted="false">"播報已暫停"</string>
+    <string name="ui_26cf640d" formatted="false">"待播 %d 段 · %.1f 秒"</string>
+    <string name="ui_13be149e" formatted="false">"查看翻譯紀錄"</string>
+    <string name="ui_c8924" formatted="false">"播報"</string>
+    <string name="ui_9ace1c9a" formatted="false">"播放翻譯語音"</string>
+    <string name="ui_115941" formatted="false">"語速"</string>
+    <string name="ui_3c572ca3" formatted="false">"自動追趕"</string>
+    <string name="ui_22fa0de1" formatted="false">"積壓時最多使用 2 倍速"</string>
+    <string name="ui_41a7a350" formatted="false">"譯音增益"</string>
+    <string name="ui_2e2729b5" formatted="false">"語音響度增強"</string>
+    <string name="ui_ab68cc17" formatted="false">"自動補強偏小的合成語音，最高約 +12 dB"</string>
+    <string name="ui_d40b4bc6" formatted="false">"增益最高 400%，仍受手機媒體音量、耳機及系統保護限制。先從較低增益調整；這不會改變其他 App 的音量。"</string>
+    <string name="ui_10fe1d3f" formatted="false">" 系統音量設定"</string>
+    <string name="ui_96dc099c" formatted="false">" 確認路由並恢復播報"</string>
+    <string name="ui_d6bc5518" formatted="false">"原聲與譯音"</string>
+    <string name="ui_41ac8f85" formatted="false">"譯音聲道"</string>
+    <string name="ui_2bf4b929" formatted="false">"左右分離"</string>
+    <string name="ui_28178be7" formatted="false">"只聽翻譯"</string>
+    <string name="ui_de8dc" formatted="false">"混音"</string>
+    <string name="ui_b0e2150c" formatted="false">"原聲 %d%%"</string>
+    <string name="ui_25420ac4" formatted="false">"交換左右"</string>
+    <string name="ui_bacf6a61" formatted="false">" 原聲 20% · 譯音 100%"</string>
+    <string name="ui_12c47a" formatted="false">"雙耳"</string>
+    <string name="ui_bdf0d" formatted="false">"左耳"</string>
+    <string name="ui_aaaa0" formatted="false">"右耳"</string>
+    <string name="ui_480ef6c8" formatted="false">"只調整 V2V 的翻譯語音；其他 App 的原聲與左右聲道不變。實體左右隔離仍受耳機／通話路由影響。"</string>
+    <string name="ui_2af2c1c8" formatted="false">"字幕外觀"</string>
+    <string name="ui_b8ca3" formatted="false">"字級"</string>
+    <string name="ui_4722d697" formatted="false">"顯示行數"</string>
+    <string name="ui_12a63c9c" formatted="false">"背景 %d%%"</string>
+    <string name="ui_87ce8424" formatted="false">"白色文字與黑色描邊不隨背景透明度變化；觸控穿透模式依 Android 安全限制略為透明。"</string>
+    <string name="ui_4cce313f" formatted="false">"清除所有翻譯紀錄？"</string>
+    <string name="ui_261a8394" formatted="false">"這會刪除此手機保存的紀錄。正在進行的翻譯不會停止；若自動保存開啟，新的片段仍會保存。已匯出的檔案需自行刪除。"</string>
+    <string name="ui_de8ff" formatted="false">"清除"</string>
+    <string name="ui_a9472" formatted="false">"取消"</string>
+    <string name="ui_ec65e830" formatted="false">"翻譯紀錄 · %d"</string>
+    <string name="ui_f6788b86" formatted="false">"原文與譯文，隨時回看。"</string>
+    <string name="ui_3c4f3686" formatted="false">"自動保存"</string>
+    <string name="ui_645cef57" formatted="false">"只存此手機，最多 1,000 段，或 4 MB，不進技術 Log"</string>
+    <string name="ui_471c75b3" formatted="false">"顯示原文"</string>
+    <string name="ui_92f8d693" formatted="false">"搜尋原文或翻譯"</string>
+    <string name="ui_f4cdd293" formatted="false">"還沒有翻譯紀錄"</string>
+    <string name="ui_1a4dbdf3" formatted="false">"找不到相符紀錄"</string>
+    <string name="ui_55dae0a5" formatted="false">"完成的翻譯會出現在這裡。"</string>
+    <string name="ui_94bfef44" formatted="false">"試試其他關鍵字。"</string>
+    <string name="ui_3c4f5bc2" formatted="false">"自動偵測"</string>
+    <string name="ui_89257164" formatted="false">"找不到語音安裝程式，請在系統設定搜尋「文字轉語音」。"</string>
+    <string name="ui_78d779b9" formatted="false">"文字檔已匯出"</string>
+    <string name="ui_54fc9283" formatted="false">"匯出失敗，請重新選擇位置"</string>
+    <string name="ui_4acf1c08" formatted="false">"已匯出技術 Log；可附在聊天中協助開發"</string>
+    <string name="ui_5a950965" formatted="false">"Log 匯出失敗，請重新選擇儲存位置"</string>
+    <string name="ui_19971f52" formatted="false">"已取消擷取授權；沒有啟動錄音"</string>
+    <string name="ui_d2e87ce8" formatted="false">"未授予音訊擷取權限；沒有啟動，也不會改用麥克風"</string>
+    <string name="ui_e6564dc9" formatted="false">"已清除翻譯紀錄"</string>
+    <string name="ui_672f231c" formatted="false">"清除失敗，請稍後重試"</string>
+    <string name="ui_8eb76e98" formatted="false">"分享 V2V 技術 Log"</string>
+    <string name="ui_f8217707" formatted="false">"已開啟系統分享；請自行選擇接收對象"</string>
+    <string name="ui_76947ee6" formatted="false">"無法分享，請改用匯出檔案"</string>
+    <string name="ui_7ff1c591" formatted="false">"需要本次音訊／螢幕擷取授權；不啟用麥克風"</string>
+    <string name="ui_58041552" formatted="false">"無法啟動前景服務，請保持主畫面可見後重試"</string>
+    <string name="ui_d8e712bb" formatted="false">"%s 引擎與 Key"</string>
+    <string name="ui_86a0f417" formatted="false">"已儲存加密 Key；不顯示原值"</string>
+    <string name="ui_8fcf036" formatted="false">"尚未設定 Key；不會有真實雲端字幕"</string>
+    <string name="ui_e49d2696" formatted="false">"API Key（僅存此裝置）"</string>
+    <string name="ui_6ad81e40" formatted="false">"已用 Keystore 加密儲存"</string>
+    <string name="ui_cf9df7fb" formatted="false">"無法儲存，請確認裝置 Keystore 並重新輸入"</string>
+    <string name="ui_ec7c247" formatted="false">"儲存 / 更新"</string>
+    <string name="ui_1334a1da" formatted="false">"已移除 Key"</string>
+    <string name="ui_74b31893" formatted="false">"無法移除 Key，請稍後重試"</string>
+    <string name="ui_f5bc9" formatted="false">"移除"</string>
+    <string name="ui_97e25811" formatted="false">"Key 驗證及模型查詢成功；仍需音訊端到端測試，不代表扣款／轉寫已驗收"</string>
+    <string name="ui_14811510" formatted="false">"連線失敗或 Key 已失效，請重新設定"</string>
+    <string name="ui_3ecd7faa" formatted="false">"處理中…"</string>
+    <string name="ui_4f1d2324" formatted="false">"測試連線（僅傳 Key，不傳音訊）"</string>
+    <string name="ui_3ae315c5" formatted="false">"OpenAI · whisper-1 辨識 / gpt-4o-mini 翻譯。"</string>
+    <string name="ui_b3702b81" formatted="false">"Google Gemini · %s，請使用 Google AI Studio 的 API Key。"</string>
+    <string name="ui_9ced6488" formatted="false">"分段完成後更新字幕，最長 10 秒。播報沿用手機離線語音。供應商可能收費；沒有額度時請在供應商後台調整專案／帳務，不需設定 CircleCI。"</string>
+    <string name="ui_9e822bbe" formatted="false">"測試 Log"</string>
+    <string name="ui_af508c23" formatted="false">"技術事件記錄中"</string>
+    <string name="ui_1dabfd15" formatted="false">"技術事件記錄已關閉"</string>
+    <string name="ui_a9d3f496" formatted="false">"記錄啟停、權限、每秒電平、音訊路由、provider 狀態與錯誤類型。不含錄音、字幕、API Key、檔案路徑或裝置識別碼。含型號／Android 版本，僅存本機，最多 3 × 512KiB。"</string>
+    <string name="ui_75b1ce2f" formatted="false">"匯出 Log"</string>
+    <string name="ui_4c42b9e9" formatted="false">"分享 Log"</string>
+    <string name="ui_a64bcc0e" formatted="false">"已清除既有 Log；若記錄開啟，新的測試事件會繼續寫入"</string>
+    <string name="ui_e07656aa" formatted="false">"清除既有 Log"</string>
+    <string name="ui_261f9728" formatted="false">"測試方式：開啟記錄 → 重現問題 → 停止工作階段 → 匯出／分享 Log，附上發生問題的操作步驟。"</string>
+    <string name="ui_6635532e" formatted="false">"等待下一段翻譯…"</string>
+    <string name="ui_6d52ed34" formatted="false">"請先開啟「顯示在其他應用程式上層」權限"</string>
+    <string name="ui_4ba29462" formatted="false">"V2V 浮動控制：點一下展開，拖曳移動"</string>
+    <string name="ui_2cbc9aa1" formatted="false">"翻譯字幕：拖曳移動，點一下展開控制"</string>
+    <string name="ui_572d03b5" formatted="false">"浮窗無法顯示；主畫面字幕仍可使用，請檢查上層顯示權限"</string>
+    <string name="ui_bff6eb7a" formatted="false">"上層顯示權限已撤銷；主畫面字幕持續"</string>
+    <string name="ui_117c41bb" formatted="false">"服務暫時中斷，正在恢復…"</string>
+    <string name="ui_9fbc65f9" formatted="false">"翻譯已暫停：%s"</string>
+    <string name="ui_ea7d20da" formatted="false">"音訊測試模式，未啟用翻譯"</string>
+    <string name="ui_bdfb0ea3" formatted="false">"等待手機播放音訊與翻譯…"</string>
+    <string name="ui_163cc45d" formatted="false">"浮窗已關閉；請重新檢查顯示權限"</string>
+    <string name="ui_b6dde" formatted="false">"字幕"</string>
+    <string name="ui_2f49dc81" formatted="false">"收合控制"</string>
+    <string name="ui_b31ec" formatted="false">"增益"</string>
+    <string name="ui_2f4fd8c5" formatted="false">"播放翻譯"</string>
+    <string name="ui_46865b20" formatted="false">"響度增強"</string>
+    <string name="ui_10e6ac" formatted="false">"行數"</string>
+    <string name="ui_fff23" formatted="false">"背景"</string>
+    <string name="ui_b803a" formatted="false">"寬度"</string>
+    <string name="ui_403d0e5f" formatted="false">"觸控穿透"</string>
+    <string name="ui_63580d1e" formatted="false">"開啟主畫面"</string>
+    <string name="ui_4681db9c" formatted="false">"隱藏字幕"</string>
+    <string name="ui_445c08ba" formatted="false">"V2V %s · 本機紀錄不自動上傳；沒有離線辨識／翻譯模型。"</string>
+    <string name="ui_f69f5769" formatted="false">"V2V 即時翻譯"</string>
+    <string name="ui_31e3dbe4" formatted="false">"V2V · 音訊工作階段"</string>
+    <string name="ui_f34e22c0" formatted="false">"擷取／字幕工作中 · 按停止結束；無自動重新錄音"</string>
+    <string name="ui_471d5dc9" formatted="false">"顯示字幕"</string>
+    <string name="ui_a2686" formatted="false">"停止"</string>
+    <string name="ui_a89d592" formatted="false">"請先安裝離線 %s 語音，再重新開始；字幕仍可使用。"</string>
+    <string name="ui_485cdb5d" formatted="false">"語音合成失敗（%s）；本段部分語音可能缺失，字幕仍保留。"</string>
+    <string name="ui_5027955d" formatted="false">"無法初始化 Android 語音引擎；請檢查文字轉語音設定"</string>
+    <string name="ui_1994f7be" formatted="false">"選擇手機播放音訊及翻譯語言、同意雲端翻譯後開始；需本次系統授權"</string>
+    <string name="ui_561ebedc" formatted="false">"使用者已停止"</string>
+    <string name="ui_2b72e412" formatted="false">"尚未輸出"</string>
+</resources>

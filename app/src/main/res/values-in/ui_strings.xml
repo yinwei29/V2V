@@ -1,0 +1,195 @@
+<resources>
+    <string name="ui_6a0feacd" formatted="false">"Kurangi %s"</string>
+    <string name="ui_c4edcf06" formatted="false">"Tambah %s"</string>
+    <string name="ui_100ad4" formatted="false">"Terjemahkan"</string>
+    <string name="ui_fb604" formatted="false">"Riwayat"</string>
+    <string name="ui_1025c1" formatted="false">"Audio"</string>
+    <string name="ui_11170d" formatted="false">"Pengaturan"</string>
+    <string name="ui_40b0a2ef" formatted="false">"Pahami setiap kalimat"</string>
+    <string name="ui_bb017159" formatted="false">"Ekspor teks"</string>
+    <string name="ui_412bad57" formatted="false">"Hapus riwayat terjemahan"</string>
+    <string name="ui_182e5eb" formatted="false">"Meminta izin"</string>
+    <string name="ui_1a931ca" formatted="false">"Menyiapkan"</string>
+    <string name="ui_1e33bfe" formatted="false">"Menghentikan"</string>
+    <string name="ui_398456d3" formatted="false">"Menunggu audio"</string>
+    <string name="ui_d2cc6d4f" formatted="false">"Menunggu layanan pulih"</string>
+    <string name="ui_2af42d6f" formatted="false">"Takarir dijeda"</string>
+    <string name="ui_4725e7c5" formatted="false">"Mode audio"</string>
+    <string name="ui_1f19dd9" formatted="false">"Menerjemahkan"</string>
+    <string name="ui_fd567470" formatted="false">"Tampilkan takarir mengambang"</string>
+    <string name="ui_ce1f8500" formatted="false">"Akhiri uji audio"</string>
+    <string name="ui_3a8ad723" formatted="false">"Hentikan terjemahan"</string>
+    <string name="ui_67c53611" formatted="false">"Mulai uji audio"</string>
+    <string name="ui_3b67906" formatted="false">"Atur API key"</string>
+    <string name="ui_455b9874" formatted="false">"Mulai terjemahan"</string>
+    <string name="ui_2d43ceeb" formatted="false">"Lanjutkan suara"</string>
+    <string name="ui_2fe5c7f5" formatted="false">"Jeda suara"</string>
+    <string name="ui_218ff39c" formatted="false">"Setujui pemrosesan audio di bawah untuk menerjemahkan. Pilihan Anda disimpan."</string>
+    <string name="ui_9df69792" formatted="false">"Audio dan bahasa"</string>
+    <string name="ui_c53135dc" formatted="false">"Audio dari ponsel"</string>
+    <string name="ui_29bd6e2" formatted="false">"Berkas WAV lokal"</string>
+    <string name="ui_342f4bb1" formatted="false">"Audio uji"</string>
+    <string name="ui_65913eb3" formatted="false">"Audio ponsel · semua nama aplikasi"</string>
+    <string name="ui_189caee5" formatted="false">"WAV lokal · 48k mono PCM16"</string>
+    <string name="ui_6e55907b" formatted="false">"Audio uji · 440 / 660 Hz"</string>
+    <string name="ui_457a18b3" formatted="false">"Pilih berkas lain"</string>
+    <string name="ui_44fc0cb0" formatted="false">"Pilih berkas audio"</string>
+    <string name="ui_25d6986c" formatted="false">"Bahasa sumber"</string>
+    <string name="ui_37de32f8" formatted="false">"Bahasa tujuan"</string>
+    <string name="ui_1f2beb3b" formatted="false">"%s · Ganti mesin"</string>
+    <string name="ui_6844c09b" formatted="false">"Saya berhak memproses audio ini dan setuju mengirimnya ke %s untuk pengenalan dan terjemahan. Biaya mungkin berlaku."</string>
+    <string name="ui_7223ef78" formatted="false">"Pilihan ini disimpan. Persetujuan dapat dicabut kapan saja."</string>
+    <string name="ui_a04cd126" formatted="false">"Atur API key"</string>
+    <string name="ui_c10baa2b" formatted="false">"Menangkap audio yang diizinkan Android tanpa memilih aplikasi. Panggilan atau konten terlindungi mungkin tidak tersedia. Atur volume asli di aplikasi sumber."</string>
+    <string name="ui_83cfa3ae" formatted="false">"Nada uji bukan suara terjemahan dan tidak dikirim ke cloud."</string>
+    <string name="ui_3300d345" formatted="false">"Takarir mengambang"</string>
+    <string name="ui_1366cb" formatted="false">"Tampilkan"</string>
+    <string name="ui_cf0a2" formatted="false">"Izin"</string>
+    <string name="ui_1bf3b3fd" formatted="false">"Gunakan tombol mengambang untuk mengatur suara dan takarir saat memakai aplikasi lain."</string>
+    <string name="ui_6bade60d" formatted="false">"Mesin dan API key"</string>
+    <string name="ui_8d6f48fa" formatted="false">"Hentikan terjemahan sebelum mengganti mesin."</string>
+    <string name="ui_5a510f35" formatted="false">"Model Gemini"</string>
+    <string name="ui_4eaea695" formatted="false">"Jika layanan sibuk, hentikan lalu pilih model lain. Penyedia tidak diganti otomatis."</string>
+    <string name="ui_261ad359" formatted="false">"Bahasa antarmuka"</string>
+    <string name="ui_42c2de3f" formatted="false">"Ikuti sistem"</string>
+    <string name="ui_fb071fb5" formatted="false">"Bahasa antarmuka terpisah dari bahasa sumber dan tujuan. Hentikan terjemahan sebelum menggantinya."</string>
+    <string name="ui_4149582e" formatted="false">"Mesin suara"</string>
+    <string name="ui_10470239" formatted="false">"Suara menggunakan suara offline bahasa tujuan yang terpasang. Pengenalan dan terjemahan memerlukan internet."</string>
+    <string name="ui_9eb6e2e1" formatted="false">"Pasang suara offline"</string>
+    <string name="ui_d4254355" formatted="false">"Buka pengaturan suara → roda gigi mesin → Pasang data suara → unduh bahasa tujuan. Menu Samsung dan Google mungkin berbeda. Mulai ulang terjemahan setelah mengunduh."</string>
+    <string name="ui_dcb11233" formatted="false">"Pengaturan suara Android"</string>
+    <string name="ui_cc0f8624" formatted="false">"Diagnostik dan pengujian"</string>
+    <string name="ui_2162c7e8" formatted="false">"Sembunyikan detail teknis"</string>
+    <string name="ui_593e64df" formatted="false">"Tampilkan detail teknis dan log"</string>
+    <string name="ui_6793de20" formatted="false">"Pengenalan / Terjemahan / Suara"</string>
+    <string name="ui_a0fca" formatted="false">"Sumber"</string>
+    <string name="ui_472a53d9" formatted="false">"Rute audio"</string>
+    <string name="ui_3c766742" formatted="false">"Terlewat / Gagal"</string>
+    <string name="ui_4727ac0" formatted="false">"Pemakaian terjemahan"</string>
+    <string name="ui_814671ae" formatted="false">"Pemakaian tidak dilaporkan"</string>
+    <string name="ui_12b8b4" formatted="false">"%d segmen"</string>
+    <string name="ui_1f484d61" formatted="false">"Menerjemahkan kalimat ini…"</string>
+    <string name="ui_ff9e4feb" formatted="false">"Mendengarkan dan mengenali…"</string>
+    <string name="ui_23fbc129" formatted="false">"Menunggu kalimat berikutnya…"</string>
+    <string name="ui_9ca7ff05" formatted="false">"Dekatkan bahasa."</string>
+    <string name="ui_b4389cdf" formatted="false">"Suara dijeda"</string>
+    <string name="ui_26cf640d" formatted="false">"Antrean %d · %.1f detik"</string>
+    <string name="ui_13be149e" formatted="false">"Lihat riwayat terjemahan"</string>
+    <string name="ui_c8924" formatted="false">"Suara"</string>
+    <string name="ui_9ace1c9a" formatted="false">"Putar suara terjemahan"</string>
+    <string name="ui_115941" formatted="false">"Kecepatan bicara"</string>
+    <string name="ui_3c572ca3" formatted="false">"Kejar otomatis"</string>
+    <string name="ui_22fa0de1" formatted="false">"Hingga 2× saat tertinggal"</string>
+    <string name="ui_41a7a350" formatted="false">"Penguatan terjemahan"</string>
+    <string name="ui_2e2729b5" formatted="false">"Peningkatan kenyaringan"</string>
+    <string name="ui_ab68cc17" formatted="false">"Perkuat suara sintesis pelan hingga sekitar +12 dB"</string>
+    <string name="ui_d40b4bc6" formatted="false">"Penguatan hingga 400%; volume media, headphone dan perlindungan sistem tetap berlaku. Mulai dari rendah. Volume aplikasi lain tidak berubah."</string>
+    <string name="ui_10fe1d3f" formatted="false">"Pengaturan volume sistem"</string>
+    <string name="ui_96dc099c" formatted="false">"Konfirmasi rute dan lanjutkan"</string>
+    <string name="ui_d6bc5518" formatted="false">"Suara asli dan terjemahan"</string>
+    <string name="ui_41ac8f85" formatted="false">"Saluran terjemahan"</string>
+    <string name="ui_2bf4b929" formatted="false">"Pisah kiri / kanan"</string>
+    <string name="ui_28178be7" formatted="false">"Hanya terjemahan"</string>
+    <string name="ui_de8dc" formatted="false">"Campur"</string>
+    <string name="ui_b0e2150c" formatted="false">"Asli %d%%"</string>
+    <string name="ui_25420ac4" formatted="false">"Tukar kiri / kanan"</string>
+    <string name="ui_bacf6a61" formatted="false">"Asli 20% · Terjemahan 100%"</string>
+    <string name="ui_12c47a" formatted="false">"Kedua telinga"</string>
+    <string name="ui_bdf0d" formatted="false">"Telinga kiri"</string>
+    <string name="ui_aaaa0" formatted="false">"Telinga kanan"</string>
+    <string name="ui_480ef6c8" formatted="false">"Hanya mengatur suara V2V. Audio dan saluran aplikasi lain tetap. Pemisahan fisik bergantung pada headphone dan rute panggilan."</string>
+    <string name="ui_2af2c1c8" formatted="false">"Tampilan takarir"</string>
+    <string name="ui_b8ca3" formatted="false">"Ukuran teks"</string>
+    <string name="ui_4722d697" formatted="false">"Jumlah baris"</string>
+    <string name="ui_12a63c9c" formatted="false">"Latar %d%%"</string>
+    <string name="ui_87ce8424" formatted="false">"Teks putih dan garis hitam tetap terlihat terlepas dari latar. Mode tembus sentuhan sedikit transparan sesuai keamanan Android."</string>
+    <string name="ui_4cce313f" formatted="false">"Hapus semua riwayat terjemahan?"</string>
+    <string name="ui_261a8394" formatted="false">"Menghapus riwayat di ponsel ini. Terjemahan tetap berjalan; segmen baru tetap disimpan jika simpan otomatis aktif. Hapus berkas ekspor secara terpisah."</string>
+    <string name="ui_de8ff" formatted="false">"Hapus"</string>
+    <string name="ui_a9472" formatted="false">"Batal"</string>
+    <string name="ui_ec65e830" formatted="false">"Riwayat terjemahan · %d"</string>
+    <string name="ui_f6788b86" formatted="false">"Lihat teks asli dan terjemahan kapan saja."</string>
+    <string name="ui_3c4f3686" formatted="false">"Simpan otomatis"</string>
+    <string name="ui_645cef57" formatted="false">"Hanya di ponsel ini; maksimal 1.000 segmen atau 4 MB. Tidak masuk log teknis."</string>
+    <string name="ui_471c75b3" formatted="false">"Tampilkan teks asli"</string>
+    <string name="ui_92f8d693" formatted="false">"Cari teks asli atau terjemahan"</string>
+    <string name="ui_f4cdd293" formatted="false">"Belum ada riwayat terjemahan"</string>
+    <string name="ui_1a4dbdf3" formatted="false">"Tidak ada hasil yang cocok"</string>
+    <string name="ui_55dae0a5" formatted="false">"Terjemahan yang selesai akan muncul di sini."</string>
+    <string name="ui_94bfef44" formatted="false">"Coba kata pencarian lain."</string>
+    <string name="ui_3c4f5bc2" formatted="false">"Deteksi otomatis"</string>
+    <string name="ui_89257164" formatted="false">"Pemasang suara tidak ditemukan. Cari Teks ke ucapan di pengaturan Android."</string>
+    <string name="ui_78d779b9" formatted="false">"Berkas teks diekspor"</string>
+    <string name="ui_54fc9283" formatted="false">"Ekspor gagal. Pilih lokasi lain."</string>
+    <string name="ui_4acf1c08" formatted="false">"Log teknis diekspor. Lampirkan di chat untuk membantu pengembangan."</string>
+    <string name="ui_5a950965" formatted="false">"Ekspor log gagal. Pilih lokasi lain."</string>
+    <string name="ui_19971f52" formatted="false">"Izin tangkap dibatalkan. Perekaman tidak dimulai."</string>
+    <string name="ui_d2e87ce8" formatted="false">"Izin tangkap audio ditolak. Pengambilan tidak dimulai; mikrofon tidak digunakan."</string>
+    <string name="ui_e6564dc9" formatted="false">"Riwayat terjemahan dihapus"</string>
+    <string name="ui_672f231c" formatted="false">"Gagal menghapus. Coba lagi nanti."</string>
+    <string name="ui_8eb76e98" formatted="false">"Bagikan log teknis V2V"</string>
+    <string name="ui_f8217707" formatted="false">"Menu berbagi dibuka. Pilih penerima."</string>
+    <string name="ui_76947ee6" formatted="false">"Gagal berbagi. Ekspor berkas sebagai gantinya."</string>
+    <string name="ui_7ff1c591" formatted="false">"Izin diperlukan untuk menangkap audio/layar ini. Mikrofon tidak digunakan."</string>
+    <string name="ui_58041552" formatted="false">"Layanan gagal dimulai. Tetap di layar utama aplikasi lalu coba lagi."</string>
+    <string name="ui_d8e712bb" formatted="false">"Mesin dan key %s"</string>
+    <string name="ui_86a0f417" formatted="false">"Key terenkripsi disimpan; nilainya disembunyikan."</string>
+    <string name="ui_8fcf036" formatted="false">"Key belum diatur; takarir cloud tidak tersedia."</string>
+    <string name="ui_e49d2696" formatted="false">"API key (hanya perangkat ini)"</string>
+    <string name="ui_6ad81e40" formatted="false">"Dienkripsi dan disimpan dengan Keystore"</string>
+    <string name="ui_cf9df7fb" formatted="false">"Gagal menyimpan. Periksa Keystore perangkat dan masukkan ulang key."</string>
+    <string name="ui_ec7c247" formatted="false">"Simpan / Perbarui"</string>
+    <string name="ui_1334a1da" formatted="false">"Key dihapus"</string>
+    <string name="ui_74b31893" formatted="false">"Key gagal dihapus. Coba lagi nanti."</string>
+    <string name="ui_f5bc9" formatted="false">"Hapus"</string>
+    <string name="ui_97e25811" formatted="false">"Key dan pencarian model berhasil. Terjemahan audio masih perlu diuji menyeluruh."</string>
+    <string name="ui_14811510" formatted="false">"Koneksi gagal atau key kedaluwarsa. Periksa pengaturan."</string>
+    <string name="ui_3ecd7faa" formatted="false">"Memproses…"</string>
+    <string name="ui_4f1d2324" formatted="false">"Uji koneksi (hanya key, tanpa audio)"</string>
+    <string name="ui_3ae315c5" formatted="false">"OpenAI · pengenalan whisper-1 / terjemahan gpt-4o-mini."</string>
+    <string name="ui_b3702b81" formatted="false">"Google Gemini · %s. Gunakan API key Google AI Studio."</string>
+    <string name="ui_9ced6488" formatted="false">"Takarir diperbarui setelah setiap segmen audio, maksimal 10 detik. Suara memakai data offline. Biaya penyedia mungkin berlaku; atur tagihan melalui penyedia."</string>
+    <string name="ui_9e822bbe" formatted="false">"Log pengujian"</string>
+    <string name="ui_af508c23" formatted="false">"Log teknis aktif"</string>
+    <string name="ui_1dabfd15" formatted="false">"Log teknis nonaktif"</string>
+    <string name="ui_a9d3f496" formatted="false">"Mencatat mulai/berhenti, izin, level, rute audio, status penyedia dan jenis kesalahan. Tanpa rekaman, takarir, key, jalur berkas atau ID perangkat. Termasuk model ponsel dan versi Android. Lokal saja, maksimal 3 × 512 KiB."</string>
+    <string name="ui_75b1ce2f" formatted="false">"Ekspor log"</string>
+    <string name="ui_4c42b9e9" formatted="false">"Bagikan log"</string>
+    <string name="ui_a64bcc0e" formatted="false">"Log lama dihapus. Peristiwa baru tetap dicatat jika log aktif."</string>
+    <string name="ui_e07656aa" formatted="false">"Hapus log lama"</string>
+    <string name="ui_261f9728" formatted="false">"Aktifkan log → ulangi masalah → hentikan sesi → ekspor/bagikan log beserta langkah yang dilakukan."</string>
+    <string name="ui_6635532e" formatted="false">"Menunggu terjemahan berikutnya…"</string>
+    <string name="ui_6d52ed34" formatted="false">"Aktifkan izin Tampil di atas aplikasi lain terlebih dahulu."</string>
+    <string name="ui_4ba29462" formatted="false">"Kontrol mengambang V2V: ketuk untuk membuka, seret untuk memindahkan"</string>
+    <string name="ui_2cbc9aa1" formatted="false">"Takarir terjemahan: seret untuk memindahkan, ketuk untuk kontrol"</string>
+    <string name="ui_572d03b5" formatted="false">"Jendela mengambang gagal tampil. Takarir utama tetap tersedia. Periksa izin tampil di atas aplikasi lain."</string>
+    <string name="ui_bff6eb7a" formatted="false">"Izin mengambang dicabut. Takarir utama berlanjut."</string>
+    <string name="ui_117c41bb" formatted="false">"Layanan terputus. Memulihkan…"</string>
+    <string name="ui_9fbc65f9" formatted="false">"Terjemahan dijeda: %s"</string>
+    <string name="ui_ea7d20da" formatted="false">"Mode uji audio; terjemahan nonaktif"</string>
+    <string name="ui_bdfb0ea3" formatted="false">"Menunggu audio ponsel dan terjemahan…"</string>
+    <string name="ui_163cc45d" formatted="false">"Jendela mengambang ditutup. Periksa izin tampil."</string>
+    <string name="ui_b6dde" formatted="false">"Takarir"</string>
+    <string name="ui_2f49dc81" formatted="false">"Tutup kontrol"</string>
+    <string name="ui_b31ec" formatted="false">"Penguatan"</string>
+    <string name="ui_2f4fd8c5" formatted="false">"Putar terjemahan"</string>
+    <string name="ui_46865b20" formatted="false">"Peningkatan kenyaringan"</string>
+    <string name="ui_10e6ac" formatted="false">"Baris"</string>
+    <string name="ui_fff23" formatted="false">"Latar"</string>
+    <string name="ui_b803a" formatted="false">"Lebar"</string>
+    <string name="ui_403d0e5f" formatted="false">"Tembus sentuhan"</string>
+    <string name="ui_63580d1e" formatted="false">"Buka aplikasi"</string>
+    <string name="ui_4681db9c" formatted="false">"Sembunyikan takarir"</string>
+    <string name="ui_445c08ba" formatted="false">"V2V %s · Riwayat tetap di ponsel. Pengenalan dan terjemahan memerlukan internet."</string>
+    <string name="ui_f69f5769" formatted="false">"V2V Terjemahan Langsung"</string>
+    <string name="ui_31e3dbe4" formatted="false">"V2V · Sesi audio"</string>
+    <string name="ui_f34e22c0" formatted="false">"Mengambil audio dan takarir · Ketuk Hentikan untuk mengakhiri"</string>
+    <string name="ui_471d5dc9" formatted="false">"Tampilkan takarir"</string>
+    <string name="ui_a2686" formatted="false">"Hentikan"</string>
+    <string name="ui_a89d592" formatted="false">"Pasang suara offline %s, lalu mulai ulang terjemahan. Takarir tetap tersedia."</string>
+    <string name="ui_485cdb5d" formatted="false">"Sintesis suara gagal (%s). Sebagian audio mungkin hilang; takarir tetap disimpan."</string>
+    <string name="ui_5027955d" formatted="false">"Mesin suara gagal dimulai. Periksa pengaturan teks ke ucapan Android."</string>
+    <string name="ui_1994f7be" formatted="false">"Pilih audio ponsel dan bahasa, setujui pemrosesan cloud, lalu mulai. Izin pengambilan Android diperlukan."</string>
+    <string name="ui_561ebedc" formatted="false">"Dihentikan pengguna"</string>
+    <string name="ui_2b72e412" formatted="false">"Belum ada keluaran"</string>
+</resources>

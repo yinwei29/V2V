@@ -30,9 +30,9 @@ class SettingsStore internal constructor(private val store: DataStore<Preference
     val presentation = store.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }.map { p ->
         PresentationSettings(p[booleanPreferencesKey("speech_enabled")] ?: true,
             (p[floatPreferencesKey("speech_rate")] ?: 1f).coerceIn(0.75f, 2f),
-            (p[floatPreferencesKey("caption_size")] ?: 18f).coerceIn(14f, 30f),
+            (p[floatPreferencesKey("caption_size")] ?: 18f).coerceIn(6f, 30f),
             (p[floatPreferencesKey("caption_opacity")] ?: 0.55f).coerceIn(0f, 1f),
-            (p[intPreferencesKey("caption_lines")] ?: 4).coerceIn(2, 6),
+            (p[intPreferencesKey("caption_lines")] ?: 4).coerceIn(2, 10),
             p[booleanPreferencesKey("speech_auto_catch_up")] ?: true,
             p[booleanPreferencesKey("save_history")] ?: true, p[booleanPreferencesKey("enhance_speech")] ?: true)
     }.distinctUntilChanged()
@@ -42,9 +42,9 @@ class SettingsStore internal constructor(private val store: DataStore<Preference
         it[booleanPreferencesKey("enhance_speech")] = s.enhanceSpeech
         it[booleanPreferencesKey("speech_auto_catch_up")] = s.autoCatchUp
         it[floatPreferencesKey("speech_rate")] = s.speechRate.coerceIn(0.75f, 2f)
-        it[floatPreferencesKey("caption_size")] = s.captionSize.coerceIn(14f, 30f)
+        it[floatPreferencesKey("caption_size")] = s.captionSize.coerceIn(6f, 30f)
         it[floatPreferencesKey("caption_opacity")] = s.backgroundOpacity.coerceIn(0f, 1f)
-        it[intPreferencesKey("caption_lines")] = s.captionLines.coerceIn(2, 6)
+        it[intPreferencesKey("caption_lines")] = s.captionLines.coerceIn(2, 10)
     } }
     val cloudConsent = store.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[booleanPreferencesKey("cloud_consent")] ?: false }.distinctUntilChanged()

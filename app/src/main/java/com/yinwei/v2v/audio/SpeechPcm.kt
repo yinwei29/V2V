@@ -5,6 +5,16 @@ import java.nio.ByteOrder
 
 /** Engine PCM16 -> mono 48k. Only upsampling is supported, avoiding downsampling aliasing. */
 object SpeechPcm {
+    /** Remove only near-silent engine padding at edges, preserving consonant margins and internal pauses. */
+    fun trimBoundarySilence(pcm: ShortArray): ShortArray {
+        val first = pcm.indexOfFirst { kotlin.math.abs(it.toInt()) > 32 }
+        if (first < 0) return pcm
+        val last = pcm.indexOfLast { kotlin.math.abs(it.toInt()) > 32 }
+        val start = (first - 1920).coerceAtLeast(0) // 40ms onset margin at 48k
+        val end = (last + 1 + 3840).coerceAtMost(pcm.size) // 80ms release margin
+        return if (start == 0 && end == pcm.size) pcm else pcm.copyOfRange(start, end)
+    }
+
     fun decode(bytes: ByteArray, sampleRate: Int, channels: Int): ShortArray {
         require(sampleRate in 8000..48000 && channels in 1..2)
         require(bytes.size % (channels * 2) == 0)

@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +44,15 @@ import kotlinx.coroutines.*
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
+    private val context get() = this
+    override fun attachBaseContext(base: android.content.Context) = super.attachBaseContext(UiLocale.wrap(base))
+    private fun openVoiceSettings(install: Boolean) {
+        val intents = if (install) listOf(Intent(android.speech.tts.TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA),
+            Intent("com.android.settings.TTS_SETTINGS")) else listOf(Intent("com.android.settings.TTS_SETTINGS"))
+        for (intent in intents) if (runCatching { startActivity(intent); true }.getOrDefault(false)) return
+        android.widget.Toast.makeText(this, uiText(context.uiText("找不到語音安裝程式，請在系統設定搜尋「文字轉語音」。")), android.widget.Toast.LENGTH_LONG).show()
+    }
+
     private val repository: SessionRepository by inject()
     private val history: HistoryStore by inject()
     private var historyNotice by mutableStateOf("")
@@ -54,9 +64,9 @@ class MainActivity : ComponentActivity() {
             historyBusy = true
             try {
                 withContext(Dispatchers.IO) { contentResolver.openOutputStream(uri, "wt")?.bufferedWriter(Charsets.UTF_8)?.use { it.write(snapshot) } ?: error("Cannot export") }
-                historyNotice = "文字檔已匯出"
+                historyNotice = context.uiText("文字檔已匯出")
             } catch (e: CancellationException) { throw e }
-            catch (_: Exception) { historyNotice = "匯出失敗，請重新選擇位置" }
+            catch (_: Exception) { historyNotice = context.uiText("匯出失敗，請重新選擇位置") }
             finally { historyBusy = false }
         }
     }
@@ -70,9 +80,9 @@ class MainActivity : ComponentActivity() {
             logBusy = true
             try {
                 withContext(Dispatchers.IO) { contentResolver.openOutputStream(uri, "wt")?.use { diagnostics.journal.export(it) } ?: error("Cannot open export") }
-                logNotice = "已匯出技術 Log；可附在聊天中協助開發"
+                logNotice = context.uiText("已匯出技術 Log；可附在聊天中協助開發")
             } catch (e: CancellationException) { throw e }
-            catch (_: Exception) { logNotice = "Log 匯出失敗，請重新選擇儲存位置" }
+            catch (_: Exception) { logNotice = context.uiText("Log 匯出失敗，請重新選擇儲存位置") }
             finally { logBusy = false }
         }
     }
@@ -92,12 +102,12 @@ class MainActivity : ComponentActivity() {
     private val captureConsent = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         diagnostics.journal.record(DiagnosticEvent.PERMISSION, metrics = mapOf(Metric.GRANTED to if (result.resultCode == Activity.RESULT_OK) 1 else 0), tags = mapOf(Tag.PERMISSION to PermissionKind.PROJECTION))
         if (result.resultCode == Activity.RESULT_OK && result.data != null) startSession(true, result.resultCode, result.data)
-        else repository.update { it.copy(state = SessionState.IDLE, message = "已取消擷取授權；沒有啟動錄音") }
+        else repository.update { it.copy(state = SessionState.IDLE, message = context.uiText("已取消擷取授權；沒有啟動錄音")) }
     }
     private val recordPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         diagnostics.journal.record(DiagnosticEvent.PERMISSION, metrics = mapOf(Metric.GRANTED to if (granted) 1 else 0), tags = mapOf(Tag.PERMISSION to PermissionKind.AUDIO))
         if (granted) askProjection() else repository.update {
-            it.copy(state = SessionState.IDLE, message = "未授予音訊擷取權限；沒有啟動，也不會改用麥克風") }
+            it.copy(state = SessionState.IDLE, message = context.uiText("未授予音訊擷取權限；沒有啟動，也不會改用麥克風")) }
     }
     private val notifications = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         diagnostics.journal.record(DiagnosticEvent.PERMISSION, metrics = mapOf(Metric.GRANTED to if (granted) 1 else 0), tags = mapOf(Tag.PERMISSION to PermissionKind.NOTIFICATION))
@@ -147,8 +157,11 @@ class MainActivity : ComponentActivity() {
                         when (command) {
                             "overlayPermission" -> startActivity(Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:$packageName")))
                             "soundSettings" -> startActivity(Intent(android.provider.Settings.ACTION_SOUND_SETTINGS))
-                            "ttsSettings" -> runCatching { startActivity(Intent("com.android.settings.TTS_SETTINGS")) }
-                            else -> startService(Intent(this, TranslationForegroundService::class.java).setAction(command))
+                            "ttsSettings" -> openVoiceSettings(false)
+                            "ttsInstall" -> openVoiceSettings(true)
+                            else -> if (command.startsWith("uiLocale:")) {
+                                UiLocale.set(this, command.substringAfter(':')); recreate()
+                            } else startService(Intent(this, TranslationForegroundService::class.java).setAction(command))
                         }
                     },
                     { changed -> lifecycleScope.launch { settings.save(changed) } }, diagnostics, logEnabled,
@@ -161,8 +174,8 @@ class MainActivity : ComponentActivity() {
                         try { withContext(Dispatchers.IO) {
                             val current = repository.state.value
                             history.clear(current.id, current.segments.filter { it.translatedText.isNotBlank() }.maxOfOrNull { it.id } ?: -1)
-                        }; historyNotice = "已清除翻譯紀錄" }
-                        catch (_: Exception) { historyNotice = "清除失敗，請稍後重試" }
+                        }; historyNotice = context.uiText("已清除翻譯紀錄") }
+                        catch (_: Exception) { historyNotice = context.uiText("清除失敗，請稍後重試") }
                         finally { historyBusy = false }
                     } }, selectedProvider, { provider -> lifecycleScope.launch { settings.saveCloudProvider(provider) } },
                     cloudConsent, { enabled -> lifecycleScope.launch { settings.saveCloudConsent(enabled) } },
@@ -184,10 +197,10 @@ class MainActivity : ComponentActivity() {
                 }
                 val uri = FileProvider.getUriForFile(this@MainActivity, "$packageName.diagnostics", file)
                 startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("application/x-ndjson")
-                    .putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION), "分享 V2V 技術 Log"))
-                logNotice = "已開啟系統分享；請自行選擇接收對象"
+                    .putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION), context.uiText("分享 V2V 技術 Log")))
+                logNotice = context.uiText("已開啟系統分享；請自行選擇接收對象")
             } catch (e: CancellationException) { throw e }
-            catch (_: Exception) { logNotice = "無法分享，請改用匯出檔案" }
+            catch (_: Exception) { logNotice = context.uiText("無法分享，請改用匯出檔案") }
             finally { logBusy = false }
         }
     }
@@ -202,7 +215,7 @@ class MainActivity : ComponentActivity() {
     private fun continueStart() {
         if (!pendingExternal) { startSession(false); return }
         repository.update { it.copy(state = SessionState.REQUESTING_PERMISSION, source = Source.SYSTEM_PLAYBACK,
-            capabilities = SourceCapabilities(), message = "需要本次音訊／螢幕擷取授權；不啟用麥克風") }
+            capabilities = SourceCapabilities(), message = context.uiText("需要本次音訊／螢幕擷取授權；不啟用麥克風")) }
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) askProjection()
         else recordPermission.launch(Manifest.permission.RECORD_AUDIO)
     }
@@ -214,58 +227,60 @@ class MainActivity : ComponentActivity() {
                 .putExtra("resultCode", result).putExtra("consent", consent)
                 .putExtra("fileUri", if (!external) fileUri else null)
                 .putExtra("targetLanguage", pendingTargetLanguage).putExtra("geminiModel", pendingGeminiModel.name).putExtra("provider", pendingProvider.name).putExtra("cloudConsent", pendingCloud).putExtra("language", pendingLanguage))
-        } catch (_: Exception) { repository.update { it.copy(state = SessionState.ERROR, message = "無法啟動前景服務，請保持主畫面可見後重試") } }
+        } catch (_: Exception) { repository.update { it.copy(state = SessionState.ERROR, message = context.uiText("無法啟動前景服務，請保持主畫面可見後重試")) } }
     }
 }
 
 @Composable
 internal fun KeyPanel(provider: CloudProvider, model: GeminiModel, keys: ApiKeyStore, configured: Boolean, enabled: Boolean, journal: DiagnosticJournal, refresh: () -> Unit) {
+    val context = LocalContext.current
     var value by remember(provider) { mutableStateOf("") } // Deliberately NOT rememberSaveable.
     var busy by remember(provider) { mutableStateOf(false) }
     var message by remember(provider) { mutableStateOf("") }
     val scope = rememberCoroutineScope()
-    Text("${provider.label} 引擎與 Key", style = MaterialTheme.typography.titleLarge)
-    Text(if (configured) "已儲存加密 Key；不顯示原值" else "尚未設定 Key；不會有真實雲端字幕")
-    OutlinedTextField(value = value, onValueChange = { value = it.take(1024) }, label = { Text("API Key（僅存此裝置）") },
+    Text(context.uiText("%s 引擎與 Key").format(provider.label), style = MaterialTheme.typography.titleLarge)
+    Text(if (configured) context.uiText("已儲存加密 Key；不顯示原值") else context.uiText("尚未設定 Key；不會有真實雲端字幕"))
+    OutlinedTextField(value = value, onValueChange = { value = it.take(1024) }, label = { Text(context.uiText("API Key（僅存此裝置）")) },
         visualTransformation = PasswordVisualTransformation(), singleLine = true, enabled = enabled && !busy, modifier = Modifier.fillMaxWidth())
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Button(onClick = {
             busy = true
             val pending = value; value = ""
             scope.launch {
-                try { withContext(Dispatchers.IO) { keys.save(pending, provider) }; refresh(); message = "已用 Keystore 加密儲存" }
-                catch (_: Exception) { message = "無法儲存，請確認裝置 Keystore 並重新輸入" }
+                try { withContext(Dispatchers.IO) { keys.save(pending, provider) }; refresh(); message = context.uiText("已用 Keystore 加密儲存") }
+                catch (_: Exception) { message = context.uiText("無法儲存，請確認裝置 Keystore 並重新輸入") }
                 finally { busy = false }
             }
-        }, enabled = enabled && !busy && value.isNotBlank()) { Text("儲存 / 更新") }
+        }, enabled = enabled && !busy && value.isNotBlank()) { Text(context.uiText("儲存 / 更新")) }
         OutlinedButton(onClick = {
             busy = true; value = ""
             scope.launch {
-                try { withContext(Dispatchers.IO) { keys.remove(provider) }; refresh(); message = "已移除 Key" }
-                catch (_: Exception) { message = "無法移除 Key，請稍後重試" }
+                try { withContext(Dispatchers.IO) { keys.remove(provider) }; refresh(); message = context.uiText("已移除 Key") }
+                catch (_: Exception) { message = context.uiText("無法移除 Key，請稍後重試") }
                 finally { busy = false }
             }
-        }, enabled = enabled && !busy && configured) { Text("移除") }
+        }, enabled = enabled && !busy && configured) { Text(context.uiText("移除")) }
     }
     OutlinedButton(onClick = {
         busy = true
         scope.launch {
             try {
                 withContext(Dispatchers.IO) { provider.create(checkNotNull(keys.read(provider)), journal, model).healthCheck() }
-                message = "Key 驗證及模型查詢成功；仍需音訊端到端測試，不代表扣款／轉寫已驗收"
+                message = context.uiText("Key 驗證及模型查詢成功；仍需音訊端到端測試，不代表扣款／轉寫已驗收")
             } catch (e: CancellationException) { throw e }
             catch (e: ProviderFailure) { message = e.message.orEmpty() }
-            catch (_: Exception) { message = "連線失敗或 Key 已失效，請重新設定" }
+            catch (_: Exception) { message = context.uiText("連線失敗或 Key 已失效，請重新設定") }
             finally { busy = false }
         }
-    }, enabled = enabled && !busy && configured) { Text(if (busy) "處理中…" else "測試連線（僅傳 Key，不傳音訊）") }
+    }, enabled = enabled && !busy && configured) { Text(if (busy) context.uiText("處理中…") else context.uiText("測試連線（僅傳 Key，不傳音訊）")) }
     if (message.isNotBlank()) Text(message)
-    Text(if (provider == CloudProvider.OPENAI) "OpenAI · whisper-1 辨識 / gpt-4o-mini 翻譯。" else "Google Gemini · ${model.apiId} 辨識與翻譯。請使用 Google AI Studio 的 Gemini API Key。", style = MaterialTheme.typography.bodySmall)
-    Text("分段完成後更新字幕，最長 10 秒。播報沿用手機離線語音。供應商可能收費；沒有額度時請在供應商後台調整專案／帳務，不需設定 CircleCI。", style = MaterialTheme.typography.bodySmall)
+    Text(if (provider == CloudProvider.OPENAI) context.uiText("OpenAI · whisper-1 辨識 / gpt-4o-mini 翻譯。") else context.uiText("Google Gemini · %s，請使用 Google AI Studio 的 API Key。").format(model.apiId), style = MaterialTheme.typography.bodySmall)
+    Text(context.uiText("分段完成後更新字幕，最長 10 秒。播報沿用手機離線語音。供應商可能收費；沒有額度時請在供應商後台調整專案／帳務，不需設定 CircleCI。"), style = MaterialTheme.typography.bodySmall)
 }
 
 @Composable
 private fun Choice(title: String, subtitle: String, selected: Boolean, enabled: Boolean, choose: () -> Unit) {
+    val context = LocalContext.current
     OutlinedCard(onClick = choose, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
         Row(Modifier.padding(12.dp)) {
             RadioButton(selected = selected, onClick = choose, enabled = enabled)
@@ -275,32 +290,34 @@ private fun Choice(title: String, subtitle: String, selected: Boolean, enabled: 
 }
 @Composable
 internal fun Detail(label: String, value: String) {
+    val context = LocalContext.current
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) { Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.secondary); Text(value) }
 }
 
 @Composable
 internal fun DiagnosticPanel(diagnostics: Diagnostics, enabled: Boolean, setEnabled: (Boolean) -> Unit,
     notice: String, exportBusy: Boolean, export: () -> Unit, share: () -> Unit) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var clearing by remember { mutableStateOf(false) }
     var clearNotice by remember { mutableStateOf("") }
-    Text("測試 Log", style = MaterialTheme.typography.titleLarge)
-    Row { Switch(checked = enabled, onCheckedChange = setEnabled); Text(if (enabled) "技術事件記錄中" else "技術事件記錄已關閉", Modifier.padding(start = 12.dp, top = 12.dp)) }
-    Text("記錄啟停、權限、每秒電平、音訊路由、provider 狀態與錯誤類型。不含錄音、字幕、API Key、檔案路徑或裝置識別碼。含型號／Android 版本，僅存本機，最多 3 × 512KiB。", style = MaterialTheme.typography.bodySmall)
+    Text(context.uiText("測試 Log"), style = MaterialTheme.typography.titleLarge)
+    Row { Switch(checked = enabled, onCheckedChange = setEnabled); Text(if (enabled) context.uiText("技術事件記錄中") else context.uiText("技術事件記錄已關閉"), Modifier.padding(start = 12.dp, top = 12.dp)) }
+    Text(context.uiText("記錄啟停、權限、每秒電平、音訊路由、provider 狀態與錯誤類型。不含錄音、字幕、API Key、檔案路徑或裝置識別碼。含型號／Android 版本，僅存本機，最多 3 × 512KiB。"), style = MaterialTheme.typography.bodySmall)
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Button(onClick = export, enabled = !exportBusy && !clearing) { Text("匯出 Log") }
-        OutlinedButton(onClick = share, enabled = !exportBusy && !clearing) { Text("分享 Log") }
+        Button(onClick = export, enabled = !exportBusy && !clearing) { Text(context.uiText("匯出 Log")) }
+        OutlinedButton(onClick = share, enabled = !exportBusy && !clearing) { Text(context.uiText("分享 Log")) }
     }
     OutlinedButton(onClick = {
         clearing = true
         scope.launch {
-            try { withContext(Dispatchers.IO) { diagnostics.journal.clear() }; clearNotice = "已清除既有 Log；若記錄開啟，新的測試事件會繼續寫入" }
-            catch (_: Exception) { clearNotice = "清除失敗，請稍後重試" }
+            try { withContext(Dispatchers.IO) { diagnostics.journal.clear() }; clearNotice = context.uiText("已清除既有 Log；若記錄開啟，新的測試事件會繼續寫入") }
+            catch (_: Exception) { clearNotice = context.uiText("清除失敗，請稍後重試") }
             finally { clearing = false }
         }
-    }, enabled = !exportBusy && !clearing) { Text("清除既有 Log") }
-    if (exportBusy || clearing) Text("處理中…")
+    }, enabled = !exportBusy && !clearing) { Text(context.uiText("清除既有 Log")) }
+    if (exportBusy || clearing) Text(context.uiText("處理中…"))
     if (notice.isNotBlank()) Text(notice)
     if (clearNotice.isNotBlank()) Text(clearNotice)
-    Text("測試方式：開啟記錄 → 重現問題 → 停止工作階段 → 匯出／分享 Log，附上發生問題的操作步驟。", style = MaterialTheme.typography.bodySmall)
+    Text(context.uiText("測試方式：開啟記錄 → 重現問題 → 停止工作階段 → 匯出／分享 Log，附上發生問題的操作步驟。"), style = MaterialTheme.typography.bodySmall)
 }

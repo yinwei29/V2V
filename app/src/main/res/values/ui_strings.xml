@@ -1,0 +1,195 @@
+<resources>
+    <string name="ui_6a0feacd" formatted="false">"Decrease %s"</string>
+    <string name="ui_c4edcf06" formatted="false">"Increase %s"</string>
+    <string name="ui_100ad4" formatted="false">"Translate"</string>
+    <string name="ui_fb604" formatted="false">"History"</string>
+    <string name="ui_1025c1" formatted="false">"Audio"</string>
+    <string name="ui_11170d" formatted="false">"Settings"</string>
+    <string name="ui_40b0a2ef" formatted="false">"Understand every sentence"</string>
+    <string name="ui_bb017159" formatted="false">"Export text"</string>
+    <string name="ui_412bad57" formatted="false">"Clear translation history"</string>
+    <string name="ui_182e5eb" formatted="false">"Requesting permission"</string>
+    <string name="ui_1a931ca" formatted="false">"Preparing"</string>
+    <string name="ui_1e33bfe" formatted="false">"Stopping"</string>
+    <string name="ui_398456d3" formatted="false">"Waiting for audio"</string>
+    <string name="ui_d2cc6d4f" formatted="false">"Waiting for service recovery"</string>
+    <string name="ui_2af42d6f" formatted="false">"Captions paused"</string>
+    <string name="ui_4725e7c5" formatted="false">"Audio mode"</string>
+    <string name="ui_1f19dd9" formatted="false">"Translating"</string>
+    <string name="ui_fd567470" formatted="false">"Show floating captions"</string>
+    <string name="ui_ce1f8500" formatted="false">"End audio test"</string>
+    <string name="ui_3a8ad723" formatted="false">"Stop translation"</string>
+    <string name="ui_67c53611" formatted="false">"Start audio test"</string>
+    <string name="ui_3b67906" formatted="false">"Set API key"</string>
+    <string name="ui_455b9874" formatted="false">"Start translation"</string>
+    <string name="ui_2d43ceeb" formatted="false">"Resume speech"</string>
+    <string name="ui_2fe5c7f5" formatted="false">"Pause speech"</string>
+    <string name="ui_218ff39c" formatted="false">"Enable audio consent below to translate. Your choice is remembered."</string>
+    <string name="ui_9df69792" formatted="false">"Audio and languages"</string>
+    <string name="ui_c53135dc" formatted="false">"Device playback"</string>
+    <string name="ui_29bd6e2" formatted="false">"Local WAV file"</string>
+    <string name="ui_342f4bb1" formatted="false">"Test audio"</string>
+    <string name="ui_65913eb3" formatted="false">"Device playback · any app name"</string>
+    <string name="ui_189caee5" formatted="false">"Local WAV · 48k mono PCM16"</string>
+    <string name="ui_6e55907b" formatted="false">"Test audio · 440 / 660 Hz"</string>
+    <string name="ui_457a18b3" formatted="false">"Choose another file"</string>
+    <string name="ui_44fc0cb0" formatted="false">"Choose audio file"</string>
+    <string name="ui_25d6986c" formatted="false">"Source language"</string>
+    <string name="ui_37de32f8" formatted="false">"Target language"</string>
+    <string name="ui_1f2beb3b" formatted="false">"%s · Change engine"</string>
+    <string name="ui_6844c09b" formatted="false">"I have permission to process this audio and consent to sending it to %s for recognition and translation. Charges may apply."</string>
+    <string name="ui_7223ef78" formatted="false">"Remember this choice. You can withdraw consent at any time."</string>
+    <string name="ui_a04cd126" formatted="false">"Set API key"</string>
+    <string name="ui_c10baa2b" formatted="false">"Captures playback allowed by Android without choosing an app. Calls and protected content may be unavailable. Adjust original volume in the source app."</string>
+    <string name="ui_83cfa3ae" formatted="false">"Test tones are not translated speech and are not sent to the cloud."</string>
+    <string name="ui_3300d345" formatted="false">"Floating captions"</string>
+    <string name="ui_1366cb" formatted="false">"Show"</string>
+    <string name="ui_cf0a2" formatted="false">"Permission"</string>
+    <string name="ui_1bf3b3fd" formatted="false">"Use the floating bubble to adjust speech and captions while using other apps."</string>
+    <string name="ui_6bade60d" formatted="false">"Engine and API keys"</string>
+    <string name="ui_8d6f48fa" formatted="false">"Stop translation before changing engines."</string>
+    <string name="ui_5a510f35" formatted="false">"Gemini model"</string>
+    <string name="ui_4eaea695" formatted="false">"If the service is busy, stop and choose another model. Providers are not switched automatically."</string>
+    <string name="ui_261ad359" formatted="false">"Interface language"</string>
+    <string name="ui_42c2de3f" formatted="false">"Follow system"</string>
+    <string name="ui_fb071fb5" formatted="false">"Interface language is separate from source and target languages. Stop translation before switching."</string>
+    <string name="ui_4149582e" formatted="false">"Speech engine"</string>
+    <string name="ui_10470239" formatted="false">"Speech uses an installed offline voice for the target language. Recognition and translation require internet."</string>
+    <string name="ui_9eb6e2e1" formatted="false">"Install offline voices"</string>
+    <string name="ui_d4254355" formatted="false">"Open speech settings → engine gear → Install voice data → download the target language. Samsung and Google menus may differ. Restart translation after downloading."</string>
+    <string name="ui_dcb11233" formatted="false">"Android speech settings"</string>
+    <string name="ui_cc0f8624" formatted="false">"Diagnostics and testing"</string>
+    <string name="ui_2162c7e8" formatted="false">"Hide technical details"</string>
+    <string name="ui_593e64df" formatted="false">"Show technical details and logs"</string>
+    <string name="ui_6793de20" formatted="false">"Recognition / Translation / Speech"</string>
+    <string name="ui_a0fca" formatted="false">"Source"</string>
+    <string name="ui_472a53d9" formatted="false">"Audio route"</string>
+    <string name="ui_3c766742" formatted="false">"Skipped / Failed"</string>
+    <string name="ui_4727ac0" formatted="false">"Translation usage"</string>
+    <string name="ui_814671ae" formatted="false">"Usage not provided"</string>
+    <string name="ui_12b8b4" formatted="false">"%d segments"</string>
+    <string name="ui_1f484d61" formatted="false">"Translating this sentence…"</string>
+    <string name="ui_ff9e4feb" formatted="false">"Listening and recognizing…"</string>
+    <string name="ui_23fbc129" formatted="false">"Waiting for the next sentence…"</string>
+    <string name="ui_9ca7ff05" formatted="false">"Bring languages closer."</string>
+    <string name="ui_b4389cdf" formatted="false">"Speech paused"</string>
+    <string name="ui_26cf640d" formatted="false">"%d queued · %.1f seconds"</string>
+    <string name="ui_13be149e" formatted="false">"View translation history"</string>
+    <string name="ui_c8924" formatted="false">"Speech"</string>
+    <string name="ui_9ace1c9a" formatted="false">"Play translated speech"</string>
+    <string name="ui_115941" formatted="false">"Speech rate"</string>
+    <string name="ui_3c572ca3" formatted="false">"Auto catch-up"</string>
+    <string name="ui_22fa0de1" formatted="false">"Up to 2× speed when behind"</string>
+    <string name="ui_41a7a350" formatted="false">"Translation gain"</string>
+    <string name="ui_2e2729b5" formatted="false">"Speech loudness boost"</string>
+    <string name="ui_ab68cc17" formatted="false">"Boost quiet synthesized audio by up to about +12 dB"</string>
+    <string name="ui_d40b4bc6" formatted="false">"Gain up to 400%; media volume, headphones and system protection still apply. Start low. This does not change other apps\' volume."</string>
+    <string name="ui_10fe1d3f" formatted="false">"System volume settings"</string>
+    <string name="ui_96dc099c" formatted="false">"Confirm route and resume"</string>
+    <string name="ui_d6bc5518" formatted="false">"Original and translation"</string>
+    <string name="ui_41ac8f85" formatted="false">"Translation channels"</string>
+    <string name="ui_2bf4b929" formatted="false">"Split left / right"</string>
+    <string name="ui_28178be7" formatted="false">"Translation only"</string>
+    <string name="ui_de8dc" formatted="false">"Mix"</string>
+    <string name="ui_b0e2150c" formatted="false">"Original %d%%"</string>
+    <string name="ui_25420ac4" formatted="false">"Swap left / right"</string>
+    <string name="ui_bacf6a61" formatted="false">"Original 20% · Translation 100%"</string>
+    <string name="ui_12c47a" formatted="false">"Both ears"</string>
+    <string name="ui_bdf0d" formatted="false">"Left ear"</string>
+    <string name="ui_aaaa0" formatted="false">"Right ear"</string>
+    <string name="ui_480ef6c8" formatted="false">"Controls only V2V speech. Other apps\' original audio and channels remain unchanged. Physical separation depends on headphones and call routing."</string>
+    <string name="ui_2af2c1c8" formatted="false">"Caption appearance"</string>
+    <string name="ui_b8ca3" formatted="false">"Text size"</string>
+    <string name="ui_4722d697" formatted="false">"Visible lines"</string>
+    <string name="ui_12a63c9c" formatted="false">"Background %d%%"</string>
+    <string name="ui_87ce8424" formatted="false">"White text and black outlines stay visible independently of the background. Touch-through mode is slightly transparent for Android security."</string>
+    <string name="ui_4cce313f" formatted="false">"Clear all translation history?"</string>
+    <string name="ui_261a8394" formatted="false">"Deletes history saved on this phone. Translation continues; new segments are still saved if auto-save is enabled. Exported files must be deleted separately."</string>
+    <string name="ui_de8ff" formatted="false">"Clear"</string>
+    <string name="ui_a9472" formatted="false">"Cancel"</string>
+    <string name="ui_ec65e830" formatted="false">"Translation history · %d"</string>
+    <string name="ui_f6788b86" formatted="false">"Review original text and translations anytime."</string>
+    <string name="ui_3c4f3686" formatted="false">"Auto-save"</string>
+    <string name="ui_645cef57" formatted="false">"On this phone only; up to 1,000 segments or 4 MB. Not included in technical logs."</string>
+    <string name="ui_471c75b3" formatted="false">"Show original"</string>
+    <string name="ui_92f8d693" formatted="false">"Search original or translation"</string>
+    <string name="ui_f4cdd293" formatted="false">"No translation history yet"</string>
+    <string name="ui_1a4dbdf3" formatted="false">"No matching records"</string>
+    <string name="ui_55dae0a5" formatted="false">"Completed translations will appear here."</string>
+    <string name="ui_94bfef44" formatted="false">"Try another search."</string>
+    <string name="ui_3c4f5bc2" formatted="false">"Auto-detect"</string>
+    <string name="ui_89257164" formatted="false">"No voice installer found. Search Android settings for Text-to-speech."</string>
+    <string name="ui_78d779b9" formatted="false">"Text file exported"</string>
+    <string name="ui_54fc9283" formatted="false">"Export failed. Choose another location."</string>
+    <string name="ui_4acf1c08" formatted="false">"Technical log exported. Attach it to the chat for troubleshooting."</string>
+    <string name="ui_5a950965" formatted="false">"Log export failed. Choose another location."</string>
+    <string name="ui_19971f52" formatted="false">"Capture permission cancelled. Recording did not start."</string>
+    <string name="ui_d2e87ce8" formatted="false">"Audio capture permission denied. Capture did not start; microphone is not used."</string>
+    <string name="ui_e6564dc9" formatted="false">"Translation history cleared"</string>
+    <string name="ui_672f231c" formatted="false">"Could not clear. Try again later."</string>
+    <string name="ui_8eb76e98" formatted="false">"Share V2V technical log"</string>
+    <string name="ui_f8217707" formatted="false">"Share sheet opened. Choose a recipient."</string>
+    <string name="ui_76947ee6" formatted="false">"Could not share. Export the file instead."</string>
+    <string name="ui_7ff1c591" formatted="false">"Permission is needed for this audio/screen capture. Microphone is not used."</string>
+    <string name="ui_58041552" formatted="false">"Could not start service. Keep the app visible and try again."</string>
+    <string name="ui_d8e712bb" formatted="false">"%s engine and key"</string>
+    <string name="ui_86a0f417" formatted="false">"Encrypted key saved; its value is hidden."</string>
+    <string name="ui_8fcf036" formatted="false">"No key configured; cloud captions are unavailable."</string>
+    <string name="ui_e49d2696" formatted="false">"API key (this device only)"</string>
+    <string name="ui_6ad81e40" formatted="false">"Encrypted and saved with Keystore"</string>
+    <string name="ui_cf9df7fb" formatted="false">"Could not save. Check device Keystore and re-enter the key."</string>
+    <string name="ui_ec7c247" formatted="false">"Save / Update"</string>
+    <string name="ui_1334a1da" formatted="false">"Key removed"</string>
+    <string name="ui_74b31893" formatted="false">"Could not remove key. Try again later."</string>
+    <string name="ui_f5bc9" formatted="false">"Remove"</string>
+    <string name="ui_97e25811" formatted="false">"Key and model lookup succeeded. Audio translation still needs end-to-end testing."</string>
+    <string name="ui_14811510" formatted="false">"Connection failed or key expired. Check settings."</string>
+    <string name="ui_3ecd7faa" formatted="false">"Working…"</string>
+    <string name="ui_4f1d2324" formatted="false">"Test connection (key only, no audio)"</string>
+    <string name="ui_3ae315c5" formatted="false">"OpenAI · whisper-1 recognition / gpt-4o-mini translation."</string>
+    <string name="ui_b3702b81" formatted="false">"Google Gemini · %s. Use an API key from Google AI Studio."</string>
+    <string name="ui_9ced6488" formatted="false">"Captions update after each audio segment, up to 10 seconds. Speech uses offline voices. Provider charges may apply; manage billing with the provider."</string>
+    <string name="ui_9e822bbe" formatted="false">"Test logs"</string>
+    <string name="ui_af508c23" formatted="false">"Technical logging enabled"</string>
+    <string name="ui_1dabfd15" formatted="false">"Technical logging disabled"</string>
+    <string name="ui_a9d3f496" formatted="false">"Logs start/stop, permissions, levels, audio routes, provider states and error types. No recordings, captions, keys, file paths or device IDs. Includes phone model and Android version. Local only, up to 3 × 512 KiB."</string>
+    <string name="ui_75b1ce2f" formatted="false">"Export log"</string>
+    <string name="ui_4c42b9e9" formatted="false">"Share log"</string>
+    <string name="ui_a64bcc0e" formatted="false">"Existing logs cleared. New events will still be recorded if logging is enabled."</string>
+    <string name="ui_e07656aa" formatted="false">"Clear existing logs"</string>
+    <string name="ui_261f9728" formatted="false">"Enable logging → reproduce the issue → stop the session → export/share the log with the steps you took."</string>
+    <string name="ui_6635532e" formatted="false">"Waiting for the next translation…"</string>
+    <string name="ui_6d52ed34" formatted="false">"Enable Display over other apps permission first."</string>
+    <string name="ui_4ba29462" formatted="false">"V2V floating control: tap to expand, drag to move"</string>
+    <string name="ui_2cbc9aa1" formatted="false">"Translated captions: drag to move, tap for controls"</string>
+    <string name="ui_572d03b5" formatted="false">"Could not show overlay. Main captions still work. Check overlay permission."</string>
+    <string name="ui_bff6eb7a" formatted="false">"Overlay permission revoked. Main captions continue."</string>
+    <string name="ui_117c41bb" formatted="false">"Service interrupted. Recovering…"</string>
+    <string name="ui_9fbc65f9" formatted="false">"Translation paused: %s"</string>
+    <string name="ui_ea7d20da" formatted="false">"Audio test mode; translation disabled"</string>
+    <string name="ui_bdfb0ea3" formatted="false">"Waiting for device audio and translation…"</string>
+    <string name="ui_163cc45d" formatted="false">"Overlay closed. Check display permission."</string>
+    <string name="ui_b6dde" formatted="false">"Captions"</string>
+    <string name="ui_2f49dc81" formatted="false">"Collapse controls"</string>
+    <string name="ui_b31ec" formatted="false">"Gain"</string>
+    <string name="ui_2f4fd8c5" formatted="false">"Play translation"</string>
+    <string name="ui_46865b20" formatted="false">"Loudness boost"</string>
+    <string name="ui_10e6ac" formatted="false">"Lines"</string>
+    <string name="ui_fff23" formatted="false">"Background"</string>
+    <string name="ui_b803a" formatted="false">"Width"</string>
+    <string name="ui_403d0e5f" formatted="false">"Touch through"</string>
+    <string name="ui_63580d1e" formatted="false">"Open app"</string>
+    <string name="ui_4681db9c" formatted="false">"Hide captions"</string>
+    <string name="ui_445c08ba" formatted="false">"V2V %s · History stays on this phone. Recognition and translation require internet."</string>
+    <string name="ui_f69f5769" formatted="false">"V2V Live Translate"</string>
+    <string name="ui_31e3dbe4" formatted="false">"V2V · Audio session"</string>
+    <string name="ui_f34e22c0" formatted="false">"Capturing audio and captions · Tap Stop to end"</string>
+    <string name="ui_471d5dc9" formatted="false">"Show captions"</string>
+    <string name="ui_a2686" formatted="false">"Stop"</string>
+    <string name="ui_a89d592" formatted="false">"Install an offline %s voice, then restart translation. Captions still work."</string>
+    <string name="ui_485cdb5d" formatted="false">"Speech synthesis failed (%s). Some audio may be missing; captions are kept."</string>
+    <string name="ui_5027955d" formatted="false">"Could not initialize the speech engine. Check Android text-to-speech settings."</string>
+    <string name="ui_1994f7be" formatted="false">"Choose device audio and languages, consent to cloud processing, then start. Android capture permission is required."</string>
+    <string name="ui_561ebedc" formatted="false">"Stopped by user"</string>
+    <string name="ui_2b72e412" formatted="false">"No output yet"</string>
+</resources>

@@ -10,8 +10,8 @@ android {
         applicationId = "com.yinwei.v2v"
         minSdk = 29
         targetSdk = 35
-        versionCode = 11
-        versionName = "0.6.1-speech-flow"
+        versionCode = 12
+        versionName = "0.7.0-global"
     }
     buildFeatures { compose = true; buildConfig = true }
     compileOptions {

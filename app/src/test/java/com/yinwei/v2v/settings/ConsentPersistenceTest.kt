@@ -17,6 +17,22 @@ class ConsentPersistenceTest {
         val store = PreferenceDataStoreFactory.create(scope = CoroutineScope(job + Dispatchers.IO), produceFile = { file })
         try { block(SettingsStore(store)) } finally { job.cancelAndJoin() }
     }
+    @Test fun sixPointCaptionsAndTenLinesSurviveRestartAndClampInvalidValues() = runBlocking {
+        val directory = Files.createTempDirectory("v2v-caption-range").toFile()
+        val file = File(directory, "settings.preferences_pb")
+        try {
+            open(file) { it.savePresentation(PresentationSettings(captionSize = 6f, captionLines = 10)) }
+            open(file) {
+                assertEquals(6f, it.presentation.first().captionSize, 0f)
+                assertEquals(10, it.presentation.first().captionLines)
+                it.savePresentation(PresentationSettings(captionSize = 1f, captionLines = 99))
+            }
+            open(file) {
+                assertEquals(6f, it.presentation.first().captionSize, 0f)
+                assertEquals(10, it.presentation.first().captionLines)
+            }
+        } finally { directory.deleteRecursively() }
+    }
     @Test fun explicitConsentSurvivesRestartAndProviderChanges() = runBlocking {
         val directory = Files.createTempDirectory("v2v-consent").toFile()
         val file = File(directory, "settings.preferences_pb")

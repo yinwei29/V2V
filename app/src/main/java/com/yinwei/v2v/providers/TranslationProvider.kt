@@ -18,3 +18,9 @@ fun CloudProvider.create(key: String, journal: DiagnosticJournal? = null, gemini
     CloudProvider.OPENAI -> OpenAiProvider(key, diagnostics = journal)
     CloudProvider.GEMINI -> GeminiProvider(key, diagnostics = journal, model = geminiModel)
 }
+
+/** Providers that can return verbatim source and translation from one audio request. */
+data class AudioTranslation(val original: String, val translation: TranslatedText)
+interface AudioTranslationProvider {
+    suspend fun translateAudio(chunk: AudioChunk, language: String, targetLanguage: String): AudioTranslation
+}

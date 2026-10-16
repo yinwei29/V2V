@@ -23,11 +23,44 @@ class GeminiProviderTest {
         try { block(server, GeminiProvider(fixtureKey, baseUrl = server.url("v1beta/").toString())) }
         finally { server.shutdown() }
     }
-    private fun answer(text: String, reason: String = "STOP", tokens: Long? = null): MockResponse {
+    private fun answer(text: String, reason: String = "STOP", tokens: Long? = null, original: String? = null): MockResponse {
+        val decoded = JSONObject().put("text", text)
+        if (original != null) decoded.put("original", original)
         val root = JSONObject().put("candidates", JSONArray().put(JSONObject().put("finishReason", reason)
-            .put("content", JSONObject().put("parts", JSONArray().put(JSONObject().put("text", JSONObject().put("text", text).toString()))))))
+            .put("content", JSONObject().put("parts", JSONArray().put(JSONObject().put("text", decoded.toString()))))))
         if (tokens != null) root.put("usageMetadata", JSONObject().put("totalTokenCount", tokens))
         return MockResponse().setBody(root.toString())
+    }
+    @Test fun audioReturnsOriginalAndTranslationInOneAuthenticatedRequest() = runBlocking {
+        fixture { server, provider ->
+            server.enqueue(answer("Good morning. Welcome.", tokens = 42, original = "Selamat pagi. Selamat datang."))
+            val result = provider.translateAudio(chunk, "id", "en")
+            assertEquals("Selamat pagi. Selamat datang.", result.original)
+            assertEquals("Good morning. Welcome.", result.translation.text)
+            assertEquals(42L, result.translation.tokens)
+            assertEquals(1, server.requestCount)
+            val request = server.takeRequest()
+            assertEquals(fixtureKey, request.getHeader("x-goog-api-key"))
+            val body = JSONObject(request.body.readUtf8())
+            assertTrue(body.getJSONObject("systemInstruction").toString().contains("Do not summarize or omit sentences"))
+            assertTrue(body.getJSONObject("systemInstruction").toString().contains("English (en)"))
+            val required = body.getJSONObject("generationConfig").getJSONObject("responseFormat").getJSONObject("text")
+                .getJSONObject("schema").getJSONArray("required")
+            assertEquals(setOf("text", "original"), (0 until required.length()).map { required.getString(it) }.toSet())
+            val audio = body.getJSONArray("contents").getJSONObject(0).getJSONArray("parts").getJSONObject(0).getJSONObject("inlineData")
+            assertArrayEquals(chunk.wavBytes(), Base64.getDecoder().decode(audio.getString("data")))
+        }
+    }
+    @Test fun combinedSilenceIsEmptyButMissingOriginalAndMissingTranslationAreRejected() = runBlocking {
+        fixture { server, provider ->
+            server.enqueue(answer("", original = ""))
+            assertEquals("", provider.translateAudio(chunk, "auto", "id").original)
+            for (response in listOf(answer("translation"), answer("", original = "audible source"), answer("partial", "MAX_TOKENS", original = "source"))) {
+                server.enqueue(response)
+                try { provider.translateAudio(chunk, "auto", "id"); fail("Incomplete combined result accepted") }
+                catch (_: ProviderFailure) { }
+            }
+        }
     }
     @Test fun sendsRealWavAndUsesHeaderAuthenticationWithNoKeyInUrl() = runBlocking {
         fixture { server, provider ->
@@ -156,7 +189,7 @@ class GeminiProviderTest {
     }
     @Test fun geminiPipelinePublishesOriginalTranslationAndSpeechCallbackWithoutLoggingContent() = runBlocking {
         fixture { server, provider ->
-            server.enqueue(answer("private original")); server.enqueue(answer("私人譯文"))
+            server.enqueue(answer("私人譯文", original = "private original"))
             val repository = SessionRepository().apply { set(SessionSnapshot(id = "gemini", cloudEnabled = true, cloudProvider = CloudProvider.GEMINI)) }
             val directory = Files.createTempDirectory("gemini-log").toFile()
             val journal = DiagnosticJournal(directory, DiagnosticEnvironment("test", 35, "test", "test"))
@@ -164,11 +197,12 @@ class GeminiProviderTest {
             val delivered = CompletableDeferred<TranscriptSegment>()
             val pipeline = SubtitlePipeline("gemini", "en", provider, repository, pipelineScope, journal, { delivered.complete(it) })
             try {
-                repeat(80) { i -> pipeline.offer(AudioFrame("gemini", Source.OWNED_FILE, i.toLong(), i * 20000L, 48000,
+                repeat(200) { i -> pipeline.offer(AudioFrame("gemini", Source.OWNED_FILE, i.toLong(), i * 20000L, 48000,
                     ShortArray(960) { if (i < 50) 3000 else 0 }, i * 960L)) }
                 val segment = withTimeout(3000) { delivered.await() }
                 assertEquals("private original", segment.originalText); assertEquals("私人譯文", segment.translatedText)
                 assertEquals(provider.description, segment.provider); assertEquals(2, segment.revision)
+                assertEquals(1, server.requestCount)
                 val log = ByteArrayOutputStream().also(journal::export).toString("UTF-8")
                 assertTrue(log.contains("TRANSLATION_PUBLISHED")); assertFalse(log.contains("私人譯文"))
                 assertFalse(log.contains("private original")); assertFalse(log.contains(fixtureKey))

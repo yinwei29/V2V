@@ -1,6 +1,7 @@
 package com.yinwei.v2v.session
 
 import com.yinwei.v2v.languages.AppLanguage
+import com.yinwei.v2v.languages.uiText
 import com.yinwei.v2v.overlay.CaptionOverlay
 import android.app.*
 import android.content.*
@@ -22,6 +23,8 @@ import org.koin.android.ext.android.inject
 import java.util.UUID
 
 class TranslationForegroundService : Service() {
+    override fun attachBaseContext(base: android.content.Context) = super.attachBaseContext(com.yinwei.v2v.languages.UiLocale.wrap(base))
+
     private val repository: SessionRepository by inject()
     private val settings: SettingsStore by inject()
     private val keys: ApiKeyStore by inject()
@@ -231,8 +234,8 @@ class TranslationForegroundService : Service() {
         val restore = PendingIntent.getService(this, 2, Intent(this, javaClass).setAction(SHOW_OVERLAY), PendingIntent.FLAG_IMMUTABLE)
         val stop = PendingIntent.getService(this, 1, Intent(this, javaClass).setAction(STOP), PendingIntent.FLAG_IMMUTABLE)
         return Notification.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_captions)
-            .setContentTitle("V2V · 音訊工作階段").setContentText("擷取／字幕工作中 · 按停止結束；無自動重新錄音")
-            .setContentIntent(open).setOngoing(true).addAction(Notification.Action.Builder(null, "顯示字幕", restore).build()).addAction(Notification.Action.Builder(null, "停止", stop).build()).build()
+            .setContentTitle(uiText("V2V · 音訊工作階段")).setContentText(uiText("擷取／字幕工作中 · 按停止結束；無自動重新錄音"))
+            .setContentIntent(open).setOngoing(true).addAction(Notification.Action.Builder(null, uiText("顯示字幕"), restore).build()).addAction(Notification.Action.Builder(null, uiText("停止"), stop).build()).build()
     }
     companion object {
         const val START = "com.yinwei.v2v.START"

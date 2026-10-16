@@ -9,6 +9,7 @@ import android.provider.Settings
 import android.view.*
 import android.widget.*
 import androidx.core.content.edit
+import com.yinwei.v2v.languages.uiText
 import com.yinwei.v2v.R
 import com.yinwei.v2v.session.SessionSnapshot
 import com.yinwei.v2v.settings.PresentationSettings
@@ -33,7 +34,7 @@ class CaptionOverlay(private val context: Context, private val open: () -> Unit,
     private var paused = false
     private var appearance = PresentationSettings()
     private var translationGain = 1f
-    private var latest = "等待下一段翻譯…"
+    private var latest = context.uiText("等待下一段翻譯…")
     private val refreshers = mutableListOf<() -> Unit>()
     fun setTranslationGain(gain: Float) { translationGain = gain; refreshValues() }
     fun configure(settings: PresentationSettings) { appearance = settings; applyAppearance(); refreshValues() }
@@ -44,13 +45,13 @@ class CaptionOverlay(private val context: Context, private val open: () -> Unit,
         PixelFormat.TRANSLUCENT).apply { gravity = Gravity.TOP or Gravity.START; this.x = x; this.y = y }
     private fun preferredWidth() = preferences.getInt("captionWidth", dp(340)).coerceIn(dp(180), (context.resources.displayMetrics.widthPixels - dp(24)).coerceAtLeast(dp(180)))
     fun show() {
-        if (!Settings.canDrawOverlays(context)) { failed("請先開啟「顯示在其他應用程式上層」權限"); return }
+        if (!Settings.canDrawOverlays(context)) { failed(context.uiText("請先開啟「顯示在其他應用程式上層」權限")); return }
         if (circle != null) { visible = true; render(); return }
         try {
             val bubble = ImageView(context).apply {
                 setImageResource(R.drawable.ic_captions); setColorFilter(Color.WHITE); setPadding(dp(14), dp(14), dp(14), dp(14))
                 background = bg(Color.rgb(8, 127, 121), 28); elevation = dp(6).toFloat()
-                contentDescription = "V2V 浮動控制：點一下展開，拖曳移動"
+                contentDescription = context.uiText("V2V 浮動控制：點一下展開，拖曳移動")
             }
             val bp = params(dp(56), dp(56), preferences.getInt("bubbleX", 0), preferences.getInt("bubbleY", dp(160)))
             clamp(bp, dp(56)); drag(bubble, bp, "bubble") { controls = !controls; visible = true; render() }
@@ -58,30 +59,30 @@ class CaptionOverlay(private val context: Context, private val open: () -> Unit,
             val panel = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(12), dp(10), dp(12), dp(10)); elevation = dp(4).toFloat() }
             val label = OutlineCaption(context).apply {
                 setTextColor(Color.WHITE); setTypeface(null, Typeface.BOLD)
-                contentDescription = "翻譯字幕：拖曳移動，點一下展開控制"
+                contentDescription = context.uiText("翻譯字幕：拖曳移動，點一下展開控制")
             }
             panel.addView(label); text = label
             val cp = params(preferredWidth(), WindowManager.LayoutParams.WRAP_CONTENT, preferences.getInt("captionX", dp(12)), preferences.getInt("captionY", dp(280)))
             clamp(cp, dp(180)); drag(label, cp, "caption", panel) { controls = !controls; render() }
             manager.addView(panel, cp); caption = panel
             render(); failed("")
-        } catch (_: Exception) { close(); failed("浮窗無法顯示；主畫面字幕仍可使用，請檢查上層顯示權限") }
+        } catch (_: Exception) { close(); failed(context.uiText("浮窗無法顯示；主畫面字幕仍可使用，請檢查上層顯示權限")) }
     }
     fun update(state: SessionSnapshot) {
-        if (circle != null && !Settings.canDrawOverlays(context)) { close(); failed("上層顯示權限已撤銷；主畫面字幕持續"); return }
+        if (circle != null && !Settings.canDrawOverlays(context)) { close(); failed(context.uiText("上層顯示權限已撤銷；主畫面字幕持續")); return }
         val translated = state.segments.lastOrNull { it.translatedText.isNotBlank() }?.translatedText
         latest = when {
-            state.providerRecovering -> "服務暫時中斷，正在恢復…" + (translated?.let { "\n$it" } ?: "")
-            state.providerError.isNotBlank() -> "翻譯已暫停：${state.providerError}"
-            !state.cloudEnabled -> "音訊測試模式，未啟用翻譯"
-            else -> translated ?: "等待手機播放音訊與翻譯…"
+            state.providerRecovering -> context.uiText("服務暫時中斷，正在恢復…") + (translated?.let { "\n$it" } ?: "")
+            state.providerError.isNotBlank() -> context.uiText("翻譯已暫停：%s").format(state.providerError)
+            !state.cloudEnabled -> context.uiText("音訊測試模式，未啟用翻譯")
+            else -> translated ?: context.uiText("等待手機播放音訊與翻譯…")
         }
         text?.text = latest
         if (paused != state.outputPaused) { paused = state.outputPaused; refreshValues() }
         listOfNotNull(circle, caption).forEach { view ->
             val p = view.layoutParams as WindowManager.LayoutParams
             clamp(p, view.height.coerceAtLeast(dp(56)))
-            runCatching { manager.updateViewLayout(view, p) }.onFailure { close(); failed("浮窗已關閉；請重新檢查顯示權限") }
+            runCatching { manager.updateViewLayout(view, p) }.onFailure { close(); failed(context.uiText("浮窗已關閉；請重新檢查顯示權限")) }
         }
     }
     private fun present(next: PresentationSettings) { appearance = next; savePresentation(next); applyAppearance(); refreshValues() }
@@ -111,7 +112,7 @@ class CaptionOverlay(private val context: Context, private val open: () -> Unit,
         }
         panel.addView(shell, LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(10) })
         val tabs = LinearLayout(context)
-        listOf("播報", "字幕").forEachIndexed { index, title ->
+        listOf(context.uiText("播報"), context.uiText("字幕")).forEachIndexed { index, title ->
             tabs.addView(TextView(context).apply {
                 text = title; textSize = 14f; setTypeface(null, Typeface.BOLD); gravity = Gravity.CENTER
                 setTextColor(if (controlTab == index) teal else muted)
@@ -119,39 +120,39 @@ class CaptionOverlay(private val context: Context, private val open: () -> Unit,
                 setOnClickListener { controlTab = index; render() }
             }, LinearLayout.LayoutParams(0, dp(48), 1f))
         }
-        tabs.addView(iconButton(R.drawable.ic_close, "收合控制") { controls = false; render() })
+        tabs.addView(iconButton(R.drawable.ic_close, context.uiText("收合控制")) { controls = false; render() })
         shell.addView(tabs)
         val list = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
         val scroll = ScrollView(context).apply { isFillViewport = false; addView(list) }
         shell.addView(scroll, LinearLayout.LayoutParams(-1, minOf(dp(if (controlTab == 0) 276 else 288), context.resources.displayMetrics.heightPixels / 3)))
         if (controlTab == 0) {
-            stepper(list, "語速", R.drawable.ic_speed, { "%.2f×".format(appearance.speechRate) },
+            stepper(list, context.uiText("語速"), R.drawable.ic_speed, { "%.2f×".format(appearance.speechRate) },
                 { appearance.speechRate > 0.75f }, { appearance.speechRate < 2f },
                 { present(appearance.copy(speechRate = (appearance.speechRate - 0.1f).coerceAtLeast(0.75f))) },
                 { present(appearance.copy(speechRate = (appearance.speechRate + 0.1f).coerceAtMost(2f))) })
-            stepper(list, "增益", R.drawable.ic_sound, { "${(translationGain * 100).roundToInt()}%" }, { translationGain > 0f }, { translationGain < 4f },
+            stepper(list, context.uiText("增益"), R.drawable.ic_sound, { "${(translationGain * 100).roundToInt()}%" }, { translationGain > 0f }, { translationGain < 4f },
                 { gain(translationGain - 0.1f) }, { gain(translationGain + 0.1f) })
-            toggle(list, "播放翻譯", { appearance.speechEnabled }) { present(appearance.copy(speechEnabled = it)) }
-            toggle(list, "響度增強", { appearance.enhanceSpeech }) { present(appearance.copy(enhanceSpeech = it)) }
-            toggle(list, "自動追趕", { appearance.autoCatchUp }) { present(appearance.copy(autoCatchUp = it)) }
+            toggle(list, context.uiText("播放翻譯"), { appearance.speechEnabled }) { present(appearance.copy(speechEnabled = it)) }
+            toggle(list, context.uiText("響度增強"), { appearance.enhanceSpeech }) { present(appearance.copy(enhanceSpeech = it)) }
+            toggle(list, context.uiText("自動追趕"), { appearance.autoCatchUp }) { present(appearance.copy(autoCatchUp = it)) }
         } else {
-            stepper(list, "字級", R.drawable.ic_captions, { "${appearance.captionSize.roundToInt()}sp" }, { appearance.captionSize > 14 }, { appearance.captionSize < 30 },
-                { present(appearance.copy(captionSize = (appearance.captionSize - 1).coerceAtLeast(14f))) }, { present(appearance.copy(captionSize = (appearance.captionSize + 1).coerceAtMost(30f))) })
-            stepper(list, "行數", R.drawable.ic_file, { "${appearance.captionLines}" }, { appearance.captionLines > 2 }, { appearance.captionLines < 6 },
+            stepper(list, context.uiText("字級"), R.drawable.ic_captions, { "${appearance.captionSize.roundToInt()}sp" }, { appearance.captionSize > 6 }, { appearance.captionSize < 30 },
+                { present(appearance.copy(captionSize = (appearance.captionSize - 1).coerceAtLeast(6f))) }, { present(appearance.copy(captionSize = (appearance.captionSize + 1).coerceAtMost(30f))) })
+            stepper(list, context.uiText("行數"), R.drawable.ic_file, { "${appearance.captionLines}" }, { appearance.captionLines > 2 }, { appearance.captionLines < 10 },
                 { present(appearance.copy(captionLines = appearance.captionLines - 1)) }, { present(appearance.copy(captionLines = appearance.captionLines + 1)) })
-            stepper(list, "背景", R.drawable.ic_settings, { "${(appearance.backgroundOpacity * 100).roundToInt()}%" }, { appearance.backgroundOpacity > 0 }, { appearance.backgroundOpacity < 1 },
+            stepper(list, context.uiText("背景"), R.drawable.ic_settings, { "${(appearance.backgroundOpacity * 100).roundToInt()}%" }, { appearance.backgroundOpacity > 0 }, { appearance.backgroundOpacity < 1 },
                 { present(appearance.copy(backgroundOpacity = (appearance.backgroundOpacity - 0.1f).coerceAtLeast(0f))) }, { present(appearance.copy(backgroundOpacity = (appearance.backgroundOpacity + 0.1f).coerceAtMost(1f))) })
-            stepper(list, "寬度", R.drawable.ic_width, { "${(preferredWidth() / context.resources.displayMetrics.density).roundToInt()}" }, { preferredWidth() > dp(180) }, { preferredWidth() < context.resources.displayMetrics.widthPixels - dp(24) },
+            stepper(list, context.uiText("寬度"), R.drawable.ic_width, { "${(preferredWidth() / context.resources.displayMetrics.density).roundToInt()}" }, { preferredWidth() > dp(180) }, { preferredWidth() < context.resources.displayMetrics.widthPixels - dp(24) },
                 { resize(-dp(32)) }, { resize(dp(32)) })
-            toggle(list, "觸控穿透", { reading }) { reading = it; controls = false; render() }
+            toggle(list, context.uiText("觸控穿透"), { reading }) { reading = it; controls = false; render() }
         }
         val footer = LinearLayout(context).apply { gravity = Gravity.CENTER }
-        footer.addView(iconButton(R.drawable.ic_home, "開啟主畫面", open), LinearLayout.LayoutParams(0, dp(48), 1f))
-        footer.addView(iconButton(R.drawable.ic_eye, "隱藏字幕") { visible = false; controls = false; render() }, LinearLayout.LayoutParams(0, dp(48), 1f))
-        val pauseButton = iconButton(R.drawable.ic_pause, "暫停播報", pause)
-        refreshers += { pauseButton.setImageResource(if (paused) R.drawable.ic_play else R.drawable.ic_pause); pauseButton.contentDescription = if (paused) "恢復播報" else "暫停播報" }
+        footer.addView(iconButton(R.drawable.ic_home, context.uiText("開啟主畫面"), open), LinearLayout.LayoutParams(0, dp(48), 1f))
+        footer.addView(iconButton(R.drawable.ic_eye, context.uiText("隱藏字幕")) { visible = false; controls = false; render() }, LinearLayout.LayoutParams(0, dp(48), 1f))
+        val pauseButton = iconButton(R.drawable.ic_pause, context.uiText("暫停播報"), pause)
+        refreshers += { pauseButton.setImageResource(if (paused) R.drawable.ic_play else R.drawable.ic_pause); pauseButton.contentDescription = if (paused) context.uiText("恢復播報") else context.uiText("暫停播報") }
         footer.addView(pauseButton, LinearLayout.LayoutParams(0, dp(48), 1f))
-        footer.addView(iconButton(R.drawable.ic_stop, "結束翻譯", stop).apply { setColorFilter(Color.rgb(255, 174, 161)) }, LinearLayout.LayoutParams(0, dp(48), 1f))
+        footer.addView(iconButton(R.drawable.ic_stop, context.uiText("結束翻譯"), stop).apply { setColorFilter(Color.rgb(255, 174, 161)) }, LinearLayout.LayoutParams(0, dp(48), 1f))
         shell.addView(footer); refreshValues()
     }
     private fun label(title: String) = TextView(context).apply { text = title; setTextColor(Color.WHITE); textSize = 14f; gravity = Gravity.CENTER_VERTICAL }
@@ -165,9 +166,9 @@ class CaptionOverlay(private val context: Context, private val open: () -> Unit,
         val row = LinearLayout(context).apply { gravity = Gravity.CENTER_VERTICAL }
         row.addView(ImageView(context).apply { setImageResource(icon); setColorFilter(muted) }, LinearLayout.LayoutParams(dp(20), dp(20)).apply { marginEnd = dp(8) })
         row.addView(label(title), LinearLayout.LayoutParams(0, dp(52), 1f))
-        val minus = iconButton(R.drawable.ic_minus, "降低$title", decrease)
+        val minus = iconButton(R.drawable.ic_minus, context.uiText("降低 %s").format(title), decrease)
         val number = label("").apply { gravity = Gravity.CENTER; setTextColor(teal); setTypeface(null, Typeface.BOLD); textSize = 16f }
-        val plus = iconButton(R.drawable.ic_plus, "提高$title", increase)
+        val plus = iconButton(R.drawable.ic_plus, context.uiText("提高 %s").format(title), increase)
         row.addView(minus); row.addView(number, LinearLayout.LayoutParams(dp(58), dp(52))); row.addView(plus); parent.addView(row)
         refreshers += { number.text = value(); minus.isEnabled = less(); plus.isEnabled = more(); minus.alpha = if (less()) 1f else 0.3f; plus.alpha = if (more()) 1f else 0.3f }
     }

@@ -6,6 +6,15 @@ import org.junit.Test
 
 class ChunkMailboxTest {
     private fun chunk(id: Long, seconds: Int) = AudioChunk(id, id * 10000, id * 10000 + seconds * 1000, ShortArray(seconds * 48000))
+    @Test fun productionBacklogKeepsThreeLongChunksInOrderAndRejectsOverflow() = runBlocking {
+        val mailbox = ChunkMailbox(maxQueuedSamples = 30 * 48000, maxChunks = 12)
+        repeat(3) { assertTrue(mailbox.tryOffer(chunk(it.toLong(), 10))) }
+        assertFalse(mailbox.tryOffer(chunk(3, 1)))
+        assertEquals(30 * 48000, mailbox.queuedSamples)
+        repeat(3) { assertEquals(it.toLong(), mailbox.receive()!!.id) }
+        assertTrue(mailbox.tryOffer(chunk(3, 10)))
+        mailbox.cancel(); assertEquals(0, mailbox.queuedSamples)
+    }
     @Test fun shortChunksWaitWithinFiveSecondBudgetInsteadOfBeingDroppedImmediately() = runBlocking {
         val mailbox = ChunkMailbox()
         assertTrue(mailbox.tryOffer(chunk(1, 2)))

@@ -1,0 +1,195 @@
+<resources>
+    <string name="ui_6a0feacd" formatted="false">"%s を下げる"</string>
+    <string name="ui_c4edcf06" formatted="false">"%s を上げる"</string>
+    <string name="ui_100ad4" formatted="false">"翻訳"</string>
+    <string name="ui_fb604" formatted="false">"履歴"</string>
+    <string name="ui_1025c1" formatted="false">"音声"</string>
+    <string name="ui_11170d" formatted="false">"設定"</string>
+    <string name="ui_40b0a2ef" formatted="false">"一文ずつ理解する"</string>
+    <string name="ui_bb017159" formatted="false">"テキストを書き出す"</string>
+    <string name="ui_412bad57" formatted="false">"翻訳履歴を削除"</string>
+    <string name="ui_182e5eb" formatted="false">"権限を確認中"</string>
+    <string name="ui_1a931ca" formatted="false">"準備中"</string>
+    <string name="ui_1e33bfe" formatted="false">"停止中"</string>
+    <string name="ui_398456d3" formatted="false">"音声を待っています"</string>
+    <string name="ui_d2cc6d4f" formatted="false">"サービスの復旧待ち"</string>
+    <string name="ui_2af42d6f" formatted="false">"字幕は一時停止中"</string>
+    <string name="ui_4725e7c5" formatted="false">"音声モード"</string>
+    <string name="ui_1f19dd9" formatted="false">"翻訳中"</string>
+    <string name="ui_fd567470" formatted="false">"フローティング字幕を表示"</string>
+    <string name="ui_ce1f8500" formatted="false">"音声テストを終了"</string>
+    <string name="ui_3a8ad723" formatted="false">"翻訳を終了"</string>
+    <string name="ui_67c53611" formatted="false">"音声テストを開始"</string>
+    <string name="ui_3b67906" formatted="false">"API キーを設定"</string>
+    <string name="ui_455b9874" formatted="false">"翻訳を開始"</string>
+    <string name="ui_2d43ceeb" formatted="false">"読み上げを再開"</string>
+    <string name="ui_2fe5c7f5" formatted="false">"読み上げを一時停止"</string>
+    <string name="ui_218ff39c" formatted="false">"翻訳するには下の音声処理に同意してください。選択は保存されます。"</string>
+    <string name="ui_9df69792" formatted="false">"音声と言語"</string>
+    <string name="ui_c53135dc" formatted="false">"端末の再生音声"</string>
+    <string name="ui_29bd6e2" formatted="false">"端末の WAV ファイル"</string>
+    <string name="ui_342f4bb1" formatted="false">"テスト音声"</string>
+    <string name="ui_65913eb3" formatted="false">"端末の再生音声 · アプリ名の指定不要"</string>
+    <string name="ui_189caee5" formatted="false">"端末の WAV · 48k mono PCM16"</string>
+    <string name="ui_6e55907b" formatted="false">"テスト音声 · 440 / 660 Hz"</string>
+    <string name="ui_457a18b3" formatted="false">"別のファイルを選択"</string>
+    <string name="ui_44fc0cb0" formatted="false">"音声ファイルを選択"</string>
+    <string name="ui_25d6986c" formatted="false">"元の言語"</string>
+    <string name="ui_37de32f8" formatted="false">"翻訳先の言語"</string>
+    <string name="ui_1f2beb3b" formatted="false">"%s · エンジンを変更"</string>
+    <string name="ui_6844c09b" formatted="false">"この音声を処理する権利があり、認識と翻訳のため %s へ送信することに同意します。料金がかかる場合があります。"</string>
+    <string name="ui_7223ef78" formatted="false">"選択を保存します。同意はいつでも取り消せます。"</string>
+    <string name="ui_a04cd126" formatted="false">"API キーを設定"</string>
+    <string name="ui_c10baa2b" formatted="false">"Android が許可した再生音声を取得します。通話や保護された音声は取得できない場合があります。原音の音量は再生元アプリで調整してください。"</string>
+    <string name="ui_83cfa3ae" formatted="false">"テスト音は翻訳音声ではなく、クラウドへ送信されません。"</string>
+    <string name="ui_3300d345" formatted="false">"フローティング字幕"</string>
+    <string name="ui_1366cb" formatted="false">"表示"</string>
+    <string name="ui_cf0a2" formatted="false">"権限"</string>
+    <string name="ui_1bf3b3fd" formatted="false">"他のアプリを使用中も、丸いボタンから読み上げと字幕を調整できます。"</string>
+    <string name="ui_6bade60d" formatted="false">"エンジンと API キー"</string>
+    <string name="ui_8d6f48fa" formatted="false">"翻訳を終了するとエンジンを変更できます。"</string>
+    <string name="ui_5a510f35" formatted="false">"Gemini モデル"</string>
+    <string name="ui_4eaea695" formatted="false">"サービスが混雑している場合は終了して別のモデルを選択してください。プロバイダーは自動変更されません。"</string>
+    <string name="ui_261ad359" formatted="false">"表示言語"</string>
+    <string name="ui_42c2de3f" formatted="false">"システムに従う"</string>
+    <string name="ui_fb071fb5" formatted="false">"表示言語は翻訳元・翻訳先とは別の設定です。変更する前に翻訳を終了してください。"</string>
+    <string name="ui_4149582e" formatted="false">"音声エンジン"</string>
+    <string name="ui_10470239" formatted="false">"読み上げは端末にインストールされた翻訳先言語のオフライン音声を使用します。認識と翻訳には通信が必要です。"</string>
+    <string name="ui_9eb6e2e1" formatted="false">"オフライン音声をインストール"</string>
+    <string name="ui_d4254355" formatted="false">"音声設定 → エンジン横の歯車 → 音声データのインストール → 翻訳先の言語をダウンロード。Samsung と Google でメニューが異なる場合があります。完了後、翻訳を開始し直してください。"</string>
+    <string name="ui_dcb11233" formatted="false">"Android の音声設定"</string>
+    <string name="ui_cc0f8624" formatted="false">"診断とテスト"</string>
+    <string name="ui_2162c7e8" formatted="false">"技術情報を折りたたむ"</string>
+    <string name="ui_593e64df" formatted="false">"技術情報とログを表示"</string>
+    <string name="ui_6793de20" formatted="false">"認識 / 翻訳 / 読み上げ"</string>
+    <string name="ui_a0fca" formatted="false">"入力元"</string>
+    <string name="ui_472a53d9" formatted="false">"音声の出力先"</string>
+    <string name="ui_3c766742" formatted="false">"スキップ / 失敗"</string>
+    <string name="ui_4727ac0" formatted="false">"翻訳の使用量"</string>
+    <string name="ui_814671ae" formatted="false">"使用量の情報なし"</string>
+    <string name="ui_12b8b4" formatted="false">"%d 件"</string>
+    <string name="ui_1f484d61" formatted="false">"この文を翻訳中…"</string>
+    <string name="ui_ff9e4feb" formatted="false">"音声を認識中…"</string>
+    <string name="ui_23fbc129" formatted="false">"次の発話を待っています…"</string>
+    <string name="ui_9ca7ff05" formatted="false">"言葉の距離を縮めよう。"</string>
+    <string name="ui_b4389cdf" formatted="false">"読み上げは一時停止中"</string>
+    <string name="ui_26cf640d" formatted="false">"待機 %d 件 · %.1f 秒"</string>
+    <string name="ui_13be149e" formatted="false">"翻訳履歴を表示"</string>
+    <string name="ui_c8924" formatted="false">"読み上げ"</string>
+    <string name="ui_9ace1c9a" formatted="false">"翻訳音声を再生"</string>
+    <string name="ui_115941" formatted="false">"読み上げ速度"</string>
+    <string name="ui_3c572ca3" formatted="false">"自動追いつき"</string>
+    <string name="ui_22fa0de1" formatted="false">"遅れた場合は最大 2 倍速"</string>
+    <string name="ui_41a7a350" formatted="false">"翻訳音声のゲイン"</string>
+    <string name="ui_2e2729b5" formatted="false">"読み上げの音量補正"</string>
+    <string name="ui_ab68cc17" formatted="false">"小さな合成音声を最大約 +12 dB 補正"</string>
+    <string name="ui_d40b4bc6" formatted="false">"ゲインは最大 400%。端末のメディア音量やイヤホン、音量保護の影響を受けます。低い値から調整してください。他のアプリの音量は変わりません。"</string>
+    <string name="ui_10fe1d3f" formatted="false">"システムの音量設定"</string>
+    <string name="ui_96dc099c" formatted="false">"出力先を確認して再開"</string>
+    <string name="ui_d6bc5518" formatted="false">"原音と翻訳音声"</string>
+    <string name="ui_41ac8f85" formatted="false">"翻訳音声のチャンネル"</string>
+    <string name="ui_2bf4b929" formatted="false">"左右に分離"</string>
+    <string name="ui_28178be7" formatted="false">"翻訳のみ"</string>
+    <string name="ui_de8dc" formatted="false">"ミックス"</string>
+    <string name="ui_b0e2150c" formatted="false">"原音 %d%%"</string>
+    <string name="ui_25420ac4" formatted="false">"左右を入れ替える"</string>
+    <string name="ui_bacf6a61" formatted="false">"原音 20% · 翻訳 100%"</string>
+    <string name="ui_12c47a" formatted="false">"両耳"</string>
+    <string name="ui_bdf0d" formatted="false">"左耳"</string>
+    <string name="ui_aaaa0" formatted="false">"右耳"</string>
+    <string name="ui_480ef6c8" formatted="false">"V2V の翻訳音声のみを調整します。他のアプリの原音や左右チャンネルは変わりません。実際の左右分離はイヤホンや通話の出力先に依存します。"</string>
+    <string name="ui_2af2c1c8" formatted="false">"字幕の表示"</string>
+    <string name="ui_b8ca3" formatted="false">"文字サイズ"</string>
+    <string name="ui_4722d697" formatted="false">"表示行数"</string>
+    <string name="ui_12a63c9c" formatted="false">"背景 %d%%"</string>
+    <string name="ui_87ce8424" formatted="false">"白文字と黒い縁取りは背景の透明度に影響されません。タッチ透過モードでは Android の制限により全体が少し透けます。"</string>
+    <string name="ui_4cce313f" formatted="false">"翻訳履歴をすべて削除しますか？"</string>
+    <string name="ui_261a8394" formatted="false">"端末に保存した履歴を削除します。翻訳は継続し、自動保存が有効なら新しい内容は保存されます。書き出したファイルは別途削除してください。"</string>
+    <string name="ui_de8ff" formatted="false">"削除"</string>
+    <string name="ui_a9472" formatted="false">"キャンセル"</string>
+    <string name="ui_ec65e830" formatted="false">"翻訳履歴 · %d"</string>
+    <string name="ui_f6788b86" formatted="false">"原文と訳文をいつでも確認。"</string>
+    <string name="ui_3c4f3686" formatted="false">"自動保存"</string>
+    <string name="ui_645cef57" formatted="false">"この端末にのみ保存。最大 1,000 件または 4 MB。技術ログには含まれません。"</string>
+    <string name="ui_471c75b3" formatted="false">"原文を表示"</string>
+    <string name="ui_92f8d693" formatted="false">"原文または訳文を検索"</string>
+    <string name="ui_f4cdd293" formatted="false">"翻訳履歴はまだありません"</string>
+    <string name="ui_1a4dbdf3" formatted="false">"一致する履歴なし"</string>
+    <string name="ui_55dae0a5" formatted="false">"完了した翻訳がここに表示されます。"</string>
+    <string name="ui_94bfef44" formatted="false">"別のキーワードをお試しください。"</string>
+    <string name="ui_3c4f5bc2" formatted="false">"自動検出"</string>
+    <string name="ui_89257164" formatted="false">"音声インストーラーが見つかりません。システム設定で「テキスト読み上げ」を検索してください。"</string>
+    <string name="ui_78d779b9" formatted="false">"テキストを書き出しました"</string>
+    <string name="ui_54fc9283" formatted="false">"書き出せませんでした。保存先を選び直してください。"</string>
+    <string name="ui_4acf1c08" formatted="false">"技術ログを書き出しました。問題の調査用にチャットへ添付できます。"</string>
+    <string name="ui_5a950965" formatted="false">"ログを書き出せませんでした。保存先を選び直してください。"</string>
+    <string name="ui_19971f52" formatted="false">"取得の許可がキャンセルされました。録音は開始していません。"</string>
+    <string name="ui_d2e87ce8" formatted="false">"音声取得の権限がありません。取得は開始せず、マイクも使用しません。"</string>
+    <string name="ui_e6564dc9" formatted="false">"翻訳履歴を削除しました"</string>
+    <string name="ui_672f231c" formatted="false">"削除できませんでした。後でもう一度お試しください。"</string>
+    <string name="ui_8eb76e98" formatted="false">"V2V 技術ログを共有"</string>
+    <string name="ui_f8217707" formatted="false">"共有画面を開きました。送信先を選択してください。"</string>
+    <string name="ui_76947ee6" formatted="false">"共有できませんでした。ファイルを書き出してください。"</string>
+    <string name="ui_7ff1c591" formatted="false">"今回の音声・画面取得に許可が必要です。マイクは使用しません。"</string>
+    <string name="ui_58041552" formatted="false">"サービスを開始できませんでした。アプリを表示したまま再試行してください。"</string>
+    <string name="ui_d8e712bb" formatted="false">"%s エンジンとキー"</string>
+    <string name="ui_86a0f417" formatted="false">"暗号化したキーを保存済み。元の値は表示しません。"</string>
+    <string name="ui_8fcf036" formatted="false">"キーが未設定のため、クラウド字幕は利用できません。"</string>
+    <string name="ui_e49d2696" formatted="false">"API キー（この端末のみ）"</string>
+    <string name="ui_6ad81e40" formatted="false">"Keystore で暗号化して保存しました"</string>
+    <string name="ui_cf9df7fb" formatted="false">"保存できませんでした。端末の Keystore を確認してキーを入力し直してください。"</string>
+    <string name="ui_ec7c247" formatted="false">"保存 / 更新"</string>
+    <string name="ui_1334a1da" formatted="false">"キーを削除しました"</string>
+    <string name="ui_74b31893" formatted="false">"キーを削除できませんでした。後で再試行してください。"</string>
+    <string name="ui_f5bc9" formatted="false">"削除"</string>
+    <string name="ui_97e25811" formatted="false">"キーとモデルの確認に成功しました。音声翻訳は別途動作確認が必要です。"</string>
+    <string name="ui_14811510" formatted="false">"接続に失敗したかキーが無効です。設定を確認してください。"</string>
+    <string name="ui_3ecd7faa" formatted="false">"処理中…"</string>
+    <string name="ui_4f1d2324" formatted="false">"接続テスト（キーのみ、音声なし）"</string>
+    <string name="ui_3ae315c5" formatted="false">"OpenAI · whisper-1 で認識 / gpt-4o-mini で翻訳。"</string>
+    <string name="ui_b3702b81" formatted="false">"Google Gemini · %s。Google AI Studio の API キーを使用してください。"</string>
+    <string name="ui_9ced6488" formatted="false">"最大 10 秒の音声区間ごとに字幕を更新します。読み上げはオフライン音声を使用します。料金や利用枠はプロバイダー側で管理してください。"</string>
+    <string name="ui_9e822bbe" formatted="false">"テストログ"</string>
+    <string name="ui_af508c23" formatted="false">"技術イベントを記録中"</string>
+    <string name="ui_1dabfd15" formatted="false">"技術イベントの記録は無効"</string>
+    <string name="ui_a9d3f496" formatted="false">"開始・停止、権限、音量、出力先、プロバイダー状態、エラー種別を記録します。録音・字幕・キー・ファイルパス・端末 ID は含みません。機種と Android バージョンを含み、端末に最大 3 × 512 KiB 保存します。"</string>
+    <string name="ui_75b1ce2f" formatted="false">"ログを書き出す"</string>
+    <string name="ui_4c42b9e9" formatted="false">"ログを共有"</string>
+    <string name="ui_a64bcc0e" formatted="false">"既存ログを削除しました。記録が有効なら新しいイベントは引き続き保存されます。"</string>
+    <string name="ui_e07656aa" formatted="false">"既存ログを削除"</string>
+    <string name="ui_261f9728" formatted="false">"記録を有効化 → 問題を再現 → セッションを停止 → 操作手順とともにログを書き出し・共有してください。"</string>
+    <string name="ui_6635532e" formatted="false">"次の翻訳を待っています…"</string>
+    <string name="ui_6d52ed34" formatted="false">"先に「他のアプリの上に表示」の権限を有効にしてください。"</string>
+    <string name="ui_4ba29462" formatted="false">"V2V フローティング操作：タップで展開、ドラッグで移動"</string>
+    <string name="ui_2cbc9aa1" formatted="false">"翻訳字幕：ドラッグで移動、タップで操作を表示"</string>
+    <string name="ui_572d03b5" formatted="false">"字幕を重ねて表示できません。メイン画面の字幕は使用できます。表示権限を確認してください。"</string>
+    <string name="ui_bff6eb7a" formatted="false">"重ねて表示する権限が取り消されました。メイン画面の字幕は継続します。"</string>
+    <string name="ui_117c41bb" formatted="false">"サービスが中断しました。復旧中…"</string>
+    <string name="ui_9fbc65f9" formatted="false">"翻訳を一時停止：%s"</string>
+    <string name="ui_ea7d20da" formatted="false">"音声テストモード：翻訳は無効"</string>
+    <string name="ui_bdfb0ea3" formatted="false">"端末の再生音声と翻訳を待っています…"</string>
+    <string name="ui_163cc45d" formatted="false">"フローティング字幕を閉じました。表示権限を確認してください。"</string>
+    <string name="ui_b6dde" formatted="false">"字幕"</string>
+    <string name="ui_2f49dc81" formatted="false">"操作を折りたたむ"</string>
+    <string name="ui_b31ec" formatted="false">"ゲイン"</string>
+    <string name="ui_2f4fd8c5" formatted="false">"翻訳を再生"</string>
+    <string name="ui_46865b20" formatted="false">"音量補正"</string>
+    <string name="ui_10e6ac" formatted="false">"行数"</string>
+    <string name="ui_fff23" formatted="false">"背景"</string>
+    <string name="ui_b803a" formatted="false">"幅"</string>
+    <string name="ui_403d0e5f" formatted="false">"タッチ透過"</string>
+    <string name="ui_63580d1e" formatted="false">"アプリを開く"</string>
+    <string name="ui_4681db9c" formatted="false">"字幕を隠す"</string>
+    <string name="ui_445c08ba" formatted="false">"V2V %s · 履歴は端末に保存されます。認識と翻訳には通信が必要です。"</string>
+    <string name="ui_f69f5769" formatted="false">"V2V リアルタイム翻訳"</string>
+    <string name="ui_31e3dbe4" formatted="false">"V2V · 音声セッション"</string>
+    <string name="ui_f34e22c0" formatted="false">"音声・字幕を処理中 · 停止で終了"</string>
+    <string name="ui_471d5dc9" formatted="false">"字幕を表示"</string>
+    <string name="ui_a2686" formatted="false">"停止"</string>
+    <string name="ui_a89d592" formatted="false">"%s のオフライン音声をインストールして翻訳を開始し直してください。字幕は引き続き使えます。"</string>
+    <string name="ui_485cdb5d" formatted="false">"音声合成に失敗しました（%s）。音声の一部が欠ける場合があります。字幕は保持されます。"</string>
+    <string name="ui_5027955d" formatted="false">"音声エンジンを初期化できません。Android のテキスト読み上げ設定を確認してください。"</string>
+    <string name="ui_1994f7be" formatted="false">"端末の音声と言語を選び、クラウド処理に同意して開始してください。Android の取得権限が必要です。"</string>
+    <string name="ui_561ebedc" formatted="false">"ユーザーが停止しました"</string>
+    <string name="ui_2b72e412" formatted="false">"まだ出力していません"</string>
+</resources>

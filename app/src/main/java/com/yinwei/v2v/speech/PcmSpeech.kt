@@ -1,7 +1,7 @@
 package com.yinwei.v2v.speech
 
 import com.yinwei.v2v.diagnostics.*
-import com.yinwei.v2v.languages.AppLanguage
+import com.yinwei.v2v.languages.*
 import com.yinwei.v2v.settings.PresentationSettings
 import android.content.Context
 import android.media.AudioFormat
@@ -39,7 +39,7 @@ class PcmSpeech(private val context: Context, private val id: String, private va
                 OfflineVoicePolicy.score(targetLanguage, voice.locale.toLanguageTag(), voice.isNetworkConnectionRequired)?.let { it to voice }
             }?.sortedWith(compareBy<Pair<Int, android.speech.tts.Voice>> { it.first }.thenBy { it.second.name })?.firstOrNull()?.second
             if (voice == null) {
-                update(StageState.ERROR, "請在 Android 文字轉語音設定安裝離線${AppLanguage.label(targetLanguage)}語音，再重新開始；字幕仍可使用")
+                update(StageState.ERROR, UiLocale.wrap(context).uiText("請先安裝離線 %s 語音，再重新開始；字幕仍可使用。").format(UiLocale.wrap(context).languageLabel(targetLanguage)))
                 return@launch
             }
             check(tts.setVoice(voice) == TextToSpeech.SUCCESS)
@@ -65,14 +65,14 @@ class PcmSpeech(private val context: Context, private val id: String, private va
                         val began = System.nanoTime()
                         // Retry oversized engine output as smaller phrases; never discard the whole paragraph.
                         synthesizePhrase(tts, phrase) { rawAudio ->
-                            val level = withContext(Dispatchers.Default) { SpeechLoudness.process(rawAudio, options().enhanceSpeech) }
+                            val level = withContext(Dispatchers.Default) { SpeechLoudness.process(SpeechPcm.trimBoundarySilence(rawAudio), options().enhanceSpeech) }
                             val audio = level.pcm
                             while (epoch == generation && queue.active(request.key) && !paused() && options().speechEnabled) {
                                 if (queue.append(request.key, audio)) {
                                     journal.record(DiagnosticEvent.TTS_PCM_READY, id, mapOf(Metric.SAMPLES to audio.size,
                                         Metric.SEGMENT_ID to request.segmentId, Metric.PHRASE_INDEX to index,
                                         Metric.LATENCY_MS to (System.nanoTime() - began) / 1_000_000, Metric.SPEECH_RATE to rate,
-                                        Metric.INPUT_RMS to level.inputRms, Metric.OUTPUT_RMS to level.outputRms, Metric.NORMALIZATION_GAIN to level.appliedGain))
+                                        Metric.TRIMMED_SAMPLES to (rawAudio.size - audio.size), Metric.INPUT_RMS to level.inputRms, Metric.OUTPUT_RMS to level.outputRms, Metric.NORMALIZATION_GAIN to level.appliedGain))
                                     break
                                 }
                                 delay(20) // Playback frees space; do not throw away valid speech because PCM is temporarily full.
@@ -87,12 +87,12 @@ class PcmSpeech(private val context: Context, private val id: String, private va
                         journal.record(DiagnosticEvent.TTS_FAILURE, id, mapOf(Metric.SEGMENT_ID to request.segmentId),
                             mapOf(Tag.TTS_REASON to reason), e.javaClass)
                         repository.update { if (it.id == id) it.copy(ttsFailures = it.ttsFailures + 1) else it }
-                        update(StageState.ERROR, "語音合成失敗（${reason.name}）；本段部分語音可能缺失，字幕仍保留")
+                        update(StageState.ERROR, UiLocale.wrap(context).uiText("語音合成失敗（%s）；本段部分語音可能缺失，字幕仍保留。").format(reason.name))
                     }
                 } finally { queue.complete(request.key) }
             }
         } catch (e: CancellationException) { throw e }
-        catch (_: Exception) { update(StageState.ERROR, "無法初始化 Android 語音引擎；請檢查文字轉語音設定") }
+        catch (_: Exception) { update(StageState.ERROR, UiLocale.wrap(context).uiText("無法初始化 Android 語音引擎；請檢查文字轉語音設定")) }
         finally { engine?.stop(); engine?.shutdown(); engine = null }
     }
     fun offer(segment: com.yinwei.v2v.transcript.TranscriptSegment) {

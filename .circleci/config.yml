@@ -17,6 +17,7 @@ jobs:
           name: Build, unit tests and Android lint
           command: |
             set -o pipefail
+            python3 ./scripts/verify-locales.py
             ./gradlew --no-daemon assembleDebug testDebugUnitTest lintDebug 2>&1 | tee ci-build.log
       - store_artifacts:
           path: ci-build.log

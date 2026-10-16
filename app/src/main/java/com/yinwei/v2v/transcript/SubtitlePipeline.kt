@@ -7,7 +7,7 @@ import com.yinwei.v2v.session.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 
-/** 250 × 20ms bounded ingress. No waiting chunk backlog: busy provider drops are counted and shown. */
+/** Bounded ingress and FIFO backlog; overload remains counted rather than growing without limit. */
 class SubtitlePipeline(
     private val sessionId: String, private val language: String, private val provider: TranslationProvider,
     private val repository: SessionRepository, scope: CoroutineScope,
@@ -16,7 +16,7 @@ class SubtitlePipeline(
     private val targetLanguage: String = "zh-TW",
 ) {
     private val frames = Channel<AudioFrame>(250)
-    private val chunks = ChunkMailbox()
+    private val chunks = ChunkMailbox(maxQueuedSamples = 30 * 48000, maxChunks = 12)
     private val ledger = TranscriptLedger(sessionId)
     private val worker = scope.launch(Dispatchers.IO) {
         var consecutiveFailures = 0
@@ -54,8 +54,10 @@ class SubtitlePipeline(
         finally { chunks.close() }
     }
     private suspend fun process(chunk: AudioChunk) {
-        stage(asr = StageState.RUNNING, mt = StageState.IDLE)
-        val original = provider.transcribe(chunk, language)
+        stage(asr = StageState.RUNNING, mt = if (provider is AudioTranslationProvider) StageState.RUNNING else StageState.IDLE)
+        val began = System.nanoTime()
+        val combined = (provider as? AudioTranslationProvider)?.translateAudio(chunk, language, targetLanguage)
+        val original = combined?.original ?: provider.transcribe(chunk, language)
         currentCoroutineContext().ensureActive()
         if (original.isBlank()) {
             diagnostics?.record(DiagnosticEvent.ASR_EMPTY, sessionId, mapOf(Metric.SEGMENT_ID to chunk.id))
@@ -65,8 +67,7 @@ class SubtitlePipeline(
             originalText = original, sourceLanguage = language, provider = provider.description, targetLanguage = targetLanguage)
         publish(segment)
         stage(StageState.IDLE, StageState.RUNNING)
-        val began = System.nanoTime()
-        val result = provider.translate(original, language, targetLanguage)
+        val result = combined?.translation ?: provider.translate(original, language, targetLanguage)
         currentCoroutineContext().ensureActive()
         segment = segment.copy(revision = 2, translatedText = result.text, translationLatencyMs = (System.nanoTime() - began) / 1_000_000)
         publish(segment)
@@ -75,7 +76,7 @@ class SubtitlePipeline(
         stage(StageState.IDLE, StageState.IDLE)
     }
     private val segmenter = scope.launch(Dispatchers.IO) {
-        val splitter = SpeechSegmenter()
+        val splitter = SpeechSegmenter(minMs = if (provider is AudioTranslationProvider) 4000 else 0)
         try {
             for (frame in frames) {
                 if (frame.sessionId != sessionId) continue
