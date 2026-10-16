@@ -1,3 +1,9 @@
+# PROJECT_HANDOFF · 0.6.1-speech-flow
+
+修正英文／印尼文被空格切成短詞而反覆合成的問題。目的語言中文及日文維持原策略，其餘語言以句子與完整詞優先、最多120 code points。過長PCM遞迴縮短及有界佇列保留。詳見 docs/SPEECH_FLOW.md；真機流暢度仍須使用者試聽。本版APK由CircleCI提供，不沿用舊APK。無新增手動設定要求。
+
+---
+
 # PROJECT_HANDOFF · 0.6.0-languages
 
 使用者最新0.5.2Log為Gemini503後重試SocketTimeout，ASR錯誤後管線永久停止。新增暫時失敗恢復及模型選擇，同時按使用者要求完成來源／目的多語言（15種＋來源auto）、目的語言離線播報／紀錄匯出、手機播放音訊不限App名稱。既有勾一次記住及允許截圖保留。

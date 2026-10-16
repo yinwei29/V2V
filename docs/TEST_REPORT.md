@@ -1,3 +1,9 @@
+# 測試報告 · 0.6.1-speech-flow
+
+新增4項播報分句回歸測試：英／印尼短句完整合成、長段落保持完整詞與內容、中文日文原策略保持、小數及超長詞／遞迴分段保持有界且無損。程式不記錄原始翻譯內容或Key，原始使用者Log不提交。本機全主程式及所有測試來源直接編譯成功，61項不需網路的JUnit全部通過，輸出見evidence/speech-flow/；完整APK／所有JUnit／lint以本版CircleCI及Artifacts驗證資料為準。實體手機試聽仍待驗收。
+
+---
+
 # 測試報告 · 0.6.0-languages
 
 2026-10-16。本機使用快取Kotlin／Compose compiler直接編譯所有主程式及測試程式成功；57項不需網路JUnit通過（包含恢復、設定、歷史、DSP等）。完整Gradle建置／所有網路測試／Android lint以本版CircleCI為準，CI Artifacts提供實際verification.json、ci-build.log與APK checksum。本機Gradle未成功啟動額外網路權限流程，不沿用舊版本測試數或APK當作本版驗證。

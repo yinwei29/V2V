@@ -54,7 +54,7 @@ class PcmSpeech(private val context: Context, private val id: String, private va
                 }
                 val epoch = generation
                 try {
-                    val phrases = SpeechPlan.phrases(request.text)
+                    val phrases = SpeechPlan.phrases(request.text, targetLanguage)
                     for ((index, phrase) in phrases.withIndex()) {
                         if (epoch != generation || !queue.active(request.key) || paused() || !options().speechEnabled) break
                         val rate = SpeechPlan.rate(options().speechRate, options().autoCatchUp, request.text,
@@ -135,7 +135,7 @@ class PcmSpeech(private val context: Context, private val id: String, private va
         catch (e: SpeechFailure) {
             if (e.reason != SpeechFailureReason.TOO_LONG || phrase.codePointCount(0, phrase.length) <= 2) throw e
             journal.record(DiagnosticEvent.TTS_PHRASE_SPLIT, id, mapOf(Metric.CHARACTERS to phrase.length))
-            for (part in SpeechPlan.phrases(phrase, maxOf(2, phrase.codePointCount(0, phrase.length) / 2))) {
+            for (part in SpeechPlan.phrases(phrase, targetLanguage, maxOf(2, phrase.codePointCount(0, phrase.length) / 2))) {
                 synthesizePhrase(tts, part, emit)
             }
             return

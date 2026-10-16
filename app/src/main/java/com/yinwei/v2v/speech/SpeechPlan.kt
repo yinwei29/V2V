@@ -23,6 +23,53 @@ object SpeechPlan {
         }
         return result
     }
+    /** Keep space-delimited languages together so the engine can retain sentence prosody. */
+    fun phrases(text: String, targetLanguage: String, limit: Int = 120): List<String> {
+        require(limit >= 2)
+        val language = targetLanguage.substringBefore('-').lowercase(java.util.Locale.ROOT)
+        if (language in setOf("zh", "ja")) return phrases(text, minOf(18, limit))
+        val points = text.codePoints().toArray()
+        val result = mutableListOf<String>()
+        var start = 0
+        while (start < points.size) {
+            val maximum = minOf(start + limit, points.size)
+            var end = maximum
+            // A full sentence is a useful synthesis unit; a space alone is not.
+            val sentence = (start until maximum).firstOrNull { i ->
+                val p = points[i]
+                p in intArrayOf(10, 33, 63, 0x3002, 0xff01, 0xff1f) ||
+                    (p == 46 && (i + 1 == points.size || Character.isWhitespace(points[i + 1])) &&
+                        !(i > start && Character.isDigit(points[i - 1])))
+            }
+            if (sentence != null) {
+                end = sentence + 1
+            } else if (maximum < points.size) {
+                // Prefer a late clause boundary, then the last whole word that fits.
+                val clause = (start + limit / 2 until maximum).lastOrNull {
+                    points[it] in intArrayOf(44, 59, 58, 0x3001, 0xff0c, 0xff1b)
+                }
+                val space = (start + 1 until maximum).lastOrNull { Character.isWhitespace(points[it]) }
+                end = when { clause != null -> clause + 1; space != null -> space + 1; else -> maximum }
+                // Avoid leaving just one or two words at the end of a slightly overlong sentence.
+                val nearbyEnd = (maximum until minOf(points.size, maximum + limit / 3)).firstOrNull {
+                    points[it] in intArrayOf(33, 63, 0x3002, 0xff01, 0xff1f) ||
+                        (points[it] == 46 && (it + 1 == points.size || Character.isWhitespace(points[it + 1])))
+                }
+                val tail = nearbyEnd?.plus(1) ?: points.size
+                if (tail - end in 1..limit / 3) {
+                    val middle = start + (tail - start) / 2
+                    val balanced = (start + 1 until minOf(middle + 1, maximum)).lastOrNull {
+                        Character.isWhitespace(points[it])
+                    }
+                    if (balanced != null) end = balanced + 1
+                }
+            }
+            while (end < points.size && end < maximum && Character.isWhitespace(points[end])) end++
+            result += String(points, start, end - start)
+            start = end
+        }
+        return result
+    }
     fun rate(base: Float, automatic: Boolean, text: String, sourceDurationMs: Long,
         pending: Int, bufferedMs: Long): Float {
         val preferred = base.coerceIn(0.75f, 2f)

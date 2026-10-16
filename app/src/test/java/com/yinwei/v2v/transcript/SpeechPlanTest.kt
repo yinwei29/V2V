@@ -18,6 +18,38 @@ class SpeechPlanTest {
         assertEquals(text, SpeechPlan.phrases(text).joinToString(""))
         assertTrue(SpeechPlan.phrases(text).any { "Alice" in it })
     }
+    @Test fun englishAndIndonesianKeepShortSentencesTogether() {
+        for ((language, text) in listOf(
+            "en" to "Please open the meeting and listen to the translated audio.",
+            "id" to "Silakan buka rapat dan dengarkan terjemahan suara ini."
+        )) assertEquals(listOf(text), SpeechPlan.phrases(text, language))
+    }
+    @Test fun longLatinParagraphPreservesWordsAndContent() {
+        val text = "The translated meeting should sound natural and keep complete words together while explaining the next steps to everyone. ".repeat(4) + "😀"
+        val chunks = SpeechPlan.phrases(text, "en-US")
+        assertEquals(text, chunks.joinToString(""))
+        assertTrue(chunks.all { it.codePointCount(0, it.length) <= 120 })
+        assertTrue(chunks.dropLast(1).all { it.trim().split(Regex("\\s+")).size >= 4 })
+        assertTrue(chunks.zipWithNext().all { (a, b) -> !a.last().isLetter() || !b.first().isLetter() })
+    }
+    @Test fun chineseAndJapaneseRetainBoundedPhrases() {
+        for (language in listOf("zh-TW", "zh-CN", "ja")) {
+            val text = "中文と日本語の音声を確認します。".repeat(4)
+            assertEquals(SpeechPlan.phrases(text), SpeechPlan.phrases(text, language))
+        }
+    }
+    @Test fun numbersAndFallbackSplitsAreLosslessAndBounded() {
+        val text = "The price is 1,234.50 and the quantity is 20. Thank you."
+        assertTrue(SpeechPlan.phrases(text, "en").first().contains("1,234.50"))
+        val token = "a".repeat(240) + "😀"
+        assertEquals(token, SpeechPlan.phrases(token, "id").joinToString(""))
+        for (part in SpeechPlan.phrases(token, "id")) {
+            val limit = maxOf(2, part.codePointCount(0, part.length) / 2)
+            val smaller = SpeechPlan.phrases(part, "id", limit)
+            assertEquals(part, smaller.joinToString(""))
+            assertTrue(smaller.all { it.codePointCount(0, it.length) <= limit })
+        }
+    }
     @Test fun automaticRateCanReachTwoButRespectsManualChoice() {
         assertEquals(2f, SpeechPlan.rate(1f, true, "中".repeat(120), 10000, 1, 0), 0f)
         assertEquals(2f, SpeechPlan.rate(1f, true, "短句", 10000, 2, 6000), 0f)
