@@ -2,6 +2,8 @@ package com.yinwei.v2v.settings
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.yinwei.v2v.providers.CloudProvider
+import com.yinwei.v2v.providers.GeminiModel
+import com.yinwei.v2v.languages.LanguagePair
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import org.junit.Assert.*
@@ -32,6 +34,22 @@ class ConsentPersistenceTest {
                 assertTrue(store.cloudConsent.first())
             }
             open(file) { store -> assertEquals(CloudProvider.OPENAI, store.cloudProvider.first()); assertTrue(store.cloudConsent.first()) }
+        } finally { directory.deleteRecursively() }
+    }
+    @Test fun sourceAndTargetLanguagesSurviveRestart() = runBlocking {
+        val directory = Files.createTempDirectory("v2v-languages").toFile()
+        val file = File(directory, "settings.preferences_pb")
+        try {
+            open(file) { assertEquals(LanguagePair(), it.languages.first()); it.saveLanguages(LanguagePair("auto", "en")) }
+            open(file) { assertEquals(LanguagePair("auto", "en"), it.languages.first()) }
+        } finally { directory.deleteRecursively() }
+    }
+    @Test fun selectedGeminiModelSurvivesReopeningSettings() = runBlocking {
+        val directory = Files.createTempDirectory("v2v-model").toFile()
+        val file = File(directory, "settings.preferences_pb")
+        try {
+            open(file) { assertEquals(GeminiModel.DEFAULT, it.geminiModel.first()); it.saveGeminiModel(GeminiModel.FLASH) }
+            open(file) { assertEquals(GeminiModel.FLASH, it.geminiModel.first()) }
         } finally { directory.deleteRecursively() }
     }
     @Test fun manualRevocationIsRetainedAfterRestart() = runBlocking {

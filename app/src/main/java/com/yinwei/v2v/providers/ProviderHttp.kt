@@ -25,8 +25,9 @@ internal class ProviderHttp(private val client: OkHttpClient, private val authHe
             val response = try { client.newCall(request).awaitResult() }
                 catch (e: CancellationException) { throw e }
                 catch (e: IOException) {
-                    diagnostics?.record(DiagnosticEvent.PROVIDER_FAILURE, error = e.javaClass)
-                    throw ProviderFailure(0, "網路斷線或逾時；不會偷偷切換離線或其他供應商")
+                    val issue = if (e is java.net.SocketTimeoutException) ProviderIssue.NETWORK_TIMEOUT else ProviderIssue.NETWORK_UNAVAILABLE
+                    diagnostics?.record(DiagnosticEvent.PROVIDER_FAILURE, error = e.javaClass, tags = mapOf(Tag.PROVIDER_REASON to issue))
+                    throw ProviderFailure(0, issue.explanation, issue, retryable = true)
                 }
             diagnostics?.record(DiagnosticEvent.PROVIDER_STATE, metrics = mapOf(Metric.HTTP_STATUS to response.status,
                 Metric.LATENCY_MS to (System.nanoTime() - began) / 1_000_000))

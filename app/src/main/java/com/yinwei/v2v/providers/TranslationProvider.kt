@@ -12,9 +12,9 @@ interface TranslationProvider {
     val partialSupported: Boolean
     suspend fun healthCheck()
     suspend fun transcribe(chunk: AudioChunk, language: String): String
-    suspend fun translate(text: String, language: String): TranslatedText
+    suspend fun translate(text: String, language: String, targetLanguage: String = "zh-TW"): TranslatedText
 }
-fun CloudProvider.create(key: String, journal: DiagnosticJournal? = null): TranslationProvider = when (this) {
+fun CloudProvider.create(key: String, journal: DiagnosticJournal? = null, geminiModel: GeminiModel = GeminiModel.DEFAULT): TranslationProvider = when (this) {
     CloudProvider.OPENAI -> OpenAiProvider(key, diagnostics = journal)
-    CloudProvider.GEMINI -> GeminiProvider(key, diagnostics = journal)
+    CloudProvider.GEMINI -> GeminiProvider(key, diagnostics = journal, model = geminiModel)
 }

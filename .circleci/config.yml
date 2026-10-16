@@ -14,11 +14,17 @@ jobs:
           keys:
             - gradle-v1-{{ checksum "app/gradle.lockfile" }}-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - run:
-          name: Build, DSP tests and Android lint
-          command: ./gradlew --no-daemon assembleDebug testDebugUnitTest lintDebug
+          name: Build, unit tests and Android lint
+          command: |
+            set -o pipefail
+            ./gradlew --no-daemon assembleDebug testDebugUnitTest lintDebug 2>&1 | tee ci-build.log
+      - store_artifacts:
+          path: ci-build.log
       - run:
           name: Package APK and checksum
-          command: ./scripts/package-apk.sh
+          command: |
+            ./scripts/package-apk.sh
+            python3 ./scripts/verification-summary.py
       - store_test_results:
           path: app/build/test-results/testDebugUnitTest
       - store_artifacts:

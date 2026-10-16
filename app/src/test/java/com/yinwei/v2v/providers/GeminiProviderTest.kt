@@ -57,7 +57,7 @@ class GeminiProviderTest {
             assertEquals("Selamat pagi", content.getString("text")); assertFalse(content.has("inlineData"))
             val config = body.getJSONObject("generationConfig")
             assertEquals("APPLICATION_JSON", config.getJSONObject("responseFormat").getJSONObject("text").getString("mimeType"))
-            assertEquals("LOW", config.getJSONObject("thinkingConfig").getString("thinkingLevel"))
+            assertEquals("MINIMAL", config.getJSONObject("thinkingConfig").getString("thinkingLevel"))
         }
     }
     @Test fun absentUsageRemainsUnknown() = runBlocking {

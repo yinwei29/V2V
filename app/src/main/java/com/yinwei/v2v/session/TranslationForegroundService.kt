@@ -1,5 +1,6 @@
 package com.yinwei.v2v.session
 
+import com.yinwei.v2v.languages.AppLanguage
 import com.yinwei.v2v.overlay.CaptionOverlay
 import android.app.*
 import android.content.*
@@ -96,25 +97,27 @@ class TranslationForegroundService : Service() {
             stopSelf(); return
         }
         val language = intent.getStringExtra("language") ?: "en"
-        if (language !in setOf("en", "id", "auto")) { stopSelf(); return }
+        val targetLanguage = intent.getStringExtra("targetLanguage") ?: "zh-TW"
+        if (!AppLanguage.validSource(language) || AppLanguage.fromCode(targetLanguage) == null) { stopSelf(); return }
         val selectedProvider = CloudProvider.parse(intent.getStringExtra("provider"))
         if (selectedProvider == null) {
             repository.update { it.copy(state = SessionState.ERROR, message = "請選擇有效的翻譯引擎；沒有開始擷取或傳送") }
             stopSelf(); return
         }
-        val provider = if (cloud) keys.read(selectedProvider)?.let { selectedProvider.create(it, diagnostics.journal) } else null
+        val geminiModel = GeminiModel.parse(intent.getStringExtra("geminiModel")) ?: GeminiModel.DEFAULT
+        val provider = if (cloud) keys.read(selectedProvider)?.let { selectedProvider.create(it, diagnostics.journal, geminiModel) } else null
         if (cloud && provider == null) {
             repository.update { it.copy(state = SessionState.ERROR, message = "尚未設定有效的 ${selectedProvider.label} API Key；沒有開始擷取或傳送") }
             stopSelf(); return
         }
         val id = UUID.randomUUID().toString()
-        diagnostics.journal.record(DiagnosticEvent.SESSION_START, id, mapOf(Metric.CLOUD_ENABLED to if (cloud) 1 else 0), mapOf(Tag.PROVIDER to selectedProvider, Tag.SOURCE to source, Tag.LANGUAGE to DiagnosticLanguage.valueOf(language.uppercase(java.util.Locale.ROOT))))
+        diagnostics.journal.record(DiagnosticEvent.SESSION_START, id, mapOf(Metric.CLOUD_ENABLED to if (cloud) 1 else 0), mapOf(Tag.GEMINI_MODEL to geminiModel, Tag.PROVIDER to selectedProvider, Tag.SOURCE to source, Tag.LANGUAGE to (AppLanguage.fromCode(language) ?: DiagnosticLanguage.AUTO), Tag.TARGET_LANGUAGE to checkNotNull(AppLanguage.fromCode(targetLanguage))))
         terminalState = SessionState.STOPPED
         terminalMessage = "來源結束"
         stopReason = StopReason.SOURCE_FINISHED
         ending = false
         outputPaused = false
-        repository.set(SessionSnapshot(id = id, state = SessionState.STARTING, source = source, cloudEnabled = cloud, sourceLanguage = language, cloudProvider = selectedProvider,
+        repository.set(SessionSnapshot(id = id, state = SessionState.STARTING, source = source, cloudEnabled = cloud, sourceLanguage = language, targetLanguage = targetLanguage, cloudProvider = selectedProvider, geminiModel = geminiModel,
             capabilities = if (external) SourceCapabilities() else SourceCapabilities(
                 originalControl = OriginalGainControlCapability.APP_OWNED, externalDirectOutputPresent = false,
                 reason = if (source == Source.TEST_FILE) "本 APP 自有測試音檔；440Hz 原聲／660Hz 模擬譯音，不是 TTS"
@@ -150,7 +153,7 @@ class TranslationForegroundService : Service() {
         if (android.provider.Settings.canDrawOverlays(this)) overlay?.show()
         job = scope.launch {
             try {
-                withContext(Dispatchers.IO) { controller.run(id, source, projection, { mix }, { outputPaused }, fileUri, provider, language, { presentation }) }
+                withContext(Dispatchers.IO) { controller.run(id, source, projection, { mix }, { outputPaused }, fileUri, provider, language, { presentation }, targetLanguage) }
             } catch (_: CancellationException) {
                 // Explicit end owns terminal state.
             } catch (e: Exception) {

@@ -1,11 +1,11 @@
-# Gemini API · 0.5.2-gemini-fix
+# Gemini API · 0.6.0-languages
 
 ## 手機設定
 
 1. 在 https://aistudio.google.com/api-keys 建立自己的 Gemini API Key。這是 Google AI Studio／Gemini Developer API，不是 OpenAI Key、Firebase設定或Vertex服務帳戶。
 2. 安裝本版 APK，先結束進行中的翻譯，在「設定 → 引擎與金鑰」選 Google Gemini。
 3. 輸入 Key，按儲存，再按測試連線。欄位不回顯舊 Key；更新與移除只作用於目前引擎，另一家仍保留。舊 OpenAI Key 不需重填。
-4. 返回翻譯頁，選其他 App 音訊或授權 WAV、語言，首次勾選同意傳送給所選雲端引擎（只需一次，會記住），再開始並完成本次系統擷取授權。
+4. 返回翻譯頁，選其他 App 音訊或授權 WAV、語言，首次勾選同意傳送給所選雲端引擎（只需一次，會記住），選擇來源與目的語言，再開始並完成本次系統擷取授權。
 5. 確認原文與繁中譯文、播報、浮窗與紀錄。錯誤時結束、匯出技術 Log 回報操作；不要傳 Key。Log 的 SESSION_START.PROVIDER 可分辨 GEMINI／OPENAI。
 
 400會顯示安全分類：INVALID_REQUEST表示參數格式，INVALID_KEY表示Google明確回傳Key錯誤；PROJECT_SETUP_REQUIRED表示專案資格，不一律誤稱Key錯誤。未知回應僅保留HTTP狀態。
@@ -14,7 +14,7 @@
 
 ## 實作
 
-固定 HTTPS generativelanguage.googleapis.com/v1beta，x-goog-api-key header，不把 Key 放 URL，不跟redirect。使用官方仍支援的 generateContent API，模型 gemini-3.8-flash（官方2026-10文件列為stable，支援音訊與結構化輸出），LOW thinking 減少多餘推理；REST responseFormat.text.mimeType為APPLICATION_JSON（不是application/json字串），以官方discovery定義為準。採既有600ms安靜斷句／10秒最長片段，inline base64 WAV，不建立雲端檔案或對話資源。每段先辨識原文，再以原文請求繁中翻譯；字幕更新與語音佇列沿用既有流程。這不是 Gemini Live 串流辨識，不保證速度快於 OpenAI。
+固定 HTTPS generativelanguage.googleapis.com/v1beta，x-goog-api-key header，不把 Key 放 URL，不跟redirect。使用官方仍支援的 generateContent API，模型可選 gemini-3.5-flash-lite（預設）或 gemini-3.8-flash（官方2026-10文件列為stable，支援音訊與結構化輸出），Flash-Lite使用MINIMAL、Flash使用LOW thinking減少多餘推理；REST responseFormat.text.mimeType為APPLICATION_JSON（不是application/json字串），以官方discovery定義為準。採既有600ms安靜斷句／10秒最長片段，inline base64 WAV，不建立雲端檔案或對話資源。每段先辨識原文，再以原文請求繁中翻譯；字幕更新與語音佇列沿用既有流程。這不是 Gemini Live 串流辨識，不保證速度快於 OpenAI。
 
 JSON schema 要求單一 text 字串，拒絕格式不符、超過12,000字元、空譯文、被阻擋與非STOP回應；辨識空字串視為無語音，不生成假字幕。只使用非thought文字；MT token為供應商回傳值、缺失顯示未知，不是完整帳單或費用估算。HTTP成功body最多1MiB；Gemini失敗body僅於記憶體讀取最多64KiB，僅解析Google status／ErrorInfo.reason白名單分類，正文、message、metadata與未知字串不顯示、不記錄，429/5xx僅再試一次，停止時取消含body讀取／退避中的請求。共用HTTP實作亦回歸原有OpenAI測試。
 
@@ -31,3 +31,5 @@ Key以兩家獨立AES-GCM alias及私有noBackup檔案保存；舊OpenAI檔案�
 - https://ai.google.dev/gemini-api/docs/generate-content/text-generation
 - https://ai.google.dev/gemini-api/docs/generate-content/audio
 - https://ai.google.dev/gemini-api/docs/generate-content/structured-output
+
+0.6另加入暫時503／逾時後有限恢復、15種來源／目的語言與目的語言離線播報。模型選擇在設定頁，工作中不能變更。詳見LANGUAGES_AND_RECOVERY.md；沒有需要把Key放進CI的新設定。

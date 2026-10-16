@@ -1,3 +1,11 @@
+# 測試報告 · 0.6.0-languages
+
+2026-10-16。本機使用快取Kotlin／Compose compiler直接編譯所有主程式及測試程式成功；57項不需網路JUnit通過（包含恢復、設定、歷史、DSP等）。完整Gradle建置／所有網路測試／Android lint以本版CircleCI為準，CI Artifacts提供實際verification.json、ci-build.log與APK checksum。本機Gradle未成功啟動額外網路權限流程，不沿用舊版本測試數或APK當作本版驗證。
+
+新增範圍：503及timeout可恢復；MT失敗保留原文；400／Key／429不進持續管線重試；連續3段停止及取消／新session隔離；模型路徑、thinking及healthcheck一致；來源／目的保存；15種目標指令、中文ASR ISO提示、auto僅來源；離線聲線選擇；舊紀錄缺targetLanguage與新語言匯出相容。仍無Google真實Key及Android裝置驗收。
+
+---
+
 # 測試報告 · 0.5.2-gemini-fix
 
 2026-10-15。本機assembleDebug / testDebugUnitTest / lintDebug通過，79項測試，0 failure/error/skipped；完整驗證3m 23s，lint0 errors/fatal、10 warnings。原始輸出及JUnit／lint見evidence/gemini-400/。本機checksum：`a7d6b98c25f67647ac6a1c69b63447e2b0033dfd59699b4b04f700af23418f99  V2V-0.5.2-gemini-fix-debug.apk`。

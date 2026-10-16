@@ -1,6 +1,7 @@
 package com.yinwei.v2v.speech
 
 import com.yinwei.v2v.diagnostics.*
+import com.yinwei.v2v.languages.AppLanguage
 import com.yinwei.v2v.settings.PresentationSettings
 import android.content.Context
 import android.media.AudioFormat
@@ -17,7 +18,7 @@ import java.util.UUID
 
 /** Synthesis only. PCM is rendered through the session's single mixer/AudioTrack. */
 class PcmSpeech(private val context: Context, private val id: String, private val repository: SessionRepository,
-    scope: CoroutineScope, private val journal: DiagnosticJournal, private val paused: () -> Boolean, private val options: () -> PresentationSettings) {
+    scope: CoroutineScope, private val journal: DiagnosticJournal, private val paused: () -> Boolean, private val options: () -> PresentationSettings, private val targetLanguage: String = "zh-TW") {
     private val requests = Channel<Unit>(Channel.CONFLATED)
     private val queue = SpeechQueue()
     private var requestSequence = 0L
@@ -34,10 +35,11 @@ class PcmSpeech(private val context: Context, private val id: String, private va
             engine = tts
             check(withTimeout(15000) { ready.await() } == TextToSpeech.SUCCESS)
             // Offline voice only: no extra text is silently sent to another cloud service.
-            val voice = tts.voices?.filter { it.locale.language == "zh" && it.locale.country == "TW" && !it.isNetworkConnectionRequired }
-                ?.sortedBy { it.name }?.firstOrNull()
+            val voice = tts.voices?.mapNotNull { voice ->
+                OfflineVoicePolicy.score(targetLanguage, voice.locale.toLanguageTag(), voice.isNetworkConnectionRequired)?.let { it to voice }
+            }?.sortedWith(compareBy<Pair<Int, android.speech.tts.Voice>> { it.first }.thenBy { it.second.name })?.firstOrNull()?.second
             if (voice == null) {
-                update(StageState.ERROR, "請在 Android 文字轉語音設定安裝離線繁體中文（台灣）語音，再重新開始")
+                update(StageState.ERROR, "請在 Android 文字轉語音設定安裝離線${AppLanguage.label(targetLanguage)}語音，再重新開始；字幕仍可使用")
                 return@launch
             }
             check(tts.setVoice(voice) == TextToSpeech.SUCCESS)

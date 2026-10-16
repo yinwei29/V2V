@@ -9,3 +9,9 @@ local.properties
 .env*
 deliverables/*.apk
 deliverables/*.zip
+
+/ci-build.log
+/deliverables/SHA256SUMS
+/deliverables/verification.json
+
+__pycache__/

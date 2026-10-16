@@ -1,6 +1,8 @@
 package com.yinwei.v2v.settings
 
 import com.yinwei.v2v.providers.CloudProvider
+import com.yinwei.v2v.providers.GeminiModel
+import com.yinwei.v2v.languages.*
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
@@ -47,6 +49,17 @@ class SettingsStore internal constructor(private val store: DataStore<Preference
     val cloudConsent = store.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { it[booleanPreferencesKey("cloud_consent")] ?: false }.distinctUntilChanged()
     suspend fun saveCloudConsent(enabled: Boolean) { store.edit { it[booleanPreferencesKey("cloud_consent")] = enabled } }
+    val languages = store.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }.map { p ->
+        val source = p[stringPreferencesKey("source_language")]?.takeIf { AppLanguage.validSource(it) } ?: "en"
+        val target = p[stringPreferencesKey("target_language")]?.takeIf { AppLanguage.fromCode(it) != null } ?: "zh-TW"
+        LanguagePair(source, target)
+    }.distinctUntilChanged()
+    suspend fun saveLanguages(pair: LanguagePair) { store.edit {
+        it[stringPreferencesKey("source_language")] = pair.source; it[stringPreferencesKey("target_language")] = pair.target
+    } }
+    val geminiModel = store.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+        .map { GeminiModel.parse(it[stringPreferencesKey("gemini_model")]) ?: GeminiModel.DEFAULT }.distinctUntilChanged()
+    suspend fun saveGeminiModel(model: GeminiModel) { store.edit { it[stringPreferencesKey("gemini_model")] = model.name } }
     val cloudProvider = store.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }
         .map { CloudProvider.parse(it[stringPreferencesKey("cloud_provider")]) ?: CloudProvider.OPENAI }.distinctUntilChanged()
     suspend fun saveCloudProvider(provider: CloudProvider) { store.edit { it[stringPreferencesKey("cloud_provider")] = provider.name } }

@@ -1,6 +1,7 @@
 package com.yinwei.v2v.ui
 
 import com.yinwei.v2v.history.*
+import com.yinwei.v2v.languages.*
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
@@ -79,7 +80,9 @@ class MainActivity : ComponentActivity() {
     private var pendingExternal = false
     private var pendingCloud = false
     private var pendingLanguage = "en"
+    private var pendingTargetLanguage = "zh-TW"
     private var pendingProvider = CloudProvider.OPENAI
+    private var pendingGeminiModel = GeminiModel.DEFAULT
     private val filePicker = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
             runCatching { contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
@@ -106,7 +109,9 @@ class MainActivity : ComponentActivity() {
         pendingExternal = savedInstanceState?.getBoolean("external") ?: false
         pendingCloud = savedInstanceState?.getBoolean("cloud") ?: false
         pendingLanguage = savedInstanceState?.getString("language") ?: "en"
+        pendingTargetLanguage = savedInstanceState?.getString("targetLanguage") ?: "zh-TW"
         pendingProvider = CloudProvider.parse(savedInstanceState?.getString("provider")) ?: CloudProvider.OPENAI
+        pendingGeminiModel = GeminiModel.parse(savedInstanceState?.getString("geminiModel")) ?: GeminiModel.DEFAULT
         // Screenshots are enabled at the user's request; credentials remain masked in the form.
         setContent {
             MaterialTheme(colorScheme = lightColorScheme(primary = Color(0xFF086B63), secondary = Color(0xFF486C7A),
@@ -119,15 +124,21 @@ class MainActivity : ComponentActivity() {
                 val selectedProvider = storedProvider ?: return@MaterialTheme
                 val storedConsent by settings.cloudConsent.collectAsStateWithLifecycle<Boolean?>(null)
                 val cloudConsent = storedConsent ?: return@MaterialTheme
+                val storedModel by settings.geminiModel.collectAsStateWithLifecycle<GeminiModel?>(null)
+                val geminiModel = storedModel ?: return@MaterialTheme
+                val storedLanguages by settings.languages.collectAsStateWithLifecycle<LanguagePair?>(null)
+                val languages = storedLanguages ?: return@MaterialTheme
                 val archive by history.entries.collectAsStateWithLifecycle()
                 val historyError by history.error.collectAsStateWithLifecycle()
                 val logEnabled by settings.diagnosticsEnabled.collectAsStateWithLifecycle(true)
                 AppScreen(state, mix, presentation, { changed -> lifecycleScope.launch { settings.savePresentation(changed) } }, fileUri != null, keys, { filePicker.launch(arrayOf("audio/*", "application/octet-stream")) },
-                    { source, cloud, language, provider ->
+                    { source, cloud, language, targetLanguage, provider, model ->
                         pendingExternal = source == Source.SYSTEM_PLAYBACK
                         pendingCloud = cloud && source != Source.TEST_FILE
                         pendingLanguage = language
+                        pendingTargetLanguage = targetLanguage
                         pendingProvider = provider
+                        pendingGeminiModel = model
                         if (source == Source.TEST_FILE) fileUri = null
                         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
                             notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -154,7 +165,9 @@ class MainActivity : ComponentActivity() {
                         catch (_: Exception) { historyNotice = "清除失敗，請稍後重試" }
                         finally { historyBusy = false }
                     } }, selectedProvider, { provider -> lifecycleScope.launch { settings.saveCloudProvider(provider) } },
-                    cloudConsent, { enabled -> lifecycleScope.launch { settings.saveCloudConsent(enabled) } })
+                    cloudConsent, { enabled -> lifecycleScope.launch { settings.saveCloudConsent(enabled) } },
+                    geminiModel, { model -> lifecycleScope.launch { settings.saveGeminiModel(model) } },
+                    languages, { pair -> lifecycleScope.launch { settings.saveLanguages(pair) } })
             }
         }
     }
@@ -180,6 +193,8 @@ class MainActivity : ComponentActivity() {
     }
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString("file", fileUri); outState.putBoolean("external", pendingExternal)
+        outState.putString("targetLanguage", pendingTargetLanguage)
+        outState.putString("geminiModel", pendingGeminiModel.name)
         outState.putString("provider", pendingProvider.name)
         outState.putBoolean("cloud", pendingCloud); outState.putString("language", pendingLanguage)
         super.onSaveInstanceState(outState)
@@ -198,13 +213,13 @@ class MainActivity : ComponentActivity() {
                 .setAction(TranslationForegroundService.START).putExtra("external", external)
                 .putExtra("resultCode", result).putExtra("consent", consent)
                 .putExtra("fileUri", if (!external) fileUri else null)
-                .putExtra("provider", pendingProvider.name).putExtra("cloudConsent", pendingCloud).putExtra("language", pendingLanguage))
+                .putExtra("targetLanguage", pendingTargetLanguage).putExtra("geminiModel", pendingGeminiModel.name).putExtra("provider", pendingProvider.name).putExtra("cloudConsent", pendingCloud).putExtra("language", pendingLanguage))
         } catch (_: Exception) { repository.update { it.copy(state = SessionState.ERROR, message = "無法啟動前景服務，請保持主畫面可見後重試") } }
     }
 }
 
 @Composable
-internal fun KeyPanel(provider: CloudProvider, keys: ApiKeyStore, configured: Boolean, enabled: Boolean, journal: DiagnosticJournal, refresh: () -> Unit) {
+internal fun KeyPanel(provider: CloudProvider, model: GeminiModel, keys: ApiKeyStore, configured: Boolean, enabled: Boolean, journal: DiagnosticJournal, refresh: () -> Unit) {
     var value by remember(provider) { mutableStateOf("") } // Deliberately NOT rememberSaveable.
     var busy by remember(provider) { mutableStateOf(false) }
     var message by remember(provider) { mutableStateOf("") }
@@ -236,7 +251,7 @@ internal fun KeyPanel(provider: CloudProvider, keys: ApiKeyStore, configured: Bo
         busy = true
         scope.launch {
             try {
-                withContext(Dispatchers.IO) { provider.create(checkNotNull(keys.read(provider)), journal).healthCheck() }
+                withContext(Dispatchers.IO) { provider.create(checkNotNull(keys.read(provider)), journal, model).healthCheck() }
                 message = "Key 驗證及模型查詢成功；仍需音訊端到端測試，不代表扣款／轉寫已驗收"
             } catch (e: CancellationException) { throw e }
             catch (e: ProviderFailure) { message = e.message.orEmpty() }
@@ -245,7 +260,7 @@ internal fun KeyPanel(provider: CloudProvider, keys: ApiKeyStore, configured: Bo
         }
     }, enabled = enabled && !busy && configured) { Text(if (busy) "處理中…" else "測試連線（僅傳 Key，不傳音訊）") }
     if (message.isNotBlank()) Text(message)
-    Text(if (provider == CloudProvider.OPENAI) "OpenAI · whisper-1 辨識 / gpt-4o-mini 翻譯。" else "Google Gemini · ${GeminiProvider.MODEL} 辨識與翻譯。請使用 Google AI Studio 的 Gemini API Key。", style = MaterialTheme.typography.bodySmall)
+    Text(if (provider == CloudProvider.OPENAI) "OpenAI · whisper-1 辨識 / gpt-4o-mini 翻譯。" else "Google Gemini · ${model.apiId} 辨識與翻譯。請使用 Google AI Studio 的 Gemini API Key。", style = MaterialTheme.typography.bodySmall)
     Text("分段完成後更新字幕，最長 10 秒。播報沿用手機離線語音。供應商可能收費；沒有額度時請在供應商後台調整專案／帳務，不需設定 CircleCI。", style = MaterialTheme.typography.bodySmall)
 }
 

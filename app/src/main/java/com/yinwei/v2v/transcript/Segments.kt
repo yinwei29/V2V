@@ -10,7 +10,7 @@ data class TranscriptSegment(
     val startMs: Long, val endMs: Long, val originalText: String,
     val translatedText: String = "", val sourceLanguage: String,
     val isFinal: Boolean = true, val provider: String = "OpenAI whisper-1 / gpt-4o-mini",
-    val translationLatencyMs: Long = 0,
+    val translationLatencyMs: Long = 0, val targetLanguage: String = "zh-TW",
 )
 
 /** Endpoint on silence; hard ceiling also handles uninterrupted speech. No partial/fake transcripts. */

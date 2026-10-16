@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-16",
+  "version": "0.6.0-languages",
+  "validation": "direct cached Kotlin/Compose compiler, not Gradle APK build",
+  "mainCompileExit": 0,
+  "testCompileExit": 0,
+  "localNonNetworkJunitTests": 57,
+  "localNonNetworkJunitPassed": true,
+  "kotlinSourcesSha256": "d7aa6a08bc8cd7e3f45ea2df4b03b9db79608640db43b35c38dc3a137430f106",
+  "sourceTestMethods": 94,
+  "fullGradleValidation": "CircleCI required",
+  "liveProviderTested": false,
+  "androidDeviceTested": false,
+  "latestCompileIncludesOverlayStatus": true
+}

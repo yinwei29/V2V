@@ -13,7 +13,7 @@ class GeminiErrorClassifierTest {
         }
     }
     @Test fun projectAndQuotaFailuresAreNotCalledInvalidKeys() {
-        for ((status, issue) in mapOf("FAILED_PRECONDITION" to ProviderIssue.PROJECT_SETUP_REQUIRED,
+        for ((status, issue) in mapOf("UNAVAILABLE" to ProviderIssue.SERVICE_UNAVAILABLE, "FAILED_PRECONDITION" to ProviderIssue.PROJECT_SETUP_REQUIRED,
             "PERMISSION_DENIED" to ProviderIssue.ACCESS_DENIED, "NOT_FOUND" to ProviderIssue.MODEL_UNAVAILABLE,
             "RESOURCE_EXHAUSTED" to ProviderIssue.QUOTA_EXCEEDED)) {
             assertEquals(issue, GeminiErrorClassifier.classify(400, """{"error":{"status":"$status"}}"""))

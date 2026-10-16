@@ -24,7 +24,7 @@ class SessionController(private val context: Context, private val repository: Se
     fun pauseOutput() { speech?.clear(); activeOutput?.pauseAndFlush() }
     fun interrupt() { pauseOutput(); capture?.interrupt() }
     suspend fun run(id: String, source: Source, projection: MediaProjection?, mix: () -> MixSettings,
-        outputPaused: () -> Boolean, fileUri: Uri? = null, provider: TranslationProvider? = null, language: String = "en", presentation: () -> PresentationSettings = { PresentationSettings() }) = coroutineScope {
+        outputPaused: () -> Boolean, fileUri: Uri? = null, provider: TranslationProvider? = null, language: String = "en", presentation: () -> PresentationSettings = { PresentationSettings() }, targetLanguage: String = "zh-TW") = coroutineScope {
         val external = source == Source.SYSTEM_PLAYBACK
         val probe = AsrProbe()
         val mixer = StereoMixer()
@@ -48,11 +48,11 @@ class SessionController(private val context: Context, private val repository: Se
                 try { reader = WavReader(stream) } catch (e: Exception) { stream.close(); throw e }
             }
             if (provider != null) {
-                speech = PcmSpeech(context, id, repository, this, diagnostics.journal, outputPaused, presentation)
-                subtitles = SubtitlePipeline(id, language, provider, repository, this, diagnostics.journal) { segment ->
+                speech = PcmSpeech(context, id, repository, this, diagnostics.journal, outputPaused, presentation, targetLanguage)
+                subtitles = SubtitlePipeline(id, language, provider, repository, this, diagnostics.journal, translated = { segment ->
                     speech?.offer(segment)
                     history.record(segment, presentation().saveHistory)
-                }
+                }, targetLanguage = targetLanguage)
             }
             if (external) {
                 capture = PlaybackCapture(checkNotNull(projection))
@@ -103,7 +103,7 @@ class SessionController(private val context: Context, private val repository: Se
                         level = level, frames = sequence, asrSamples = probe.samples, elapsedMs = now - began,
                         route = output?.route ?: "擷取模式不重播來源副本；語音由 Android 離線引擎合成",
                         underruns = output?.underruns ?: 0,
-                        message = if (outputPaused()) previous.message else if (silent) "NO_SIGNAL：可能安靜、暫停或來源政策限制；尚不能判定不支援"
+                        message = if (outputPaused()) previous.message else if (silent) "未收到可用播放音訊：請確認來源正在播放；也可能受 App 或系統擷取限制，沒有改用麥克風"
                             else if (!verified) "正在等待有效 PCM；不代表已成功取得來源"
                             else if (provider != null) "雲端字幕模式；音訊與辨識文字會送至 ${previous.cloudProvider.label}，語音由 Android 離線引擎合成"
                             else if (external) "取得非靜音 PCM；雲端字幕未啟用，來源控制不可用"

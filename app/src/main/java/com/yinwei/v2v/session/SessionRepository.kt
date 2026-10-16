@@ -1,6 +1,7 @@
 package com.yinwei.v2v.session
 
 import com.yinwei.v2v.providers.CloudProvider
+import com.yinwei.v2v.providers.GeminiModel
 
 import com.yinwei.v2v.audio.*
 import com.yinwei.v2v.transcript.TranscriptSegment
@@ -23,11 +24,13 @@ data class SessionSnapshot(
     val ttsRate: Float = 1f, val ttsBufferedMs: Long = 0, val ttsPending: Int = 0,
     val overlayError: String = "",
     val outputPaused: Boolean = false, val cloudEnabled: Boolean = false, val sourceLanguage: String = "en",
+    val targetLanguage: String = "zh-TW",
     val cloudProvider: CloudProvider = CloudProvider.OPENAI,
     val segments: List<TranscriptSegment> = emptyList(),
     val skippedSamples: Long = 0, val providerTokens: Long? = null,
-    val providerError: String = "",
-    val message: String = "選擇其他 App 音訊、同意雲端翻譯後開始；需本次系統授權",
+    val providerError: String = "", val providerRecovering: Boolean = false,
+    val geminiModel: GeminiModel = GeminiModel.DEFAULT,
+    val message: String = "選擇手機播放音訊及翻譯語言、同意雲端翻譯後開始；需本次系統授權",
 )
 class SessionRepository {
     private val mutable = MutableStateFlow(SessionSnapshot())

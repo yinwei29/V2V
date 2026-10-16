@@ -69,7 +69,13 @@ class CaptionOverlay(private val context: Context, private val open: () -> Unit,
     }
     fun update(state: SessionSnapshot) {
         if (circle != null && !Settings.canDrawOverlays(context)) { close(); failed("上層顯示權限已撤銷；主畫面字幕持續"); return }
-        latest = state.segments.lastOrNull { it.translatedText.isNotBlank() }?.translatedText ?: "等待下一段翻譯…"
+        val translated = state.segments.lastOrNull { it.translatedText.isNotBlank() }?.translatedText
+        latest = when {
+            state.providerRecovering -> "服務暫時中斷，正在恢復…" + (translated?.let { "\n$it" } ?: "")
+            state.providerError.isNotBlank() -> "翻譯已暫停：${state.providerError}"
+            !state.cloudEnabled -> "音訊測試模式，未啟用翻譯"
+            else -> translated ?: "等待手機播放音訊與翻譯…"
+        }
         text?.text = latest
         if (paused != state.outputPaused) { paused = state.outputPaused; refreshValues() }
         listOfNotNull(circle, caption).forEach { view ->

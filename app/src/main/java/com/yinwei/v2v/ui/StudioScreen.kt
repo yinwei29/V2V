@@ -23,7 +23,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.yinwei.v2v.languages.*
 import com.yinwei.v2v.providers.CloudProvider
+import com.yinwei.v2v.providers.GeminiModel
 import com.yinwei.v2v.R
 import com.yinwei.v2v.audio.*
 import com.yinwei.v2v.diagnostics.*
@@ -77,16 +79,18 @@ private val CardShape = RoundedCornerShape(24.dp)
 
 @Composable internal fun AppScreen(state: SessionSnapshot, mix: MixSettings, presentation: PresentationSettings,
     savePresentation: (PresentationSettings) -> Unit, hasFile: Boolean, keys: ApiKeyStore, pickFile: () -> Unit,
-    start: (Source, Boolean, String, CloudProvider) -> Unit, command: (String) -> Unit, save: (MixSettings) -> Unit,
+    start: (Source, Boolean, String, String, CloudProvider, GeminiModel) -> Unit, command: (String) -> Unit, save: (MixSettings) -> Unit,
     diagnostics: Diagnostics, logEnabled: Boolean, setLogEnabled: (Boolean) -> Unit, logNotice: String, logBusy: Boolean,
     exportLog: () -> Unit, shareLog: () -> Unit, archive: List<HistoryEntry>, historyError: String, historyNotice: String,
     historyBusy: Boolean, exportHistory: () -> Unit, clearHistory: () -> Unit,
     selectedProvider: CloudProvider, selectProvider: (CloudProvider) -> Unit,
-    cloudConsent: Boolean, saveCloudConsent: (Boolean) -> Unit) {
+    cloudConsent: Boolean, saveCloudConsent: (Boolean) -> Unit,
+    geminiModel: GeminiModel, selectGeminiModel: (GeminiModel) -> Unit,
+    languages: LanguagePair, selectLanguages: (LanguagePair) -> Unit) {
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var clearHistoryDialog by remember { mutableStateOf(false) }
     var sourceName by rememberSaveable { mutableStateOf(Source.SYSTEM_PLAYBACK.name) }
-    var language by rememberSaveable { mutableStateOf("en") }
+    val language = languages.source
     val consent = cloudConsent
     var configured by remember(selectedProvider) { mutableStateOf(false) }
     var keysLoaded by remember(selectedProvider) { mutableStateOf(false) }
@@ -118,6 +122,7 @@ private val CardShape = RoundedCornerShape(24.dp)
                         state.state == SessionState.STARTING -> "準備中"
                         state.state == SessionState.STOPPING -> "結束中"
                         state.state == SessionState.NO_SIGNAL -> "等待音訊"
+                        state.providerRecovering -> "等待服務恢復"
                         state.providerError.isNotBlank() -> "字幕暫停"
                         !state.cloudEnabled -> "音訊模式"
                         else -> "翻譯中"
@@ -142,15 +147,15 @@ private val CardShape = RoundedCornerShape(24.dp)
                     verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     when (tab) {
                         0 -> {
-                            CaptionHero(state, diagnostics) { tab = 1 }
+                            CaptionHero(state, diagnostics, if (active) state.targetLanguage else languages.target) { tab = 1 }
                             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                 Button(onClick = {
                                     when {
                                         active -> command(TranslationForegroundService.STOP)
-                                        source == Source.TEST_FILE -> start(source, false, language, selectedProvider)
+                                        source == Source.TEST_FILE -> start(source, false, language, languages.target, selectedProvider, geminiModel)
                                         !configured -> tab = 3
                                         !consent -> Unit
-                                        else -> start(source, true, language, selectedProvider)
+                                        else -> start(source, true, language, languages.target, selectedProvider, geminiModel)
                                     }
                                 }, enabled = state.state != SessionState.STOPPING && (active ||
                                     ((source != Source.OWNED_FILE || hasFile) && (source == Source.TEST_FILE ||
@@ -176,23 +181,19 @@ private val CardShape = RoundedCornerShape(24.dp)
                                 Box {
                                     OutlinedButton(onClick = { sourceMenu = true }, enabled = !active, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp)) {
                                         Symbol(if (source == Source.SYSTEM_PLAYBACK) R.drawable.ic_expand else R.drawable.ic_file)
-                                        Text(when (source) { Source.SYSTEM_PLAYBACK -> "其他 App 的音訊"; Source.OWNED_FILE -> "本機 WAV 音檔"; Source.TEST_FILE -> "測試音訊" }, Modifier.weight(1f).padding(10.dp))
+                                        Text(when (source) { Source.SYSTEM_PLAYBACK -> "手機播放音訊"; Source.OWNED_FILE -> "本機 WAV 音檔"; Source.TEST_FILE -> "測試音訊" }, Modifier.weight(1f).padding(10.dp))
                                         Symbol(R.drawable.ic_more)
                                     }
                                     DropdownMenu(expanded = sourceMenu, onDismissRequest = { sourceMenu = false }) {
-                                        listOf(Source.SYSTEM_PLAYBACK to "其他 App · YouTube / Zoom / Meet", Source.OWNED_FILE to "本機 WAV · 48k mono PCM16", Source.TEST_FILE to "測試音訊 · 440 / 660 Hz").forEach { (value, title) ->
+                                        listOf(Source.SYSTEM_PLAYBACK to "手機播放音訊 · 不限 App 名稱", Source.OWNED_FILE to "本機 WAV · 48k mono PCM16", Source.TEST_FILE to "測試音訊 · 440 / 660 Hz").forEach { (value, title) ->
                                             DropdownMenuItem(text = { Text(title) }, onClick = { sourceName = value.name; sourceMenu = false })
                                         }
                                     }
                                 }
                                 if (source == Source.OWNED_FILE) TextButton(onClick = pickFile, enabled = !active) { Symbol(R.drawable.ic_file); Text(if (hasFile) " 重新選擇音檔" else " 選擇音檔") }
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    listOf("en" to "英文", "id" to "印尼文", "auto" to "自動").forEach { (code, title) ->
-                                        FilterChip(selected = (if (active) state.sourceLanguage else language) == code, onClick = { language = code }, enabled = !active, modifier = Modifier.weight(1f), label = { Text(title) })
-                                    }
-                                }
+                                LanguagePicker("來源語言", if (active) state.sourceLanguage else language, !active, true) { selectLanguages(languages.copy(source = it)) }
+                                LanguagePicker("目的語言", if (active) state.targetLanguage else languages.target, !active, false) { selectLanguages(languages.copy(target = it)) }
                                 TextButton(onClick = { tab = 3 }, enabled = !active) { Text("${if (active) state.cloudProvider.label else selectedProvider.label} · 更換引擎") }
-                                Text("翻譯成 繁體中文", style = MaterialTheme.typography.labelMedium, color = Teal)
                                 if (source != Source.TEST_FILE) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Checkbox(if (active) state.cloudEnabled else consent, saveCloudConsent, enabled = !active)
@@ -200,7 +201,7 @@ private val CardShape = RoundedCornerShape(24.dp)
                                     }
                                     Text("記住此選擇，下次不需重勾；可隨時取消。", style = MaterialTheme.typography.bodySmall, color = Muted)
                                     if (!configured) TextButton(onClick = { tab = 3 }) { Symbol(R.drawable.ic_shield); Text(" 設定 API Key") }
-                                    if (source == Source.SYSTEM_PLAYBACK) Text("其他 App 原聲仍由該 App 控制；會議音訊能否擷取需依 App 與系統測試。", style = MaterialTheme.typography.bodySmall, color = Muted)
+                                    if (source == Source.SYSTEM_PLAYBACK) Text("不需選 App；接收系統允許擷取的播放音訊。部分通話或受保護內容可能無法取得；原聲音量由來源 App 控制。", style = MaterialTheme.typography.bodySmall, color = Muted)
                                 } else Text("測試音不是實際翻譯播報，不會傳到雲端。", style = MaterialTheme.typography.bodySmall, color = Muted)
                             }
                             Panel("浮動字幕", R.drawable.ic_expand) {
@@ -222,10 +223,18 @@ private val CardShape = RoundedCornerShape(24.dp)
                                     }
                                 }
                                 if (active) Text("結束本次翻譯後可切換引擎。", style = MaterialTheme.typography.bodySmall, color = Muted)
-                                key(selectedProvider) { KeyPanel(selectedProvider, keys, configured, !active, diagnostics.journal) { keyRefresh++ } }
+                                if (selectedProvider == CloudProvider.GEMINI) {
+                                    Text("Gemini 模型", style = MaterialTheme.typography.labelLarge)
+                                    Column {
+                                        GeminiModel.entries.forEach { model -> FilterChip(selected = geminiModel == model, enabled = !active,
+                                            onClick = { selectGeminiModel(model) }, label = { Text("${model.label} · ${model.apiId}") }) }
+                                    }
+                                    Text("服務忙碌時，可結束本次翻譯後切換模型再試；不會自動切換供應商。", style = MaterialTheme.typography.bodySmall, color = Muted)
+                                }
+                                key(selectedProvider, geminiModel) { KeyPanel(selectedProvider, geminiModel, keys, configured, !active, diagnostics.journal) { keyRefresh++ } }
                             }
                             Panel("語音引擎", R.drawable.ic_sound) {
-                                Text("播報使用手機已安裝的離線台灣中文語音；辨識與翻譯需要網路。", color = Muted)
+                                Text("播報使用手機已安裝、符合目的語言的離線語音；辨識與翻譯需要網路。", color = Muted)
                                 OutlinedButton(onClick = { command("ttsSettings") }) { Symbol(R.drawable.ic_settings); Text(" Android 語音設定") }
                             }
                             var details by rememberSaveable { mutableStateOf(false) }
@@ -251,7 +260,7 @@ private val CardShape = RoundedCornerShape(24.dp)
     }
 }
 
-@Composable private fun CaptionHero(state: SessionSnapshot, diagnostics: Diagnostics, history: () -> Unit) {
+@Composable private fun CaptionHero(state: SessionSnapshot, diagnostics: Diagnostics, targetLanguage: String, history: () -> Unit) {
     val latest = state.segments.lastOrNull { it.translatedText.isNotBlank() }
     val original = state.segments.lastOrNull()
     val lifecycle by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
@@ -262,8 +271,8 @@ private val CardShape = RoundedCornerShape(24.dp)
     Surface(shape = RoundedCornerShape(28.dp), color = Ink, modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Symbol(R.drawable.ic_captions, tint = Color(0xFF83D6C7)); Text(" 繁體中文", color = Color(0xFFBFE6DF), style = MaterialTheme.typography.labelLarge)
-                Spacer(Modifier.weight(1f)); Text("${state.segments.count { it.translatedText.isNotBlank() }} 段", color = Color(0xFFACC4CA), style = MaterialTheme.typography.labelMedium)
+                Symbol(R.drawable.ic_captions, tint = Color(0xFF83D6C7)); Text(" ${AppLanguage.label(targetLanguage)}", modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, color = Color(0xFFBFE6DF), style = MaterialTheme.typography.labelLarge)
+                 Text("${state.segments.count { it.translatedText.isNotBlank() }} 段", color = Color(0xFFACC4CA), style = MaterialTheme.typography.labelMedium)
             }
             SelectionContainer { Text(latest?.translatedText ?: when {
                 state.mtState == StageState.RUNNING -> "正在翻譯這一句…"
@@ -365,12 +374,29 @@ private val CardShape = RoundedCornerShape(24.dp)
                 Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     val formatter = remember { DateTimeFormatter.ofPattern("MM/dd HH:mm").withZone(ZoneId.systemDefault()) }
                     Row { Text(formatter.format(Instant.ofEpochMilli(entry.createdAt)), style = MaterialTheme.typography.labelMedium, color = Muted)
-                        Spacer(Modifier.weight(1f)); Text("${entry.sourceLanguage.uppercase()} → 繁中", style = MaterialTheme.typography.labelMedium, color = Teal) }
+                        Spacer(Modifier.weight(1f)); Text("${AppLanguage.label(entry.sourceLanguage)} → ${AppLanguage.label(entry.targetLanguage)}", style = MaterialTheme.typography.labelMedium, color = Teal) }
                     SelectionContainer { Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         if (showOriginal) Text(entry.original, color = Muted, fontSize = 14.sp, lineHeight = 22.sp)
                         Text(entry.translation, color = Ink, fontSize = 19.sp, lineHeight = 28.sp, fontWeight = FontWeight.Medium)
                     } }
                 }
+            }
+        }
+    }
+}
+
+@Composable private fun LanguagePicker(title: String, selected: String, enabled: Boolean, allowAuto: Boolean, choose: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Column {
+        Text(title, style = MaterialTheme.typography.labelMedium, color = Muted)
+        Box {
+            OutlinedButton(onClick = { expanded = true }, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
+                Text(AppLanguage.label(selected), Modifier.weight(1f)); Symbol(R.drawable.ic_more)
+            }
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.heightIn(max = 360.dp)) {
+                if (allowAuto) DropdownMenuItem(text = { Text("自動偵測") }, onClick = { choose("auto"); expanded = false })
+                AppLanguage.entries.forEach { language -> DropdownMenuItem(text = { Text(language.label) },
+                    onClick = { choose(language.code); expanded = false }) }
             }
         }
     }

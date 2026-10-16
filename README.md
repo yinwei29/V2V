@@ -1,10 +1,18 @@
 # V2V · Live Audio Translator
 
-Android 10+。目前 **0.5.2-gemini-fix**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
+Android 10+。目前 **0.6.0-languages**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
 
 > 使用者已確認 M2 主畫面可見原文與翻譯；M2 CircleCI #2 success。此版加入 M3/M4 工程預覽，語音引擎、浮窗與 Bluetooth 仍需裝置驗收，不能宣稱完整產品完成。離線辨識／翻譯模型尚未交付；YouTube／Zoom／Meet 仍按版本與裝置驗證。
 
-## 0.5.2 · Gemini REST 格式修正
+## 0.6 · 多語言與服務恢復
+
+來源及目的語言均可選：繁中、簡中、英文、印尼文、日文、韓文、越南文、泰文、馬來文、西班牙文、法文、德文、葡萄牙文、印地文、阿拉伯文；來源另有自動偵測。設定會記住，工作中固定語言。字幕、紀錄與TXT匯出標示實際目的語言，舊紀錄預設繁中。離線播報選擇目的語言聲線；缺少相應離線聲音時提示安裝，保留字幕，不改用雲端TTS。
+
+Gemini可選3.5 Flash-Lite（預設，MINIMAL）或3.8 Flash（LOW）。503／5xx／408／網路逾時在有限HTTP重試後，略過未完成段、退避2秒及4秒處理後續音訊，最多連續3段失敗後明示暫停；400／Key錯誤／權限或429額度錯誤不在管線內持續重試。UI及Log區分恢復中與真正暫停，不自動切換供應商。
+
+來源統一為「手機播放音訊」，不依App名稱或UID白名單限制，只排除V2V自己的輸出防止回灌。Android仍只允許擷取符合usage及capture policy的音訊，通話或受保護內容不保證可取；不偷偷改用麥克風。詳細規格與手機測試見 [LANGUAGES_AND_RECOVERY](docs/LANGUAGES_AND_RECOVERY.md)。
+
+## Gemini REST 格式修正
 
 修正generateContent的REST列舉值：responseFormat.text.mimeType使用APPLICATION_JSON，thinkingConfig.thinkingLevel使用LOW。前版送出的MIME字串與小寫thinking不符Google discovery列舉定義，可能造成400。增加獨立官方enum契約測試，以及安全的參數／Key／專案錯誤分類；實際Google帳號仍需手機驗證。
 
@@ -16,7 +24,7 @@ Android本身的音訊／螢幕擷取授權仍依系統每次要求，這與App�
 
 ## Gemini API
 
-在「設定 → 引擎與金鑰」選擇 OpenAI 或 Google Gemini，各自加密保存 Key。Gemini 使用 gemini-3.8-flash，接收分段 WAV 辨識後翻譯成台灣繁中；字幕、紀錄、浮窗與離線播報共用既有流程。切換引擎需結束本次翻譯；音訊授權依已儲存的勾選套用。不自動切換供應商。設定與限制見 [GEMINI_SETUP](docs/GEMINI_SETUP.md)。
+在「設定 → 引擎與金鑰」選擇 OpenAI 或 Google Gemini，各自加密保存 Key。Gemini 使用所選的 Flash-Lite 或 Flash，接收分段 WAV 辨識後翻譯成台灣繁中；字幕、紀錄、浮窗與離線播報共用既有流程。切換引擎需結束本次翻譯；音訊授權依已儲存的勾選套用。不自動切換供應商。設定與限制見 [GEMINI_SETUP](docs/GEMINI_SETUP.md)。
 
 ## 翻譯工作台
 
@@ -38,8 +46,8 @@ Android本身的音訊／螢幕擷取授權仍依系統每次要求，這與App�
 1. 開啟「設定 → 診斷與測試」確認 **技術事件記錄中**。
 2. 選「測試音訊」驗證 stereo mixer；440Hz / 660Hz 是原創測試音，不是真實 TTS。
 3. 選授權 WAV（**48kHz / mono / PCM16**）或其他 APP 擷取。外部擷取每次都需系統授權，不偷開麥克風。
-4. 雲端字幕需先在 App 儲存所選引擎的 OpenAI 或 Gemini Key、測試連線，並在主頁勾選音訊／文字傳送同意。選 en / id / auto → 台灣繁體中文。Key 不傳聊天、不放 Git 或 CircleCI。
-5. 雲端翻譯後自動嘗試離線台灣中文播報；若出現語音錯誤，按「Android 文字轉語音設定」安裝離線台灣中文語音、選擇引擎，再重新開始。語音引擎不可用時保留字幕。
+4. 雲端字幕需先在 App 儲存所選引擎的 OpenAI 或 Gemini Key、測試連線，並在主頁勾選音訊／文字傳送同意。選來源與目的語言，來源可自動偵測。Key 不傳聊天、不放 Git 或 CircleCI。
+5. 雲端翻譯後自動嘗試所選目的語言的離線播報；若出現語音錯誤，按「Android 文字轉語音設定」安裝目的語言的離線語音、選擇引擎，再重新開始。語音引擎不可用時保留字幕。
 6. 按「設定浮動字幕權限」開啟上層顯示 → 返回 → 開始 →「顯示浮動字幕／小圈圈」。小圈圈可拖曳吸附，點一下開控制；隱藏字幕不停止翻譯；通知可恢復。混音頁可改語速、字級、行數、背景透明度與關閉播報。
 7. 不勾雲端同意時不送 ASR／MT。外部來源不重播原聲副本；只能調整本 APP 譯音，不能靜音來源 APP。
 8. 重現問題後停止 → 診斷 → **匯出 Log／分享 Log**，把 JSONL 附回聊天，補上來源版本、耳機和步驟。Log 不含錄音／字幕／Key，不自動上傳；詳見 [DIAGNOSTIC_LOGS](docs/DIAGNOSTIC_LOGS.md)。
@@ -57,7 +65,7 @@ AGP 8.9.2 / Kotlin 2.1.20 / Gradle 8.13 / Java 17+ / compile & target SDK35 / mi
 ./scripts/package-apk.sh
 ```
 
-APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.5.2-gemini-fix-debug.apk，SHA-256 見 deliverables/SHA256SUMS。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
+APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.6.0-languages-debug.apk，SHA-256 及驗證摘要見同次CircleCI Artifacts的SHA256SUMS與verification.json。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
 
 ## CircleCI
 

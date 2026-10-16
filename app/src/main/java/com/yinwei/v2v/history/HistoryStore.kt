@@ -13,7 +13,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 data class HistoryEntry(val sessionId: String, val segmentId: Long, val revision: Int, val createdAt: Long,
-    val startMs: Long, val endMs: Long, val sourceLanguage: String, val original: String, val translation: String)
+    val startMs: Long, val endMs: Long, val sourceLanguage: String, val original: String, val translation: String, val targetLanguage: String = "zh-TW")
 
 /** Private, bounded transcript archive. Only explicit final publications are appended, never UI snapshots. */
 class HistoryStore(private val file: File, private val maxEntries: Int = 1000, private val maxBytes: Int = 4 * 1024 * 1024) {
@@ -33,7 +33,7 @@ class HistoryStore(private val file: File, private val maxEntries: Int = 1000, p
             val data = JSONArray(file.readText(Charsets.UTF_8))
             mutable.value = (0 until data.length()).map { i -> data.getJSONObject(i).let { r ->
                 HistoryEntry(r.getString("session"), r.getLong("id"), r.getInt("revision"), r.getLong("createdAt"),
-                    r.getLong("startMs"), r.getLong("endMs"), r.getString("language"), r.getString("original"), r.getString("translation"))
+                    r.getLong("startMs"), r.getLong("endMs"), r.getString("language"), r.getString("original"), r.getString("translation"), r.optString("targetLanguage", "zh-TW"))
             } }.takeLast(maxEntries)
         } catch (_: Exception) { problem.value = "紀錄檔無法讀取；既有檔案未被覆寫，可清除後重新保存" }
     }
@@ -46,7 +46,7 @@ class HistoryStore(private val file: File, private val maxEntries: Int = 1000, p
         val matching = previous.firstOrNull { it.sessionId == segment.sessionId && it.segmentId == segment.id }
         if (matching != null && matching.revision >= segment.revision) return
         val entry = HistoryEntry(segment.sessionId, segment.id, segment.revision, matching?.createdAt ?: now,
-            segment.startMs, segment.endMs, segment.sourceLanguage, segment.originalText, segment.translatedText)
+            segment.startMs, segment.endMs, segment.sourceLanguage, segment.originalText, segment.translatedText, segment.targetLanguage)
         val next = (previous.filterNot { it.sessionId == entry.sessionId && it.segmentId == entry.segmentId } + entry)
             .sortedWith(compareBy<HistoryEntry> { it.createdAt }.thenBy { it.segmentId }).takeLast(maxEntries).toMutableList()
         try {
@@ -69,7 +69,7 @@ class HistoryStore(private val file: File, private val maxEntries: Int = 1000, p
     }
     private fun encode(entries: List<HistoryEntry>): String = JSONArray().apply { entries.forEach { e ->
         put(JSONObject().put("session", e.sessionId).put("id", e.segmentId).put("revision", e.revision).put("createdAt", e.createdAt)
-            .put("startMs", e.startMs).put("endMs", e.endMs).put("language", e.sourceLanguage).put("original", e.original).put("translation", e.translation))
+            .put("startMs", e.startMs).put("endMs", e.endMs).put("language", e.sourceLanguage).put("original", e.original).put("translation", e.translation).put("targetLanguage", e.targetLanguage))
     } }.toString()
 }
 
@@ -78,7 +78,7 @@ object HistoryText {
         append("V2V 翻譯紀錄\n共 ${entries.size} 段\n\n")
         val format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(zone)
         entries.forEachIndexed { index, e ->
-            append("${index + 1}. ${format.format(Instant.ofEpochMilli(e.createdAt))}  ${e.sourceLanguage} → zh-TW\n")
+            append("${index + 1}. ${format.format(Instant.ofEpochMilli(e.createdAt))}  ${e.sourceLanguage} → ${e.targetLanguage}\n")
             append("原文：${e.original}\n譯文：${e.translation}\n\n")
         }
     }

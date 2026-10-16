@@ -4,6 +4,9 @@ import org.json.JSONObject
 
 /** Only these application-owned constants may leave the transient Google error-body parser. */
 enum class ProviderIssue(val explanation: String) {
+    SERVICE_UNAVAILABLE("Gemini 服務忙碌或暫時不可用，稍後可重試或更換 Gemini 模型"),
+    NETWORK_TIMEOUT("網路或供應商回應逾時，稍後重試"),
+    NETWORK_UNAVAILABLE("網路連線暫時中斷，稍後重試"),
     INVALID_KEY("Gemini API Key 無效、已過期或已撤銷，請重新設定"),
     KEY_RESTRICTED("Gemini Key 的應用程式、IP 或 API 限制不允許此請求，請檢查 Google AI Studio／Cloud 設定"),
     SERVICE_DISABLED("專案尚未啟用 Gemini Generative Language API，請檢查 Google 專案設定"),
@@ -36,6 +39,7 @@ internal object GeminiErrorClassifier {
                 if (issue != null) return issue
             }
             when (error.optString("status")) {
+                "UNAVAILABLE", "DEADLINE_EXCEEDED", "INTERNAL" -> ProviderIssue.SERVICE_UNAVAILABLE
                 "INVALID_ARGUMENT" -> if (httpStatus == 400) ProviderIssue.INVALID_REQUEST else ProviderIssue.UNKNOWN
                 "FAILED_PRECONDITION" -> ProviderIssue.PROJECT_SETUP_REQUIRED
                 "UNAUTHENTICATED" -> ProviderIssue.INVALID_KEY
