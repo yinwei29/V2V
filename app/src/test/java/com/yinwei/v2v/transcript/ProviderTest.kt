@@ -88,16 +88,21 @@ class ProviderTest {
             val repository = SessionRepository().apply { set(SessionSnapshot(id = "busy")) }
             val pipelineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
             val pipeline = SubtitlePipeline("busy", "en", provider, repository, pipelineScope)
-            fun sendSentence(start: Int) {
+            suspend fun sendSentence(start: Int) {
                 repeat(80) { i -> pipeline.offer(AudioFrame("busy", Source.OWNED_FILE, (start + i).toLong(), (start + i) * 20000L,
-                    48000, ShortArray(960) { if (i < 50) 3000 else 0 }, (start + i) * 960L)) }
+                    48000, ShortArray(960) { if (i < 50) 3000 else 0 }, (start + i) * 960L))
+                    delay(1) // Let segmentation drain ingress; exercise backlog, not a producer burst.
+                }
             }
             try {
                 sendSentence(0)
                 withContext(Dispatchers.IO) { assertNotNull(server.takeRequest(2, TimeUnit.SECONDS)) }
-                sendSentence(80); sendSentence(160); sendSentence(240); sendSentence(320)
+                // Production accepts up to 12 queued chunks / 30 seconds, not the old 3-chunk budget.
+                // Four 1.6-second sentences fit now, so the old fixture could never cause an overload.
+                val additionalSentences = 14
+                repeat(additionalSentences) { sendSentence((it + 1) * 80) }
                 val overloaded = withTimeout(3000) { repository.state.first { it.skippedSamples > 0 } }
-                assertTrue(overloaded.skippedSamples <= 320L * 960)
+                assertTrue(overloaded.skippedSamples <= additionalSentences * 80L * 960)
                 assertEquals(1, server.requestCount) // Provider remains blocked; no accidental second request.
             } finally { pipeline.cancel(); pipelineScope.cancel() }
         }
