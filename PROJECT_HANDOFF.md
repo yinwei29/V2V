@@ -1,3 +1,15 @@
+# V2V · 2026-10-31 CircleCI #11→#12 回歸修正
+
+本repo是yinwei29/V2V（com.yinwei.v2v／Kotlin Compose），與yinwei29/Ju／LinguaBridge獨立維護；不可混用來源、分支、PR、版本、APK及驗證數量。repo AGENTS.md已明訂。
+
+CircleCI #11在5cf817e為106 tests／1 timeout：provider blocked測試仍以舊小佇列為前提，只送四段短音訊，無法使目前30秒／12段FIFO超載。改成14段額外句子並每frame讓出1ms消化ingress，保留丟棄上下界／一次request／finally cancel，不擴timeout、不skip。正式engine／FIFO不變，README版本與APK檔名更新為現有0.7.0-global。
+
+[CircleCI #12](https://circleci.com/gh/yinwei29/V2V/12) source8e7e82d通過build、106/106 unit（0failed/errors/skipped）、lint（0Error/Fatal，208Warning）。實際下載APK33,179,757 bytes與checksum核對通過；artifact-only，未正式上架／未真機／未呼叫真實API。後續文件不變更app/與Gradle。詳見 [回歸報告](docs/CIRCLECI_11_BACKLOG_REGRESSION.md) 與 [稽核metadata](docs/validation/circleci-12-backlog-regression.json)。舊失敗及產品功能限制保留於下文。
+
+English: V2V and Ju are distinct projects. V2V #12 validates only the V2V source8e7e82d. The fix updates an obsolete overload fixture without changing production behavior; actual APK digest verified. Device/API quality and lint warnings remain outside this pass.
+
+---
+
 # PROJECT_HANDOFF · 0.7.0-global
 
 本版處理使用者Gemini漏句、播報停頓、離線語音下載入口、多國語言介面，以及最新字幕範圍要求。Gemini一次音訊請求取得原文與譯文、短段合併4秒、等待FIFO最多30秒／12段，仍有界並保留丟棄計數；TTS裁切頭尾靜音但保留句內停頓。介面繁中／英文／印尼文／日文與跟隨系統，新增語音資料安裝入口。字幕6–30sp／2–10行並保存。詳見 docs/GLOBAL_AND_AUDIO_FLOW.md；原始使用者Log不提交。

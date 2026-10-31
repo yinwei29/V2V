@@ -23,3 +23,9 @@ No production engine, key, locale, schema, Android package or version changes. R
 修正source `8e7e82d3349d4b78c6b921339dd2dbb863f6027d` 已啟動 [V2V CircleCI #12](https://circleci.com/gh/yinwei29/V2V/12)。該結果只屬V2V，不能算Ju驗證。新增本repo AGENTS.md明訂origin／package／CI及證據分離；沒有複製Ju私人程式碼。
 
 Local locale verification passed (193 labels/four locales), as did git diff --check. Local Gradle could not initialize its default home; workspace GRADLE_USER_HOME retry then failed to connect while downloading Gradle. No local Gradle build/unit pass is claimed. CircleCI remains the full Gradle verification environment. Following documentation-only changes do not alter app/src or Gradle inputs.
+
+## 已驗證結果 / Verified result
+
+V2V CircleCI #12 source8e7e82d：**106 tests、0 failures、0 errors、0 skipped**；assembleDebug及lintDebug成功，lint Error/Fatal=0、Warning=208（未宣稱清零）。產物V2V-0.7.0-global-debug.apk，33,179,757 bytes；實際下載並核對SHA-256 `ea66c44e99d21ff4c59f422ff4f7ee09c306cc0f200a51bc3ce550ab7d6868be` 與同次SHA256SUMS／verification.json一致。完整metadata在 [validation JSON](validation/circleci-12-backlog-regression.json)。本次後續文件提交不變更app/或Gradle inputs。
+
+The former overload case now passes with the existing production capacity and all assertions retained. No real provider or physical Android device testing occurred. CircleCI artifacts are temporary; no store release or permanent APK publication is claimed. These results never validate Ju.

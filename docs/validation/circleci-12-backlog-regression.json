@@ -1,0 +1,27 @@
+{
+  "version": "0.7.0-global",
+  "junit": {
+    "tests": 106,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Error": 0,
+    "Fatal": 0,
+    "Warning": 208
+  },
+  "apkChecksums": "ea66c44e99d21ff4c59f422ff4f7ee09c306cc0f200a51bc3ce550ab7d6868be  V2V-0.7.0-global-debug.apk",
+  "liveProviderTested": false,
+  "androidDeviceTested": false,
+  "provenance": {
+    "repository": "yinwei29/V2V",
+    "circleciBuild": 12,
+    "source": "8e7e82d3349d4b78c6b921339dd2dbb863f6027d",
+    "url": "https://circleci.com/gh/yinwei29/V2V/12",
+    "downloadedApkSha256": "ea66c44e99d21ff4c59f422ff4f7ee09c306cc0f200a51bc3ce550ab7d6868be",
+    "apkBytes": 33179757,
+    "apkDigestVerified": true,
+    "JuEvidence": false
+  }
+}
