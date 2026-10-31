@@ -65,7 +65,7 @@ AGP 8.9.2 / Kotlin 2.1.20 / Gradle 8.13 / Java 17+ / compile & target SDK35 / mi
 ./scripts/package-apk.sh
 ```
 
-APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.6.0-languages-debug.apk，SHA-256 及驗證摘要見同次CircleCI Artifacts的SHA256SUMS與verification.json。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
+APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.7.0-global-debug.apk，SHA-256 及驗證摘要見同次CircleCI Artifacts的SHA256SUMS與verification.json。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
 
 ## CircleCI
 

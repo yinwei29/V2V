@@ -17,3 +17,9 @@ No production engine, key, locale, schema, Android package or version changes. R
 ## 驗證與回退 / Verification and rollback
 
 新分支push後由V2V既有CircleCI verify pipeline自動build/test/lint，結果待本輪來源完成才追加。沒有真實API key／音訊／真機，不能聲稱語意品質或耳機驗收。回退用git revert此修正，不改production backlog或使用者資料。
+
+## 本輪執行與專案識別 / Execution and project identity
+
+修正source `8e7e82d3349d4b78c6b921339dd2dbb863f6027d` 已啟動 [V2V CircleCI #12](https://circleci.com/gh/yinwei29/V2V/12)。該結果只屬V2V，不能算Ju驗證。新增本repo AGENTS.md明訂origin／package／CI及證據分離；沒有複製Ju私人程式碼。
+
+Local locale verification passed (193 labels/four locales), as did git diff --check. Local Gradle could not initialize its default home; workspace GRADLE_USER_HOME retry then failed to connect while downloading Gradle. No local Gradle build/unit pass is claimed. CircleCI remains the full Gradle verification environment. Following documentation-only changes do not alter app/src or Gradle inputs.
