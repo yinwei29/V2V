@@ -1,5 +1,9 @@
 # V2V · 0.9.0-asr · 2026-11-01
 
+[0.9.0 Preview APK下載](https://github.com/yinwei29/V2V/releases/download/v0.9.0-asr/V2V-0.9.0-asr-preview.apk)已發佈；[GitHub附件工作流程](https://github.com/yinwei29/V2V/actions/runs/41299519711)成功，四附件齊全，GitHub asset digest及公開下載SHA均與CircleCI#23一致。release target faa86f0（main app/build與測試來源相同），沒有使用新簽章或重新編譯替代APK。測試原文與譯文的真實品質仍未驗收。
+
+English: Verified0.9.0 Preview prerelease is publicly downloadable; upload workflow, GitHub asset digest and public download hash agree with CircleCI#23. Same signing pin and app sources, no new device/quality acceptance claim.
+
 使用者回報通用Gemini3.5 Flash-Lite／3.8 Flash效果不佳。新增明確選用 **Transcribe → Flash／Transcribe → Flash-Lite**：相同Google Key→gemini-3.5-transcribe專用逐字ASR（Interactions，inline WAV，store/stream/background=false）→所選Gemini文字翻譯。原文先顯示，MT失敗保留本次原文，不用另一份語音翻譯；字幕/TTS仍共用成功譯文。原有combined模式、已保存選擇與預設不變，不自動提高費用。新路徑兩次請求可能較慢或增加費用，不宣稱品質已實測提升。API契約／語言hint及操作見 [SPECIALIST_ASR](docs/SPECIALIST_ASR.md)。
 
 維持Preview套件與固定簽章，Code16可更新0.8.1 Preview，資料不搬移、不刪除。Ju未改，未新增Live WebSocket／離線ASR／串流partial。中國語音hint使用官方cmn-Hans-CN，原文可能簡體，目標zh-TW譯文仍明確繁中。Interactions raw REST回應是steps/model_output/text，SDK output_text不是原始欄位。
