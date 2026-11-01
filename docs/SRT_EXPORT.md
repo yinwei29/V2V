@@ -6,7 +6,7 @@ V2V only. Implements the existing V2V specification §9 / T18; no Ju code or mee
 
 紀錄頁右上匯出→文字紀錄（TXT）或字幕（SRT）。TXT保留全紀錄原方式；SRT先選工作階段（日期/時間＋段數），再選譯文或原文＋譯文，各工作階段以自己的來源相對時間軸輸出，不能把多個從0開始的session混在同一SRT。
 
-History → Export → TXT or SRT. Choose a session for SRT, then translation-only or bilingual captions. Content is formatted off the UI thread, snapshotted before the OS save picker, and written as UTF-8 to the user-selected destination. The snapshot survives Activity recreation in a ViewModel, not Bundle/logs; process death can interrupt export and asks the user to retry. Cancelling the picker does not change history.
+History → Export → TXT or SRT. Choose a session for SRT, then translation-only or bilingual captions. Content is formatted off the UI thread, snapshotted before the OS save picker, and written as UTF-8 to the user-selected destination. The snapshot survives Activity recreation in a ViewModel, not Bundle/logs; process death can interrupt export and asks the user to retry. Cancelling the picker does not change history. Only one export can await a destination at a time, including after recreation/multi-window interaction; pending state keeps export/clear controls disabled to prevent replacing another session snapshot.
 
 外部APP擷取的時間碼從本次擷取開始計算；V2V無法知道YouTube等APP的原片播放位置、暫停或跳轉，不保證匯出的SRT可直接對齊完整原片。音訊檔路徑則使用本次來源的取樣時間軸。
 

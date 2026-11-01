@@ -78,7 +78,7 @@ class MainActivity : ComponentActivity() {
     private val exportHistory = registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain"), ::completeHistoryExport)
     private val exportSrt = registerForActivityResult(ActivityResultContracts.CreateDocument("application/x-subrip"), ::completeHistoryExport)
     private fun prepareHistoryExport(archive: List<HistoryEntry>, sessionId: String? = null, bilingual: Boolean = false) {
-        if (historyBusy) return
+        if (historyBusy || pendingHistoryExport != null) return
         historyBusy = true
         lifecycleScope.launch {
             try {
@@ -214,7 +214,7 @@ class MainActivity : ComponentActivity() {
                     { changed -> lifecycleScope.launch { settings.save(changed) } }, diagnostics, logEnabled,
                     { enabled -> lifecycleScope.launch { settings.setDiagnosticsEnabled(enabled) } }, logNotice, logBusy,
                     { exportLog.launch("V2V-technical-${System.currentTimeMillis()}.jsonl") }, ::shareLog,
-                    archive, historyError, historyNotice, historyBusy,
+                    archive, historyError, historyNotice, historyBusy || pendingHistoryExport != null,
                     { chooseHistoryExport(archive) },
                     { lifecycleScope.launch {
                         historyBusy = true
