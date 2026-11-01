@@ -10,6 +10,7 @@ print(version)
 PY
 )
 mkdir -p deliverables
-filename="V2V-${version}-debug.apk"
+filename="V2V-${version}-preview.apk"
 cp app/build/outputs/apk/debug/app-debug.apk "deliverables/$filename"
 (cd deliverables && sha256sum "$filename" > SHA256SUMS)
+python3 scripts/verify-installation.py "deliverables/$filename"

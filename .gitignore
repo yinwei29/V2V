@@ -15,3 +15,5 @@ deliverables/*.zip
 /deliverables/verification.json
 
 __pycache__/
+
+/deliverables/installation.json

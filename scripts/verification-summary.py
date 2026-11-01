@@ -13,6 +13,7 @@ lint = {level: sum(i.get('severity') == level for i in issues) for level in ('Er
 metadata = json.loads((root / 'app/build/outputs/apk/debug/output-metadata.json').read_text())
 result = {'version': metadata['elements'][0]['versionName'], 'junit': counts, 'lint': lint,
           'apkChecksums': (root / 'deliverables/SHA256SUMS').read_text().strip(),
+          'installation': json.loads((root / 'deliverables/installation.json').read_text()),
           'liveProviderTested': False, 'androidDeviceTested': False}
 (root / 'deliverables/verification.json').write_text(json.dumps(result, indent=2) + '\n')
 if counts['failures'] or counts['errors'] or lint['Error'] or lint['Fatal']:
