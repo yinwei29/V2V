@@ -37,6 +37,8 @@ class HistorySrtTest {
         val result = HistorySrt.export(listOf(entry(text="<b>A&B</b>\r\n\r\n第二行\u0000").copy(original="Original\r\n\r\nline")),"a",true)
         assertTrue(result.contains("Original\nline\n&lt;b&gt;A&amp;B&lt;/b&gt;\n第二行\n\n"))
         assertFalse(result.contains("\r"));assertFalse(result.contains("\u0000"))
+        val emptyOriginal=entry().copy(original="\u0000\r\n")
+        assertEquals(HistorySrt.export(listOf(emptyOriginal),"a"), HistorySrt.export(listOf(emptyOriginal),"a",true))
     }
     @Test fun timestampsUseAsciiDigitsRegardlessOfDeviceLocale() {
         val previous=Locale.getDefault()

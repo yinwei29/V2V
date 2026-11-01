@@ -19,7 +19,10 @@ object HistorySrt {
             cues.forEachIndexed { index, entry ->
                 append(index + 1).append('\n')
                 append(timestamp(entry.startMs)).append(" --> ").append(timestamp(entry.endMs)).append('\n')
-                if (bilingual && entry.original.isNotBlank()) append(text(entry.original)).append('\n')
+                if (bilingual) {
+                    val original = text(entry.original)
+                    if (original.isNotBlank()) append(original).append('\n')
+                }
                 append(text(entry.translation)).append("\n\n")
             }
         }
