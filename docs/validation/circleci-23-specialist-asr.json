@@ -1,0 +1,38 @@
+{
+  "version": "0.9.0-asr",
+  "junit": {
+    "tests": 134,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Error": 0,
+    "Fatal": 0,
+    "Warning": 221
+  },
+  "apkChecksums": "7303ea88d0a27df437e1f1a7cbf4aaca4d924c4d98ae6250ff89f6806ca6cf06  V2V-0.9.0-asr-preview.apk",
+  "installation": {
+    "applicationId": "com.yinwei.v2v.preview",
+    "versionCode": 16,
+    "versionName": "0.9.0-asr",
+    "minSdk": 29,
+    "targetSdk": 35,
+    "certificateSha256": "fa0d822eeb06566185983e0bb02cdf516bfdad5925a5665b0f294985be475e32",
+    "apkV2Verified": true,
+    "parallelToLegacyV2V": true,
+    "deviceInstallTested": false
+  },
+  "liveProviderTested": false,
+  "androidDeviceTested": false,
+  "provenance": {
+    "repository": "yinwei29/V2V",
+    "circleciBuild": 23,
+    "source": "2c9f4d0d33eb45037e2dd87102eb83675b4e437b",
+    "url": "https://circleci.com/gh/yinwei29/V2V/23",
+    "downloadedApkSha256": "7303ea88d0a27df437e1f1a7cbf4aaca4d924c4d98ae6250ff89f6806ca6cf06",
+    "apkBytes": 33237597,
+    "apkDigestVerified": true,
+    "JuEvidence": false
+  }
+}
