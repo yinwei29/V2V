@@ -1,5 +1,9 @@
 # V2V · 0.8.1-install · 2026-11-01
 
+[GitHub安裝APK](https://github.com/yinwei29/V2V/releases/download/v0.8.1-install/V2V-0.8.1-install-preview.apk)已發佈為v0.8.1-install prerelease，四個公開附件齊全。GitHub附件digest與CircleCI#21下載APK一致。GitHub連線上傳host曾回401，改用僅附件交付的 [manual workflow成功run](https://github.com/yinwei29/V2V/actions/runs/41283193954)；Android build/tests仍在CircleCI。發佈target為cb28d25，後續distribution workflow不改app/build。工作流程不自動發佈既有Release、不覆寫附件、不存私鑰，須人工dispatch指定來源及SHA。長期簽章備份限制維持。
+
+English: Public Preview APK and verification assets published; standard repository upload workflow succeeded, asset digest matches independently verified CircleCI#21. Distribution workflow is not a replacement Android CI.
+
 使用者回報「未安裝應用程式」。已驗證#17的0.7.1與#19/#20的0.8個別APK簽章有效，但憑證不同；#19快取缺失後換簽，不能直接覆蓋舊套件。詳見 [安裝修復](docs/INSTALLATION.md)，舊私鑰不能從公開憑證恢復，沒有自動移除舊版或搬移資料。
 
 debug現在為V2V Preview /com.yinwei.v2v.preview，Code15/0.8.1-install，與舊V2V並存；release applicationId與namespace不變，翻譯核心仍0.8。Preview需重新填Key／授權，舊歷史保留於舊App。CI先比對固定公開憑證指紋，缺key／換簽就停止；可由保護變數恢復原key，但永久加密備份尚未設定，不能以快取當長期保證。簽章私鑰不進Git／附件／Log／聊天。Ju未修改。
