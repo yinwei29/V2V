@@ -12,6 +12,8 @@ interface TranslationProvider {
     val partialSupported: Boolean
     suspend fun healthCheck()
     suspend fun transcribe(chunk: AudioChunk, language: String): String
+    suspend fun translateInContext(text: String, language: String, targetLanguage: String, context: TranslationContext): TranslatedText =
+        translate(text, language, targetLanguage)
     suspend fun translate(text: String, language: String, targetLanguage: String = "zh-TW"): TranslatedText
 }
 fun CloudProvider.create(key: String, journal: DiagnosticJournal? = null, geminiModel: GeminiModel = GeminiModel.DEFAULT): TranslationProvider = when (this) {
@@ -22,5 +24,16 @@ fun CloudProvider.create(key: String, journal: DiagnosticJournal? = null, gemini
 /** Providers that can return verbatim source and translation from one audio request. */
 data class AudioTranslation(val original: String, val translation: TranslatedText)
 interface AudioTranslationProvider {
+    suspend fun translateAudioInContext(chunk: AudioChunk, language: String, targetLanguage: String, context: TranslationContext): AudioTranslation =
+        translateAudio(chunk, language, targetLanguage)
     suspend fun translateAudio(chunk: AudioChunk, language: String, targetLanguage: String): AudioTranslation
+}
+
+/** Only preceding source text, bounded at the provider boundary; never contains instructions or keys. */
+class TranslationContext private constructor(val precedingOriginals: List<String>) {
+    companion object {
+        val EMPTY = TranslationContext(emptyList())
+        fun from(originals: List<String>) = TranslationContext(originals.takeLast(2)
+            .filter { it.isNotBlank() && it.length <= 1200 }.toList())
+    }
 }

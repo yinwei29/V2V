@@ -51,6 +51,20 @@ class GeminiProviderTest {
             assertArrayEquals(chunk.wavBytes(), Base64.getDecoder().decode(audio.getString("data")))
         }
     }
+    @Test fun combinedContextIsSeparateUntrustedTextAndCurrentWavRemainsUnchanged() = runBlocking {
+        fixture { server, provider ->
+            server.enqueue(answer("不要關閉它。", original = "Do not close it."))
+            provider.translateAudioInContext(chunk, "en", "zh-TW", TranslationContext.from(listOf("The valve is open.")))
+            val body = JSONObject(server.takeRequest().body.readUtf8())
+            val parts = body.getJSONArray("contents").getJSONObject(0).getJSONArray("parts")
+            assertEquals(2, parts.length())
+            assertArrayEquals(chunk.wavBytes(), Base64.getDecoder().decode(parts.getJSONObject(0).getJSONObject("inlineData").getString("data")))
+            val context = JSONObject(parts.getJSONObject(1).getString("text"))
+            assertEquals("The valve is open.", context.getJSONArray("preceding_source_context").getString(0))
+            assertTrue(body.getJSONObject("systemInstruction").toString().contains("ONLY the current audio"))
+            assertEquals(1, server.requestCount)
+        }
+    }
     @Test fun combinedSilenceIsEmptyButMissingOriginalAndMissingTranslationAreRejected() = runBlocking {
         fixture { server, provider ->
             server.enqueue(answer("", original = ""))

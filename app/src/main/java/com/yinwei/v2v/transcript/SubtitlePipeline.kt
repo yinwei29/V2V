@@ -18,6 +18,7 @@ class SubtitlePipeline(
     private val frames = Channel<AudioFrame>(250)
     private val chunks = ChunkMailbox(maxQueuedSamples = 30 * 48000, maxChunks = 12)
     private val ledger = TranscriptLedger(sessionId)
+    private val recentContext = SourceContextWindow()
     private val worker = scope.launch(Dispatchers.IO) {
         var consecutiveFailures = 0
         try {
@@ -31,6 +32,7 @@ class SubtitlePipeline(
                     repository.update { if (it.id == sessionId) it.copy(providerError = "", providerRecovering = false) else it }
                 } catch (e: CancellationException) { throw e }
                 catch (e: ProviderFailure) {
+                    recentContext.clear()
                     if (!e.retryable) { fail(e.message.orEmpty()); break }
                     consecutiveFailures++
                     dropped(chunk.pcm.size.toLong())
@@ -56,19 +58,29 @@ class SubtitlePipeline(
     private suspend fun process(chunk: AudioChunk) {
         stage(asr = StageState.RUNNING, mt = if (provider is AudioTranslationProvider) StageState.RUNNING else StageState.IDLE)
         val began = System.nanoTime()
-        val combined = (provider as? AudioTranslationProvider)?.translateAudio(chunk, language, targetLanguage)
+        val context = recentContext.before(chunk)
+        val combined = (provider as? AudioTranslationProvider)?.translateAudioInContext(chunk, language, targetLanguage, context)
         val original = combined?.original ?: provider.transcribe(chunk, language)
+        val asrMs = (System.nanoTime() - began) / 1_000_000
         currentCoroutineContext().ensureActive()
         if (original.isBlank()) {
             diagnostics?.record(DiagnosticEvent.ASR_EMPTY, sessionId, mapOf(Metric.SEGMENT_ID to chunk.id))
+            recentContext.clear()
             stage(StageState.IDLE, StageState.IDLE); return
         }
         var segment = TranscriptSegment(sessionId, chunk.id, startMs = chunk.startMs, endMs = chunk.endMs,
             originalText = original, sourceLanguage = language, provider = provider.description, targetLanguage = targetLanguage)
         publish(segment)
         stage(StageState.IDLE, StageState.RUNNING)
-        val result = combined?.translation ?: provider.translate(original, language, targetLanguage)
+        val mtBegan = System.nanoTime()
+        val result = combined?.translation ?: provider.translateInContext(original, language, targetLanguage, context)
         currentCoroutineContext().ensureActive()
+        if (result.text.isBlank()) throw ProviderFailure(0, "翻譯回應為空，原文保留，請停止後檢查供應商設定")
+        diagnostics?.record(DiagnosticEvent.PIPELINE_TIMING, sessionId, mapOf(
+            Metric.SEGMENT_ID to chunk.id, Metric.CHUNK_MS to (chunk.endMs - chunk.startMs),
+            Metric.ASR_MS to asrMs, Metric.MT_MS to if (combined == null) (System.nanoTime() - mtBegan) / 1_000_000 else 0L,
+            Metric.COMBINED_REQUEST to if (combined != null) 1 else 0, Metric.CONTEXT_SEGMENTS to context.precedingOriginals.size))
+        recentContext.remember(chunk, original)
         segment = segment.copy(revision = 2, translatedText = result.text, translationLatencyMs = (System.nanoTime() - began) / 1_000_000)
         publish(segment)
         if (repository.state.value.id == sessionId) translated(segment)
@@ -76,7 +88,8 @@ class SubtitlePipeline(
         stage(StageState.IDLE, StageState.IDLE)
     }
     private val segmenter = scope.launch(Dispatchers.IO) {
-        val splitter = SpeechSegmenter(minMs = if (provider is AudioTranslationProvider) 4000 else 0)
+        // Natural pauses submit immediately; sustained speech cannot wait for the old 10-second ceiling.
+        val splitter = SpeechSegmenter(maxMs = 4000)
         try {
             for (frame in frames) {
                 if (frame.sessionId != sessionId) continue

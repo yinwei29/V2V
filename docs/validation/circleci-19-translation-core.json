@@ -1,0 +1,27 @@
+{
+  "version": "0.8.0-core",
+  "junit": {
+    "tests": 123,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Error": 0,
+    "Fatal": 0,
+    "Warning": 219
+  },
+  "apkChecksums": "834de8b93426d5d8d6dd969b14c57f0e458c7ca1e3f7d821240908b9ce656eb2  V2V-0.8.0-core-debug.apk",
+  "liveProviderTested": false,
+  "androidDeviceTested": false,
+  "provenance": {
+    "repository": "yinwei29/V2V",
+    "circleciBuild": 19,
+    "source": "68455308d8d923a5f91081cfb09ba2a7b0a0f86b",
+    "url": "https://circleci.com/gh/yinwei29/V2V/19",
+    "downloadedApkSha256": "834de8b93426d5d8d6dd969b14c57f0e458c7ca1e3f7d821240908b9ce656eb2",
+    "apkBytes": 33218845,
+    "apkDigestVerified": true,
+    "JuEvidence": false
+  }
+}

@@ -14,6 +14,11 @@ class ProviderRecoveryTest {
         private val mt: suspend (Int) -> TranslatedText = { TranslatedText("譯文$it", null) }) : TranslationProvider {
         val asrCalls = AtomicInteger(); val mtCalls = AtomicInteger()
         var lastTarget: String? = null
+        val contexts = mutableListOf<List<String>>()
+        override suspend fun translateInContext(text: String, language: String, targetLanguage: String, context: TranslationContext): TranslatedText {
+            contexts += context.precedingOriginals
+            return translate(text, language, targetLanguage)
+        }
         override val description = "test-provider"
         override val partialSupported = false
         override suspend fun healthCheck() = Unit
@@ -72,6 +77,16 @@ class ProviderRecoveryTest {
             send(pipeline, 1)
             val recovered = repo.state.first { it.segments.any { s -> s.translatedText == "翻譯完成" } && !it.providerRecovering }
             assertEquals(2, recovered.segments.size); assertEquals("", recovered.segments.first().translatedText)
+        }
+    }
+    @Test fun temporaryFailureClearsSuccessfulContextBeforeFollowingRequest() = runBlocking {
+        val provider = Scripted({ "original$it" }, { if (it == 2) throw ProviderFailure(503, "busy") else TranslatedText("譯文$it", null) })
+        fixture(provider) { pipeline, repo ->
+            send(pipeline, 0); repo.state.first { it.segments.any { s -> s.revision == 2 } }
+            send(pipeline, 1); repo.state.first { it.providerRecovering }
+            send(pipeline, 2)
+            repo.state.first { it.segments.any { s -> s.id == 2L && s.revision == 2 } && !it.providerRecovering }
+            assertEquals(listOf(emptyList<String>(), listOf("original1"), emptyList<String>()), provider.contexts)
         }
     }
     @Test fun invalidKeyOrRequestIsTerminalAndNeverAutomaticallyRetried() = runBlocking {

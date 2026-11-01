@@ -1,3 +1,13 @@
+# V2V · 0.8.0-core · 2026-11-01
+
+僅V2V翻譯核心。生產管線改為600ms停頓斷句／連續語音最多4秒；移除Gemini固定4秒最低等待。OpenAI MT及Gemini combined request加入最近兩段成功原文（每段最多1,200 UTF-16 units）參考，只翻譯目前輸入，失敗／漏段／長停頓／新session清除；不用前次譯文強化錯誤。原有有界佇列、取消、供應商、單一字幕／譯音結果與資料格式保留。新增數值PIPELINE_TIMING診斷，不保存原文／音訊／Key。版本Code14，Ju沒有修改。
+
+[CircleCI #19](https://circleci.com/gh/yinwei29/V2V/19)來源68455308d8d923a5f91081cfb09ba2a7b0a0f86b：assembleDebug成功、123/123 JVM tests（0 failed/errors/skipped），lint0 Error/Fatal、219 Warning。四語系204標籤驗證通過；下載APK校驗碼及ZIP完整性核對通過，APK含新版核心標記。詳見 [核心調整／操作／限制](docs/TRANSLATION_CORE.md) 與 [驗證metadata](docs/validation/circleci-19-translation-core.json)。後續只新增本交接與驗證文件，app/Gradle/CI未變。
+
+English: V2V0.8.0-core reduces collection delay and adds bounded source continuity; matching-source CircleCI passes123 tests/build/lint with219 warnings. This is segmented final translation, not streaming or a4s end-to-end guarantee. More requests/context may increase cost. No live API accuracy/throughput or Android listening acceptance: test the same authorized audio before/after and export technical logs. Offline ASR/MT, streaming and device/source acceptance remain open. No Ju changes or store release.
+
+---
+
 # V2V · 0.7.1-srt · 2026-11-01
 
 本輪按照V2V自己的規格§9/T18完成工作階段SRT匯出。紀錄→匯出→SRT→選工作階段→純譯文或雙語；原有TXT及歷史資料保留。使用來源相對時間碼、最新修訂、UTF-8與無效紀錄略過提示；檔案選擇前的快照保留於記憶體ViewModel，非Bundle。詳見 [SRT操作及限制](docs/SRT_EXPORT.md)。版本Code13，沒有修改Ju。
