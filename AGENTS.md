@@ -6,3 +6,8 @@
 - Preserve existing bounded audio/translation queues, cancellation, privacy/consent, key storage and history. Real provider keys, user audio/transcripts and raw private logs must not enter commits or CI artifacts.
 - Use local synthetic/MockWebServer tests for automatic validation; never claim real provider, Bluetooth, capture policy or device listening acceptance from JVM tests.
 - Derive version from app/build.gradle.kts and test/build outcome from the matching source commit's CircleCI reports. Do not label an old APK or another repository's artifact as the current build.
+
+## Product scope clarification — 2026-11-01
+- V2V owns phone playback capture, imported audio transcription/translation, overlays and controlled-source original/translated audio mixing. Current owned-file support is limited to documented WAV inputs; playback capture does not imply physical microphone recording or unrestricted call capture.
+- Ju owns live microphone conversation, its own meeting transcripts/AI notes and Office/PDF document translation. Do not add these to V2V solely because a generic attachment mentions them.
+- Read docs/PRODUCT_SCOPE.md alongside this repo's own docs/Android_Translator_AI_Spec_V2.md. Do not replace V2V milestones with Ju's phase gates or use either product's offline/CI results as the other's evidence.

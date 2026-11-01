@@ -1,3 +1,11 @@
+# V2V · 2026-11-01 功能歸屬核對
+
+依使用者澄清：V2V為手機播放音訊及音訊檔轉錄／即時翻譯，Ju／LinguaBridge為獨立的對話／文件翻譯專案。以 [PRODUCT_SCOPE](docs/PRODUCT_SCOPE.md) 分離；本repo自己的Android音訊V2規格與M0–M6保留，不改套Ju混合規劃。外部會議聲音擷取不等於Ju AI會議紀要；音訊檔匯入不等於Office/PDF；系統離線TTS不等於Ju離線ASR/MT。PR#1沒有引入Ju runtime。此次只修正文檔、不改APP、不移植程式／keys、不新增功能驗收聲明。
+
+English: Scope correction only. V2V and Ju retain independent requirements, implementations and evidence; see product scope audit.
+
+---
+
 # V2V · 2026-10-31 CircleCI #11→#12 回歸修正
 
 本repo是yinwei29/V2V（com.yinwei.v2v／Kotlin Compose），與yinwei29/Ju／LinguaBridge獨立維護；不可混用來源、分支、PR、版本、APK及驗證數量。repo AGENTS.md已明訂。
