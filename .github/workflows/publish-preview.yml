@@ -1,0 +1,47 @@
+name: Upload verified CircleCI Preview APK
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing draft prerelease tag
+        required: true
+      build:
+        description: Successful V2V CircleCI build number
+        required: true
+      source:
+        description: Exact CircleCI source commit (40 hex characters)
+        required: true
+      sha256:
+        description: Independently verified APK SHA-256
+        required: true
+permissions:
+  contents: read
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      V2V_TAG: ${{ inputs.tag }}
+      V2V_CIRCLECI_BUILD: ${{ inputs.build }}
+      V2V_CIRCLECI_SOURCE: ${{ inputs.source }}
+      V2V_APK_SHA256: ${{ inputs.sha256 }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Download and validate existing CircleCI deliverables
+        run: python3 scripts/fetch-preview-delivery.py
+      - name: Ensure APK code matches current application and build configuration
+        run: |
+          git diff --exit-code "$V2V_CIRCLECI_SOURCE" HEAD -- app gradle .circleci/config.yml scripts/package-apk.sh scripts/prepare-debug-signing.sh scripts/debug-signer.sha256 scripts/verify-installation.py scripts/verification-summary.py
+      - name: Upload only to an existing draft prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release view "$V2V_TAG" --json isDraft,isPrerelease > /tmp/release-state.json
+          python3 -c 'import json; d=json.load(open("/tmp/release-state.json")); assert d["isDraft"] and d["isPrerelease"], "Refusing to modify a published/non-preview release"'
+          gh release upload "$V2V_TAG" delivery/*
