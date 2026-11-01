@@ -236,6 +236,8 @@ private val CardShape = RoundedCornerShape(24.dp)
                                         GeminiModel.entries.forEach { model -> FilterChip(selected = geminiModel == model, enabled = !active,
                                             onClick = { selectGeminiModel(model) }, label = { Text("${model.label.substringBefore(" · ")} · ${model.apiId}") }) }
                                     }
+                                    Text(context.uiText("Transcribe → Flash：專用辨識後再翻譯，建議優先比較。Flash-Lite 版本偏重成本。"), style = MaterialTheme.typography.bodySmall, color = Muted)
+                                    Text(context.uiText("專用辨識會先顯示原文，再產生譯文；需兩次請求，可能增加費用及延遲，不保證準確率。"), style = MaterialTheme.typography.bodySmall, color = Muted)
                                     Text(context.uiText("服務忙碌時，可結束本次翻譯後切換模型再試；不會自動切換供應商。"), style = MaterialTheme.typography.bodySmall, color = Muted)
                                 }
                                 key(selectedProvider, geminiModel) { KeyPanel(selectedProvider, geminiModel, keys, configured, !active, diagnostics.journal) { keyRefresh++ } }

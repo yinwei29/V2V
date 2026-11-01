@@ -10,8 +10,8 @@ android {
         applicationId = "com.yinwei.v2v"
         minSdk = 29
         targetSdk = 35
-        versionCode = 15
-        versionName = "0.8.1-install"
+        versionCode = 16
+        versionName = "0.9.0-asr"
     }
     buildTypes {
         getByName("debug") {
