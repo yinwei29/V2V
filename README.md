@@ -1,5 +1,7 @@
 # V2V · Live Audio Translator
 
+**專案範圍**：手機播放音訊及音訊檔轉錄／即時翻譯；Ju／LinguaBridge的對話與文件翻譯是另一個專案。功能與已支援限制見 [範圍核對](docs/PRODUCT_SCOPE.md)。 / V2V translates playback and imported audio; Ju is a separate conversation/document app.
+
 Android 10+。目前 **0.7.0-global**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
 
 > 使用者已確認 M2 主畫面可見原文與翻譯；M2 CircleCI #2 success。此版加入 M3/M4 工程預覽，語音引擎、浮窗與 Bluetooth 仍需裝置驗收，不能宣稱完整產品完成。離線辨識／翻譯模型尚未交付；YouTube／Zoom／Meet 仍按版本與裝置驗證。
