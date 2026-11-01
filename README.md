@@ -2,9 +2,15 @@
 
 **專案範圍**：手機播放音訊及音訊檔轉錄／即時翻譯；Ju／LinguaBridge的對話與文件翻譯是另一個專案。功能與已支援限制見 [範圍核對](docs/PRODUCT_SCOPE.md)。 / V2V translates playback and imported audio; Ju is a separate conversation/document app.
 
-Android 10+。目前 **0.7.1-srt**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
+Android 10+。目前 **0.8.0-core**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
 
 > 使用者已確認 M2 主畫面可見原文與翻譯；M2 CircleCI #2 success。此版加入 M3/M4 工程預覽，語音引擎、浮窗與 Bluetooth 仍需裝置驗收，不能宣稱完整產品完成。離線辨識／翻譯模型尚未交付；YouTube／Zoom／Meet 仍按版本與裝置驗證。
+
+## 0.8 · 翻譯核心 / Translation core
+
+移除Gemini固定至少4秒的收集等待；所有實際雲端管線在600ms安靜時斷句，連續語音最長4秒便送出。OpenAI文字翻譯及Gemini音訊翻譯可參考最近兩段原文（每段最多1,200字元），只翻譯目前片段、不重播前文。失敗／漏段／長停頓／新工作階段清除上下文。字幕與語音沿用同一個成功譯文，不引入另一份語音翻譯。詳見 [核心調整及測試](docs/TRANSLATION_CORE.md)。
+
+Cloud chunks now endpoint on600ms silence with a4s ceiling; Gemini no longer waits for a4s minimum. Bounded preceding source context helps terminology across chunks. This is segmented final output, not streaming or a guaranteed4s end-to-end latency. Shorter chunks and context can increase request/token costs. Real accuracy, throughput and listening still need device/API evaluation.
 
 ## 0.7.1 · SRT 字幕匯出
 
@@ -58,7 +64,7 @@ Android本身的音訊／螢幕擷取授權仍依系統每次要求，這與App�
 7. 不勾雲端同意時不送 ASR／MT。外部來源不重播原聲副本；只能調整本 APP 譯音，不能靜音來源 APP。
 8. 重現問題後停止 → 診斷 → **匯出 Log／分享 Log**，把 JSONL 附回聊天，補上來源版本、耳機和步驟。Log 不含錄音／字幕／Key，不自動上傳；詳見 [DIAGNOSTIC_LOGS](docs/DIAGNOSTIC_LOGS.md)。
 
-字幕是分段 final，最長 10秒／600ms 安靜斷句，不宣稱串流 partial。provider 逾時或過載會顯示錯誤／跳過，不無限排隊。外部來源原聲不可控，相關滑桿與純翻譯原聲控制禁用，不改系統媒體音量。
+字幕是分段 final，最長 4秒／600ms 安靜斷句，不宣稱串流 partial。provider 逾時或過載會顯示錯誤／跳過，不無限排隊。外部來源原聲不可控，相關滑桿與純翻譯原聲控制禁用，不改系統媒體音量。
 
 ## 建置
 
@@ -71,7 +77,7 @@ AGP 8.9.2 / Kotlin 2.1.20 / Gradle 8.13 / Java 17+ / compile & target SDK35 / mi
 ./scripts/package-apk.sh
 ```
 
-APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.7.1-srt-debug.apk，SHA-256 及驗證摘要見同次CircleCI Artifacts的SHA256SUMS與verification.json。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
+APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.8.0-core-debug.apk，SHA-256 及驗證摘要見同次CircleCI Artifacts的SHA256SUMS與verification.json。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
 
 ## CircleCI
 
