@@ -10,8 +10,14 @@ android {
         applicationId = "com.yinwei.v2v"
         minSdk = 29
         targetSdk = 35
-        versionCode = 14
-        versionName = "0.8.0-core"
+        versionCode = 15
+        versionName = "0.8.1-install"
+    }
+    buildTypes {
+        getByName("debug") {
+            applicationIdSuffix = ".preview"
+            resValue("string", "preview_app_name", "V2V Preview")
+        }
     }
     buildFeatures { compose = true; buildConfig = true }
     compileOptions {

@@ -1,3 +1,15 @@
+# V2V · 0.8.1-install · 2026-11-01
+
+使用者回報「未安裝應用程式」。已驗證#17的0.7.1與#19/#20的0.8個別APK簽章有效，但憑證不同；#19快取缺失後換簽，不能直接覆蓋舊套件。詳見 [安裝修復](docs/INSTALLATION.md)，舊私鑰不能從公開憑證恢復，沒有自動移除舊版或搬移資料。
+
+debug現在為V2V Preview /com.yinwei.v2v.preview，Code15/0.8.1-install，與舊V2V並存；release applicationId與namespace不變，翻譯核心仍0.8。Preview需重新填Key／授權，舊歷史保留於舊App。CI先比對固定公開憑證指紋，缺key／換簽就停止；可由保護變數恢復原key，但永久加密備份尚未設定，不能以快取當長期保證。簽章私鑰不進Git／附件／Log／聊天。Ju未修改。
+
+[CircleCI #21](https://circleci.com/gh/yinwei29/V2V/21)來源49597b0cd5cebbd43efa9a1d53ce6400bb773caa通過assembleDebug、123/123 JVM（0failed/errors/skipped）、lint0 Error/Fatal/219 Warning；四語系204標籤與shell/Python檢查通過。SDK apksigner/aapt驗證實際APK簽章、Preview套件／版本、min29/target35及啟動入口；實際下載APK SHA256及ZIP完整性再次通過。詳見 [metadata](docs/validation/circleci-21-installation.json)。實機安裝及真實模型品質尚未驗收。
+
+English: Installation recovery uses a parallel Preview debug package, preserving legacy data. Actual matching-source APK signature/package/version and all123 JVM tests verified; no physical device install claim. Runtime unchanged, no Ju changes or Play release. Persistent signing backup still needs secure CircleCI administration; fail-closed pinning prevents silently publishing rotated identities. Later evidence-only documentation does not change app/build/CI/scripts.
+
+---
+
 # V2V · 0.8.0-core · 2026-11-01
 
 僅V2V翻譯核心。生產管線改為600ms停頓斷句／連續語音最多4秒；移除Gemini固定4秒最低等待。OpenAI MT及Gemini combined request加入最近兩段成功原文（每段最多1,200 UTF-16 units）參考，只翻譯目前輸入，失敗／漏段／長停頓／新session清除；不用前次譯文強化錯誤。原有有界佇列、取消、供應商、單一字幕／譯音結果與資料格式保留。新增數值PIPELINE_TIMING診斷，不保存原文／音訊／Key。版本Code14，Ju沒有修改。
