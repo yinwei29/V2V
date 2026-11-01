@@ -1,3 +1,13 @@
+# V2V · 0.7.1-srt · 2026-11-01
+
+本輪按照V2V自己的規格§9/T18完成工作階段SRT匯出。紀錄→匯出→SRT→選工作階段→純譯文或雙語；原有TXT及歷史資料保留。使用來源相對時間碼、最新修訂、UTF-8與無效紀錄略過提示；檔案選擇前的快照保留於記憶體ViewModel，非Bundle。詳見 [SRT操作及限制](docs/SRT_EXPORT.md)。版本Code13，沒有修改Ju。
+
+[CircleCI #17](https://circleci.com/gh/yinwei29/V2V/17)驗證來源ec9f121a75cb5635007274897957d93affaf661a：assembleDebug成功，112/112 JVM tests（0 failures/errors/skipped），lint 0 Error/Fatal、219 Warning；四語系204標籤檢查通過。警告仍需後續處理。APK為V2V-0.7.1-srt-debug.apk，未上架；真機SAF／旋轉畫面／播放器相容性及真實模型測試未執行。離線ASR/MT、串流及來源／裝置驗收未宣告完成。
+
+English: V2V-only SRT export, matching-source CircleCI build/unit/lint passed (112 tests; lint 219 warnings, no errors). Existing TXT/history/audio/provider behavior retained. Device export/player and live API acceptance remain pending. See linked design/operation/rollback and validation metadata.
+
+---
+
 # V2V · 2026-11-01 功能歸屬核對
 
 依使用者澄清：V2V為手機播放音訊及音訊檔轉錄／即時翻譯，Ju／LinguaBridge為獨立的對話／文件翻譯專案。以 [PRODUCT_SCOPE](docs/PRODUCT_SCOPE.md) 分離；本repo自己的Android音訊V2規格與M0–M6保留，不改套Ju混合規劃。外部會議聲音擷取不等於Ju AI會議紀要；音訊檔匯入不等於Office/PDF；系統離線TTS不等於Ju離線ASR/MT。PR#1沒有引入Ju runtime。此次只修正文檔、不改APP、不移植程式／keys、不新增功能驗收聲明。

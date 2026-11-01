@@ -10,8 +10,8 @@ android {
         applicationId = "com.yinwei.v2v"
         minSdk = 29
         targetSdk = 35
-        versionCode = 12
-        versionName = "0.7.0-global"
+        versionCode = 13
+        versionName = "0.7.1-srt"
     }
     buildFeatures { compose = true; buildConfig = true }
     compileOptions {

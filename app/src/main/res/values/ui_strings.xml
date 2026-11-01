@@ -192,4 +192,15 @@
     <string name="ui_1994f7be" formatted="false">"Choose device audio and languages, consent to cloud processing, then start. Android capture permission is required."</string>
     <string name="ui_561ebedc" formatted="false">"Stopped by user"</string>
     <string name="ui_2b72e412" formatted="false">"No output yet"</string>
+    <string name="ui_eb36169" formatted="false">"File exported"</string>
+    <string name="ui_b1ea7303" formatted="false">"Export translation history"</string>
+    <string name="ui_dc839d8d" formatted="false">"Text history (TXT)"</string>
+    <string name="ui_d3e6bfbe" formatted="false">"Subtitles (SRT)"</string>
+    <string name="ui_dc2f41c6" formatted="false">"Choose a session (separate timelines)"</string>
+    <string name="ui_2af1a590" formatted="false">"Subtitle content"</string>
+    <string name="ui_c5957ccd" formatted="false">"Translation only"</string>
+    <string name="ui_ca7fa977" formatted="false">"Original and translation"</string>
+    <string name="ui_fe8a6b1e" formatted="false">"No valid subtitles to export"</string>
+    <string name="ui_f196a07e" formatted="false">"Export interrupted. Please export again."</string>
+    <string name="ui_bdc6b2ef" formatted="false">"Exported; %d invalid records omitted from subtitles. Export TXT for full history."</string>
 </resources>
