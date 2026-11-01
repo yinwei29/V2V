@@ -192,4 +192,14 @@
     <string name="ui_1994f7be" formatted="false">"端末の音声と言語を選び、クラウド処理に同意して開始してください。Android の取得権限が必要です。"</string>
     <string name="ui_561ebedc" formatted="false">"ユーザーが停止しました"</string>
     <string name="ui_2b72e412" formatted="false">"まだ出力していません"</string>
+    <string name="ui_eb36169" formatted="false">"ファイルを書き出しました"</string>
+    <string name="ui_b1ea7303" formatted="false">"翻訳履歴を書き出す"</string>
+    <string name="ui_dc839d8d" formatted="false">"テキスト履歴（TXT）"</string>
+    <string name="ui_d3e6bfbe" formatted="false">"字幕（SRT）"</string>
+    <string name="ui_dc2f41c6" formatted="false">"セッションを選択（個別の時間軸）"</string>
+    <string name="ui_2af1a590" formatted="false">"字幕の内容"</string>
+    <string name="ui_c5957ccd" formatted="false">"訳文のみ"</string>
+    <string name="ui_ca7fa977" formatted="false">"原文と訳文"</string>
+    <string name="ui_fe8a6b1e" formatted="false">"書き出せる有効な字幕がありません"</string>
+    <string name="ui_f196a07e" formatted="false">"書き出しが中断されました。もう一度お試しください。"</string>
 </resources>

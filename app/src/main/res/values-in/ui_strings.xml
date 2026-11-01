@@ -192,4 +192,14 @@
     <string name="ui_1994f7be" formatted="false">"Pilih audio ponsel dan bahasa, setujui pemrosesan cloud, lalu mulai. Izin pengambilan Android diperlukan."</string>
     <string name="ui_561ebedc" formatted="false">"Dihentikan pengguna"</string>
     <string name="ui_2b72e412" formatted="false">"Belum ada keluaran"</string>
+    <string name="ui_eb36169" formatted="false">"Berkas diekspor"</string>
+    <string name="ui_b1ea7303" formatted="false">"Ekspor riwayat terjemahan"</string>
+    <string name="ui_dc839d8d" formatted="false">"Riwayat teks (TXT)"</string>
+    <string name="ui_d3e6bfbe" formatted="false">"Subtitel (SRT)"</string>
+    <string name="ui_dc2f41c6" formatted="false">"Pilih sesi (linimasa terpisah)"</string>
+    <string name="ui_2af1a590" formatted="false">"Isi subtitel"</string>
+    <string name="ui_c5957ccd" formatted="false">"Terjemahan saja"</string>
+    <string name="ui_ca7fa977" formatted="false">"Teks asli dan terjemahan"</string>
+    <string name="ui_fe8a6b1e" formatted="false">"Tidak ada subtitel valid untuk diekspor"</string>
+    <string name="ui_f196a07e" formatted="false">"Ekspor terputus. Silakan ekspor lagi."</string>
 </resources>

@@ -192,4 +192,14 @@
     <string name="ui_1994f7be" formatted="false">"選擇手機播放音訊及翻譯語言、同意雲端翻譯後開始；需本次系統授權"</string>
     <string name="ui_561ebedc" formatted="false">"使用者已停止"</string>
     <string name="ui_2b72e412" formatted="false">"尚未輸出"</string>
+    <string name="ui_eb36169" formatted="false">"檔案已匯出"</string>
+    <string name="ui_b1ea7303" formatted="false">"匯出翻譯紀錄"</string>
+    <string name="ui_dc839d8d" formatted="false">"文字紀錄（TXT）"</string>
+    <string name="ui_d3e6bfbe" formatted="false">"字幕（SRT）"</string>
+    <string name="ui_dc2f41c6" formatted="false">"選擇工作階段（各自獨立時間軸）"</string>
+    <string name="ui_2af1a590" formatted="false">"字幕內容"</string>
+    <string name="ui_c5957ccd" formatted="false">"只匯出譯文"</string>
+    <string name="ui_ca7fa977" formatted="false">"原文與譯文"</string>
+    <string name="ui_fe8a6b1e" formatted="false">"沒有可匯出的有效字幕"</string>
+    <string name="ui_f196a07e" formatted="false">"匯出已中斷，請重新匯出"</string>
 </resources>

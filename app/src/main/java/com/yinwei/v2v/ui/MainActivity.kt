@@ -57,18 +57,63 @@ class MainActivity : ComponentActivity() {
     private val history: HistoryStore by inject()
     private var historyNotice by mutableStateOf("")
     private var historyBusy by mutableStateOf(false)
-    private var pendingHistoryExport: String? = null
-    private val exportHistory = registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
+    private val historyExportState by lazy { androidx.lifecycle.ViewModelProvider(this)[HistoryExportState::class.java] }
+    private var pendingHistoryExport: String?
+        get() = historyExportState.pending
+        set(value) { historyExportState.pending = value }
+    private fun completeHistoryExport(uri: Uri?) {
         val snapshot = pendingHistoryExport; pendingHistoryExport = null
+        if (uri != null && snapshot == null) { historyNotice = uiText("匯出已中斷，請重新匯出"); return }
         if (uri != null && snapshot != null) lifecycleScope.launch {
             historyBusy = true
             try {
                 withContext(Dispatchers.IO) { contentResolver.openOutputStream(uri, "wt")?.bufferedWriter(Charsets.UTF_8)?.use { it.write(snapshot) } ?: error("Cannot export") }
-                historyNotice = context.uiText("文字檔已匯出")
+                historyNotice = context.uiText("檔案已匯出")
             } catch (e: CancellationException) { throw e }
             catch (_: Exception) { historyNotice = context.uiText("匯出失敗，請重新選擇位置") }
             finally { historyBusy = false }
         }
+    }
+    private val exportHistory = registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain"), ::completeHistoryExport)
+    private val exportSrt = registerForActivityResult(ActivityResultContracts.CreateDocument("application/x-subrip"), ::completeHistoryExport)
+    private fun prepareHistoryExport(archive: List<HistoryEntry>, sessionId: String? = null, bilingual: Boolean = false) {
+        if (historyBusy) return
+        historyBusy = true
+        lifecycleScope.launch {
+            try {
+                val snapshot = withContext(Dispatchers.Default) {
+                    if (sessionId == null) HistoryText.export(archive) else HistorySrt.export(archive, sessionId, bilingual)
+                }
+                if (snapshot.isBlank()) historyNotice = uiText("沒有可匯出的有效字幕")
+                else {
+                    pendingHistoryExport = snapshot
+                    if (sessionId == null) exportHistory.launch("V2V-history-${System.currentTimeMillis()}.txt")
+                    else exportSrt.launch("V2V-subtitles-${System.currentTimeMillis()}.srt")
+                }
+            } catch (e: CancellationException) { throw e }
+            catch (_: Exception) { pendingHistoryExport = null; historyNotice = uiText("匯出失敗，請重新選擇位置") }
+            finally { historyBusy = false }
+        }
+    }
+    private fun chooseHistoryExport(archive: List<com.yinwei.v2v.history.HistoryEntry>) {
+        android.app.AlertDialog.Builder(this).setTitle(uiText("匯出翻譯紀錄"))
+            .setItems(arrayOf(uiText("文字紀錄（TXT）"), uiText("字幕（SRT）"))) { _, format ->
+                if (format == 0) {
+                    prepareHistoryExport(archive)
+                } else {
+                    val sessions = archive.groupBy { it.sessionId }.entries.sortedByDescending { row -> row.value.maxOf { it.createdAt } }
+                    val labels = sessions.mapIndexed { index, row ->
+                        "${index + 1}. ${java.text.DateFormat.getDateTimeInstance().format(java.util.Date(row.value.minOf { it.createdAt }))} · ${row.value.size}"
+                    }.toTypedArray()
+                    android.app.AlertDialog.Builder(this).setTitle(uiText("選擇工作階段（各自獨立時間軸）"))
+                        .setItems(labels) { _, index ->
+                            android.app.AlertDialog.Builder(this).setTitle(uiText("字幕內容"))
+                                .setItems(arrayOf(uiText("只匯出譯文"),uiText("原文與譯文"))) { _, mode ->
+                                    prepareHistoryExport(sessions[index].value, sessions[index].key, mode == 1)
+                                }.setNegativeButton(uiText("取消"),null).show()
+                        }.setNegativeButton(uiText("取消"),null).show()
+                }
+            }.setNegativeButton(uiText("取消"),null).show()
     }
     private val settings: SettingsStore by inject()
     private val keys: ApiKeyStore by inject()
@@ -168,7 +213,7 @@ class MainActivity : ComponentActivity() {
                     { enabled -> lifecycleScope.launch { settings.setDiagnosticsEnabled(enabled) } }, logNotice, logBusy,
                     { exportLog.launch("V2V-technical-${System.currentTimeMillis()}.jsonl") }, ::shareLog,
                     archive, historyError, historyNotice, historyBusy,
-                    { pendingHistoryExport = HistoryText.export(archive); exportHistory.launch("V2V-翻譯紀錄-${System.currentTimeMillis()}.txt") },
+                    { chooseHistoryExport(archive) },
                     { lifecycleScope.launch {
                         historyBusy = true
                         try { withContext(Dispatchers.IO) {

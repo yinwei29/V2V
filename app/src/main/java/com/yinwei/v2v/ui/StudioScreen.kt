@@ -121,7 +121,7 @@ private val CardShape = RoundedCornerShape(24.dp)
                     Text(if (tab == 0) context.uiText("聽懂每一句") else names[tab], color = Muted, style = MaterialTheme.typography.labelMedium)
                 }
                 if (tab == 1) {
-                    IconAction(R.drawable.ic_download, context.uiText("匯出文字檔"), !historyBusy && archive.isNotEmpty(), exportHistory)
+                    IconAction(R.drawable.ic_download, context.uiText("匯出翻譯紀錄"), !historyBusy && archive.isNotEmpty(), exportHistory)
                     IconAction(R.drawable.ic_delete, context.uiText("清除翻譯紀錄"), !historyBusy && (archive.isNotEmpty() || historyError.isNotBlank())) { clearHistoryDialog = true }
                 } else if (active) {
                     val status = when {

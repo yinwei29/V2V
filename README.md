@@ -2,9 +2,13 @@
 
 **專案範圍**：手機播放音訊及音訊檔轉錄／即時翻譯；Ju／LinguaBridge的對話與文件翻譯是另一個專案。功能與已支援限制見 [範圍核對](docs/PRODUCT_SCOPE.md)。 / V2V translates playback and imported audio; Ju is a separate conversation/document app.
 
-Android 10+。目前 **0.7.0-global**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
+Android 10+。目前 **0.7.1-srt**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
 
 > 使用者已確認 M2 主畫面可見原文與翻譯；M2 CircleCI #2 success。此版加入 M3/M4 工程預覽，語音引擎、浮窗與 Bluetooth 仍需裝置驗收，不能宣稱完整產品完成。離線辨識／翻譯模型尚未交付；YouTube／Zoom／Meet 仍按版本與裝置驗證。
+
+## 0.7.1 · SRT 字幕匯出
+
+紀錄頁匯出可選TXT或SRT；SRT逐工作階段選擇，支援譯文或雙語，保留來源時間軸、最新修訂與UTF-8。詳見 [SRT操作與限制](docs/SRT_EXPORT.md)。Android實機與字幕播放器相容性仍待驗收。
 
 ## 0.6 · 多語言與服務恢復
 
@@ -67,7 +71,7 @@ AGP 8.9.2 / Kotlin 2.1.20 / Gradle 8.13 / Java 17+ / compile & target SDK35 / mi
 ./scripts/package-apk.sh
 ```
 
-APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.7.0-global-debug.apk，SHA-256 及驗證摘要見同次CircleCI Artifacts的SHA256SUMS與verification.json。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
+APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.7.1-srt-debug.apk，SHA-256 及驗證摘要見同次CircleCI Artifacts的SHA256SUMS與verification.json。Debug 簽章在不同 CI 環境可能不同；無法更新時需移除舊版再裝（設定／Log 會清除，先匯出）。
 
 ## CircleCI
 
@@ -77,6 +81,6 @@ cimg/android:2025.04 / medium，cache 使用 dependency lockfile 與 wrapper che
 
 ## 限制與文件
 
-Key 是 AES-GCM ciphertext，AES 金鑰在 Android Keystore；排除 backup / device transfer。Key 表單不保存到 saved state，App 允許 screenshot / app preview，Key欄位仍以密碼遮蔽。即時字幕仍保留最近200段於記憶體；使用者要求新增的翻譯紀錄另存手機私有目錄，可停用／匯出／清除，沒有SRT匯出。Log 是獨立的技術資訊，最多 3×512KiB，開關可持久化、可刪除。
+Key 是 AES-GCM ciphertext，AES 金鑰在 Android Keystore；排除 backup / device transfer。Key 表單不保存到 saved state，App 允許 screenshot / app preview，Key欄位仍以密碼遮蔽。即時字幕仍保留最近200段於記憶體；使用者要求新增的翻譯紀錄另存手機私有目錄，可停用／匯出／清除，新增按工作階段的SRT匯出。Log 是獨立的技術資訊，最多 3×512KiB，開關可持久化、可刪除。
 
 無真機不能證明第三方擷取、Bluetooth 實體左右隔離、鎖屏、30分鐘與20次啟停。詳見 [PROJECT_HANDOFF](PROJECT_HANDOFF.md)、[TEST_REPORT](docs/TEST_REPORT.md)、[PROVIDER_MATRIX](docs/PROVIDER_MATRIX.md) 與來源矩陣。
