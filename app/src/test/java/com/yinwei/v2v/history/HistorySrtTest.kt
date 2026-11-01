@@ -29,6 +29,8 @@ class HistorySrtTest {
         val result = HistorySrt.export(listOf(entry(1, start=-1), entry(2, end=1000),
             entry(3, end=Long.MAX_VALUE), entry(4, text=""), entry(5, revision=0), entry(6, text="\u0000")), "a")
         assertEquals("",result)
+        val mixed = HistorySrt.prepare(listOf(entry(), entry(1, start=-1)), "a")
+        assertEquals(1, mixed.skippedInvalid); assertTrue(mixed.text.contains("你好"))
         assertTrue(HistorySrt.export(listOf(entry(end=HistorySrt.MAX_TIMESTAMP_MS)), "a").contains("99:59:59,999"))
     }
     @Test fun bilingualTextNormalizesCueSeparatorsAndEscapesMarkup() {

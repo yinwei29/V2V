@@ -202,4 +202,5 @@
     <string name="ui_ca7fa977" formatted="false">"Original and translation"</string>
     <string name="ui_fe8a6b1e" formatted="false">"No valid subtitles to export"</string>
     <string name="ui_f196a07e" formatted="false">"Export interrupted. Please export again."</string>
+    <string name="ui_bdc6b2ef" formatted="false">"Exported; %d invalid records omitted from subtitles. Export TXT for full history."</string>
 </resources>

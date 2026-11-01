@@ -202,4 +202,5 @@
     <string name="ui_ca7fa977" formatted="false">"Teks asli dan terjemahan"</string>
     <string name="ui_fe8a6b1e" formatted="false">"Tidak ada subtitel valid untuk diekspor"</string>
     <string name="ui_f196a07e" formatted="false">"Ekspor terputus. Silakan ekspor lagi."</string>
+    <string name="ui_bdc6b2ef" formatted="false">"Diekspor; %d data tidak valid diabaikan dari subtitel. Ekspor TXT untuk riwayat lengkap."</string>
 </resources>

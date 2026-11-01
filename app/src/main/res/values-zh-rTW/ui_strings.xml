@@ -202,4 +202,5 @@
     <string name="ui_ca7fa977" formatted="false">"原文與譯文"</string>
     <string name="ui_fe8a6b1e" formatted="false">"沒有可匯出的有效字幕"</string>
     <string name="ui_f196a07e" formatted="false">"匯出已中斷，請重新匯出"</string>
+    <string name="ui_bdc6b2ef" formatted="false">"已匯出；%d 段無效資料未加入字幕，完整紀錄仍可匯出 TXT。"</string>
 </resources>

@@ -202,4 +202,5 @@
     <string name="ui_ca7fa977" formatted="false">"原文と訳文"</string>
     <string name="ui_fe8a6b1e" formatted="false">"書き出せる有効な字幕がありません"</string>
     <string name="ui_f196a07e" formatted="false">"書き出しが中断されました。もう一度お試しください。"</string>
+    <string name="ui_bdc6b2ef" formatted="false">"書き出しました。無効な %d 件は字幕に含まれません。全履歴はTXTで書き出せます。"</string>
 </resources>

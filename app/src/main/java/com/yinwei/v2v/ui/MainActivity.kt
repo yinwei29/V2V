@@ -63,12 +63,13 @@ class MainActivity : ComponentActivity() {
         set(value) { historyExportState.pending = value }
     private fun completeHistoryExport(uri: Uri?) {
         val snapshot = pendingHistoryExport; pendingHistoryExport = null
+        val skippedInvalid = historyExportState.skippedInvalid; historyExportState.skippedInvalid = 0
         if (uri != null && snapshot == null) { historyNotice = uiText("匯出已中斷，請重新匯出"); return }
         if (uri != null && snapshot != null) lifecycleScope.launch {
             historyBusy = true
             try {
                 withContext(Dispatchers.IO) { contentResolver.openOutputStream(uri, "wt")?.bufferedWriter(Charsets.UTF_8)?.use { it.write(snapshot) } ?: error("Cannot export") }
-                historyNotice = context.uiText("檔案已匯出")
+                historyNotice = if (skippedInvalid > 0) context.uiText("已匯出；%d 段無效資料未加入字幕，完整紀錄仍可匯出 TXT。").format(skippedInvalid) else context.uiText("檔案已匯出")
             } catch (e: CancellationException) { throw e }
             catch (_: Exception) { historyNotice = context.uiText("匯出失敗，請重新選擇位置") }
             finally { historyBusy = false }
@@ -82,11 +83,12 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             try {
                 val snapshot = withContext(Dispatchers.Default) {
-                    if (sessionId == null) HistoryText.export(archive) else HistorySrt.export(archive, sessionId, bilingual)
+                    if (sessionId == null) HistorySrt.Result(HistoryText.export(archive), 0) else HistorySrt.prepare(archive, sessionId, bilingual)
                 }
-                if (snapshot.isBlank()) historyNotice = uiText("沒有可匯出的有效字幕")
+                if (snapshot.text.isBlank()) historyNotice = uiText("沒有可匯出的有效字幕")
                 else {
-                    pendingHistoryExport = snapshot
+                    pendingHistoryExport = snapshot.text
+                    historyExportState.skippedInvalid = snapshot.skippedInvalid
                     if (sessionId == null) exportHistory.launch("V2V-history-${System.currentTimeMillis()}.txt")
                     else exportSrt.launch("V2V-subtitles-${System.currentTimeMillis()}.srt")
                 }
