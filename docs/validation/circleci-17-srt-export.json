@@ -1,0 +1,27 @@
+{
+  "version": "0.7.1-srt",
+  "junit": {
+    "tests": 112,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Error": 0,
+    "Fatal": 0,
+    "Warning": 219
+  },
+  "apkChecksums": "f99e43aab9547fea37484f0e070a2eeef5b228b3b572894f0495fb478b106c6b  V2V-0.7.1-srt-debug.apk",
+  "liveProviderTested": false,
+  "androidDeviceTested": false,
+  "provenance": {
+    "repository": "yinwei29/V2V",
+    "circleciBuild": 17,
+    "source": "ec9f121a75cb5635007274897957d93affaf661a",
+    "url": "https://circleci.com/gh/yinwei29/V2V/17",
+    "downloadedApkSha256": "f99e43aab9547fea37484f0e070a2eeef5b228b3b572894f0495fb478b106c6b",
+    "apkBytes": 33218845,
+    "apkDigestVerified": true,
+    "JuEvidence": false
+  }
+}

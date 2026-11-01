@@ -23,7 +23,7 @@ External-capture SRT is relative to this capture session, not the other app's or
 
 ## Checks / 驗證
 
-Added6 JVM tests covering exact syntax/UTF-8, session isolation, revision/order/gaps, invalid records/time bounds, bilingual normalization/escaping and device-locale-independent timecodes. Existing106 cases retained (expected112). Locale check covers204 labels/four locales. Full Android assemble/unit/lint runs in this branch's CircleCI; only completed matching-source results can be called passed. No physical SAF picker/rotation/player compatibility or live API quality acceptance is claimed without device tests.
+Added6 JVM tests covering exact syntax/UTF-8, session isolation, revision/order/gaps, invalid records/time bounds, bilingual normalization/escaping and device-locale-independent timecodes. Existing106 cases retained:112 total passed on CircleCI#17, source ec9f121a75cb5635007274897957d93affaf661a. Android assembleDebug passed; lint0 Error/Fatal and219 warnings (not a zero-warning pass). See [validation metadata](validation/circleci-17-srt-export.json). Locale check covers204 labels/four locales. Full Android assemble/unit/lint runs in this branch's CircleCI; only completed matching-source results can be called passed. No physical SAF picker/rotation/player compatibility or live API quality acceptance is claimed without device tests.
 
 ## Rollback / 回退
 
