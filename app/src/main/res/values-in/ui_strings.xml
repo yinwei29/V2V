@@ -203,4 +203,6 @@
     <string name="ui_fe8a6b1e" formatted="false">"Tidak ada subtitel valid untuk diekspor"</string>
     <string name="ui_f196a07e" formatted="false">"Ekspor terputus. Silakan ekspor lagi."</string>
     <string name="ui_bdc6b2ef" formatted="false">"Diekspor; %d data tidak valid diabaikan dari subtitel. Ekspor TXT untuk riwayat lengkap."</string>
+    <string name="ui_5cd7ac6a" formatted="false">"Transcribe → Flash: pengenalan ucapan khusus lalu terjemahan; bandingkan ini dahulu. Flash-Lite mengutamakan biaya."</string>
+    <string name="ui_6b8b7b" formatted="false">"Pengenalan khusus menampilkan teks asli sebelum terjemahan; dua permintaan dapat menambah biaya dan latensi. Akurasi tidak dijamin."</string>
 </resources>

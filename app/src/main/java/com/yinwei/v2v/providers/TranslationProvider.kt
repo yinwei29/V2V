@@ -18,7 +18,8 @@ interface TranslationProvider {
 }
 fun CloudProvider.create(key: String, journal: DiagnosticJournal? = null, geminiModel: GeminiModel = GeminiModel.DEFAULT): TranslationProvider = when (this) {
     CloudProvider.OPENAI -> OpenAiProvider(key, diagnostics = journal)
-    CloudProvider.GEMINI -> GeminiProvider(key, diagnostics = journal, model = geminiModel)
+    CloudProvider.GEMINI -> if (geminiModel.specialistAsr) GeminiTranscribeProvider(key, diagnostics = journal, model = geminiModel)
+        else GeminiProvider(key, diagnostics = journal, model = geminiModel)
 }
 
 /** Providers that can return verbatim source and translation from one audio request. */

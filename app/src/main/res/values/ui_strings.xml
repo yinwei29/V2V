@@ -203,4 +203,6 @@
     <string name="ui_fe8a6b1e" formatted="false">"No valid subtitles to export"</string>
     <string name="ui_f196a07e" formatted="false">"Export interrupted. Please export again."</string>
     <string name="ui_bdc6b2ef" formatted="false">"Exported; %d invalid records omitted from subtitles. Export TXT for full history."</string>
+    <string name="ui_5cd7ac6a" formatted="false">"Transcribe → Flash: dedicated speech recognition then translation; try this comparison first. Flash-Lite prioritizes cost."</string>
+    <string name="ui_6b8b7b" formatted="false">"Dedicated recognition shows the source first, then translates; two requests may increase cost and latency. Accuracy is not guaranteed."</string>
 </resources>

@@ -2,9 +2,15 @@
 
 **專案範圍**：手機播放音訊及音訊檔轉錄／即時翻譯；Ju／LinguaBridge的對話與文件翻譯是另一個專案。功能與已支援限制見 [範圍核對](docs/PRODUCT_SCOPE.md)。 / V2V translates playback and imported audio; Ju is a separate conversation/document app.
 
-Android 10+。目前 **0.8.1-install**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
+Android 10+。目前 **0.9.0-asr**：音訊擷取／混音、BYOK 雲端字幕、Android PCM 語音、浮動字幕與技術 Log。GitHub: https://github.com/yinwei29/V2V ，CI 使用 CircleCI。
 
 > 使用者已確認 M2 主畫面可見原文與翻譯；M2 CircleCI #2 success。此版加入 M3/M4 工程預覽，語音引擎、浮窗與 Bluetooth 仍需裝置驗收，不能宣稱完整產品完成。離線辨識／翻譯模型尚未交付；YouTube／Zoom／Meet 仍按版本與裝置驗證。
+
+## 0.9 · 專用語音辨識 / Specialist speech recognition
+
+設定→引擎與金鑰→Google Gemini，新增 **Transcribe → Flash** 及 **Transcribe → Flash-Lite**。以同一Google Key使用`gemini-3.5-transcribe`先辨識，再用所選Flash模型翻譯文字；原文會先顯示，翻譯失敗保留本次原文。原有Flash／Flash-Lite單次音訊請求模式仍保留，不自動變更已選模型／帳號／費用選擇。詳見 [核心設計、官方契約及限制](docs/SPECIALIST_ASR.md)。
+
+New explicit specialist options use dedicated Gemini Transcribe ASR followed by text MT. This isolates recognition from translation and permits inspecting the source first; it is not a proven accuracy improvement or streaming implementation. Two requests may add cost/latency. Same Preview package/signing pin as0.8.1; no uninstall/data migration required to update Preview.
 
 ## 0.8.1 · 安裝修復 / Installation recovery
 
@@ -83,7 +89,7 @@ AGP 8.9.2 / Kotlin 2.1.20 / Gradle 8.13 / Java 17+ / compile & target SDK35 / mi
 ./scripts/package-apk.sh
 ```
 
-APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.8.1-install-preview.apk，SHA-256 及驗證摘要見同次CircleCI Artifacts的SHA256SUMS與verification.json。Preview簽章會比對固定指紋，簽章缺失或不符會停止交付；不要為了安裝而直接移除有資料的舊V2V。
+APK：app/build/outputs/apk/debug/app-debug.apk；交付副本 deliverables/V2V-0.9.0-asr-preview.apk，SHA-256 及驗證摘要見同次CircleCI Artifacts的SHA256SUMS與verification.json。Preview簽章會比對固定指紋，簽章缺失或不符會停止交付；不要為了安裝而直接移除有資料的舊V2V。
 
 ## CircleCI
 

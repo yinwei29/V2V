@@ -1,8 +1,10 @@
 package com.yinwei.v2v.providers
 
-enum class GeminiModel(val apiId: String, val label: String, val thinkingLevel: String) {
+enum class GeminiModel(val apiId: String, val label: String, val thinkingLevel: String, val specialistAsr: Boolean = false) {
     FLASH_LITE("gemini-3.5-flash-lite", "Flash-Lite · 快速", "MINIMAL"),
-    FLASH("gemini-3.8-flash", "Flash · 一般", "LOW");
+    FLASH("gemini-3.8-flash", "Flash · 一般", "LOW"),
+    TRANSCRIBE_FLASH("gemini-3.8-flash", "Transcribe → Flash", "LOW", true),
+    TRANSCRIBE_FLASH_LITE("gemini-3.5-flash-lite", "Transcribe → Flash-Lite", "MINIMAL", true);
     companion object {
         val DEFAULT = FLASH_LITE
         fun parse(value: String?): GeminiModel? = entries.firstOrNull { it.name == value }

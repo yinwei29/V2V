@@ -1,3 +1,15 @@
+# V2V · 0.9.0-asr · 2026-11-01
+
+使用者回報通用Gemini3.5 Flash-Lite／3.8 Flash效果不佳。新增明確選用 **Transcribe → Flash／Transcribe → Flash-Lite**：相同Google Key→gemini-3.5-transcribe專用逐字ASR（Interactions，inline WAV，store/stream/background=false）→所選Gemini文字翻譯。原文先顯示，MT失敗保留本次原文，不用另一份語音翻譯；字幕/TTS仍共用成功譯文。原有combined模式、已保存選擇與預設不變，不自動提高費用。新路徑兩次請求可能較慢或增加費用，不宣稱品質已實測提升。API契約／語言hint及操作見 [SPECIALIST_ASR](docs/SPECIALIST_ASR.md)。
+
+維持Preview套件與固定簽章，Code16可更新0.8.1 Preview，資料不搬移、不刪除。Ju未改，未新增Live WebSocket／離線ASR／串流partial。中國語音hint使用官方cmn-Hans-CN，原文可能簡體，目標zh-TW譯文仍明確繁中。Interactions raw REST回應是steps/model_output/text，SDK output_text不是原始欄位。
+
+[CircleCI #23](https://circleci.com/gh/yinwei29/V2V/23)來源2c9f4d0d33eb45037e2dd87102eb83675b4e437b：build成功、134/134 JVM（0 failures/errors/skipped），lint0 Error/Fatal、221 warnings（比#21多2項動態uiText字串UnusedResources，locale206/四語系驗證通過）。實際APK校驗碼、ZIP／官方apksig簽章與安裝metadata已核對；同一fa0d…憑證。詳見 [驗證metadata](docs/validation/circleci-23-specialist-asr.json)。沒有實際API／手機聆聽或準確率驗收。後續文件不改app/build/CI/scripts。
+
+English: Opt-in dedicated Gemini Transcribe ASR then contextual text MT; old models/defaults and Preview identity retained. All134 JVM tests/build/lint passed (221 warnings). Same key and pinned signer, but model/account eligibility and real quality/latency require user evaluation. No Ju, Play, streaming or offline completion claim. Cost/privacy/operation/rollback documented.
+
+---
+
 # V2V · 0.8.1-install · 2026-11-01
 
 [GitHub安裝APK](https://github.com/yinwei29/V2V/releases/download/v0.8.1-install/V2V-0.8.1-install-preview.apk)已發佈為v0.8.1-install prerelease，四個公開附件齊全。GitHub附件digest與CircleCI#21下載APK一致。GitHub連線上傳host曾回401，改用僅附件交付的 [manual workflow成功run](https://github.com/yinwei29/V2V/actions/runs/41283193954)；Android build/tests仍在CircleCI。發佈target為cb28d25，後續distribution workflow不改app/build。工作流程不自動發佈既有Release、不覆寫附件、不存私鑰，須人工dispatch指定來源及SHA。長期簽章備份限制維持。
