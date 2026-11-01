@@ -1,0 +1,38 @@
+{
+  "version": "0.8.1-install",
+  "junit": {
+    "tests": 123,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Error": 0,
+    "Fatal": 0,
+    "Warning": 219
+  },
+  "apkChecksums": "cef78e7c31165feb075c64a203210aa912fd8359c4e21e68036530cb8a2b3ac1  V2V-0.8.1-install-preview.apk",
+  "installation": {
+    "applicationId": "com.yinwei.v2v.preview",
+    "versionCode": 15,
+    "versionName": "0.8.1-install",
+    "minSdk": 29,
+    "targetSdk": 35,
+    "certificateSha256": "fa0d822eeb06566185983e0bb02cdf516bfdad5925a5665b0f294985be475e32",
+    "apkV2Verified": true,
+    "parallelToLegacyV2V": true,
+    "deviceInstallTested": false
+  },
+  "liveProviderTested": false,
+  "androidDeviceTested": false,
+  "provenance": {
+    "repository": "yinwei29/V2V",
+    "circleciBuild": 21,
+    "source": "49597b0cd5cebbd43efa9a1d53ce6400bb773caa",
+    "url": "https://circleci.com/gh/yinwei29/V2V/21",
+    "downloadedApkSha256": "cef78e7c31165feb075c64a203210aa912fd8359c4e21e68036530cb8a2b3ac1",
+    "apkBytes": 33219253,
+    "apkDigestVerified": true,
+    "JuEvidence": false
+  }
+}

@@ -31,6 +31,6 @@ This is a parallel test installation, not a signed in-place update for legacy0.7
 
 ## Verification and rollback / 驗證與回退
 
-Run locale verification, bash syntax/Python compilation, then existing V2V CircleCI assembleDebug/testDebugUnitTest/lintDebug and APK installation-metadata checks. Existing123 JVM tests retained. Matching-source result required before delivery. Physical install/update, Samsung source-policy restrictions and live-model quality remain device acceptance items.
+Run locale verification, bash syntax/Python compilation, then existing V2V CircleCI assembleDebug/testDebugUnitTest/lintDebug and APK installation-metadata checks. Existing123 JVM tests retained;123/123 passed in [CircleCI#21](https://circleci.com/gh/yinwei29/V2V/21), source49597b0cd5cebbd43efa9a1d53ce6400bb773caa. Build passed; lint0 Error/Fatal with219 warnings. New signing and APK install-metadata checks passed; downloaded APK digest/ZIP/signature reverified. See [metadata](validation/circleci-21-installation.json). Physical install/update, Samsung source-policy restrictions and live-model quality remain device acceptance items.
 
 Rollback this install-fix commit to restore prior debug identity/packaging. It does not delete either installed app, alter runtime translation or change old saved data. Do not re-publish a legacy-package APK with the mismatched new signer as an in-place update. Ju unchanged; no Play publication.
